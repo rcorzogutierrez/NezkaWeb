@@ -63,6 +63,7 @@ export const es = {
     email: 'Ese correo no tiene un formato válido.',
     minLength: (min: number) => `Usa al menos ${min} caracteres.`,
     mismatch: 'Las contraseñas no coinciden.',
+    maxLength: (max: number) => `Usa como máximo ${max} caracteres.`,
   },
   errors: {
     invalidCredentials: 'El correo o la contraseña no son correctos.',
@@ -91,15 +92,6 @@ export const es = {
   upcoming: {
     heading: 'Llega en una próxima entrega',
     intro: 'Esta sección todavía vive en la app de escritorio. Cuando pase a la web podrás:',
-    clients: {
-      summary: 'Crea y mantén los clientes a los que emites proformas y facturas.',
-      features: [
-        'Crear clientes con contacto, correo, teléfonos, dirección y Tax ID.',
-        'Editar, marcar como inactivos o eliminar los existentes.',
-        'Buscar por nombre, contacto, correo, teléfono, ciudad o Tax ID.',
-        'Importar la lista de clientes exportada de QuickBooks.',
-      ],
-    },
     products: {
       summary: 'El catálogo de productos con su foto, UPC, tamaño, pack y precio por caja.',
       features: [
@@ -123,6 +115,84 @@ export const es = {
         'Mostrar u ocultar los precios por caja.',
         'Imprimir o guardar el catálogo en PDF.',
       ],
+    },
+  },
+  clients: {
+    title: 'Clientes',
+    intro: 'Los clientes a los que emites proformas y facturas.',
+    new: 'Nuevo cliente',
+    search: 'Buscar',
+    searchPlaceholder: 'Nombre, contacto, correo, ciudad…',
+    filterLabel: 'Mostrar',
+    filters: { all: 'Todos', active: 'Activos', inactive: 'Inactivos' },
+    caption: 'Clientes',
+    colClient: 'Cliente',
+    colContact: 'Contacto',
+    colPhone: 'Teléfono',
+    colLocation: 'Ubicación',
+    colStatus: 'Estado',
+    colActions: 'Acciones',
+    active: 'Activo',
+    inactive: 'Inactivo',
+    edit: 'Editar',
+    editNamed: (name: string) => `Editar ${name}`,
+    loading: 'Cargando clientes…',
+    loadFailed: 'No se pudo cargar la lista de clientes. Revisa tu conexión y recarga la página.',
+    showing: (shown: number, total: number) =>
+      shown === total
+        ? `${total} ${total === 1 ? 'cliente' : 'clientes'}`
+        : `Mostrando ${shown} de ${total} clientes`,
+    emptyTitle: 'Todavía no hay clientes',
+    emptyBody:
+      'Agrega el primero con sus datos de contacto y dirección. Esos datos salen en el bloque CUSTOMER de cada proforma.',
+    noMatchesTitle: 'Ningún cliente coincide',
+    noMatchesBody: (search: string) =>
+      search
+        ? `No encontramos clientes con «${search}» en este filtro.`
+        : 'No hay clientes en este filtro.',
+    clearSearch: 'Ver todos los clientes',
+    created: (name: string) => `Guardamos a ${name}.`,
+    updated: (name: string) => `Guardamos los cambios de ${name}.`,
+    deleted: (name: string) => `Eliminamos a ${name}.`,
+    form: {
+      newTitle: 'Nuevo cliente',
+      editTitle: 'Editar cliente',
+      intro:
+        'Estos datos aparecen en el bloque CUSTOMER de las proformas y facturas. Solo el nombre es obligatorio.',
+      back: 'Volver a clientes',
+      general: 'Datos generales',
+      contact: 'Contacto',
+      address: 'Dirección',
+      notesSection: 'Notas',
+      name: 'Nombre del cliente',
+      branch: 'Sucursal o razón social',
+      contactName: 'Persona de contacto',
+      taxId: 'Tax ID / EIN',
+      email: 'Correo',
+      phone: 'Teléfono',
+      mobile: 'Celular',
+      street: 'Dirección',
+      city: 'Ciudad',
+      state: 'Estado',
+      zipCode: 'Código postal',
+      country: 'País',
+      notes: 'Notas',
+      notesHint: 'Condiciones de pago, horarios de entrega…',
+      active: 'Cliente activo',
+      activeHint: 'Los clientes inactivos no se ofrecen al crear estimados.',
+      submit: 'Guardar cliente',
+      submitting: 'Guardando…',
+      cancel: 'Cancelar',
+      notFound: 'Ese cliente no existe o lo eliminaron.',
+      duplicate: (name: string) =>
+        `Ya existe un cliente llamado «${name}». Si es otro cliente, vuelve a pulsar «Guardar de todos modos».`,
+      saveAnyway: 'Guardar de todos modos',
+      delete: 'Eliminar cliente',
+      deleteTitle: (name: string) => `¿Eliminar a ${name}?`,
+      deleteBody:
+        'Se borra para siempre. Si solo dejaste de venderle, desmarca «Cliente activo» y conserva su historial.',
+      deleteConfirm: 'Eliminar',
+      deleting: 'Eliminando…',
     },
   },
   users: {

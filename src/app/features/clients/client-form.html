@@ -1,0 +1,212 @@
+<a routerLink="/clients" class="link inline-flex items-center gap-1.5 text-sm font-semibold">
+  <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
+  {{ t().clients.form.back }}
+</a>
+
+<header class="mt-4 max-w-2xl">
+  <h1 class="text-[1.75rem] leading-tight font-bold tracking-tight text-ink">
+    @if (editing() && savedName()) {
+      {{ savedName() }}
+    } @else {
+      {{ editing() ? t().clients.form.editTitle : t().clients.form.newTitle }}
+    }
+  </h1>
+  <p class="mt-1.5 text-base leading-relaxed text-ink-muted">{{ t().clients.form.intro }}</p>
+</header>
+
+@if (loading()) {
+  <p class="mt-8 flex items-center gap-2.5 text-ink-muted" role="status">
+    <svg lucideLoaderCircle class="size-4 animate-spin" aria-hidden="true"></svg>
+    {{ t().clients.loading }}
+  </p>
+} @else if (loadError(); as key) {
+  <app-form-alert class="mt-8 max-w-2xl">{{ t().errors[key] }}</app-form-alert>
+} @else if (notFound()) {
+  <app-form-alert class="mt-8 max-w-2xl">{{ t().clients.form.notFound }}</app-form-alert>
+} @else {
+  <form
+    [formRoot]="clientForm"
+    class="mt-8 max-w-5xl overflow-hidden rounded-2xl border border-line bg-white"
+    novalidate
+  >
+    <div class="divide-y divide-line">
+      <section class="form-section" aria-labelledby="sec-general">
+        <h2 id="sec-general" class="form-section-title">{{ t().clients.form.general }}</h2>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <app-text-field
+            class="sm:col-span-2"
+            [field]="clientForm.name"
+            [label]="t().clients.form.name"
+            autocomplete="organization"
+          />
+          <app-text-field
+            class="sm:col-span-2"
+            [field]="clientForm.branch"
+            [label]="t().clients.form.branch"
+            autocomplete="off"
+          />
+          <app-text-field
+            [field]="clientForm.contactName"
+            [label]="t().clients.form.contactName"
+            autocomplete="off"
+          />
+          <app-text-field
+            [field]="clientForm.taxId"
+            [label]="t().clients.form.taxId"
+            autocomplete="off"
+          />
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="sec-contact">
+        <h2 id="sec-contact" class="form-section-title">{{ t().clients.form.contact }}</h2>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-5 sm:gap-x-5">
+          <app-text-field
+            class="col-span-2"
+            [field]="clientForm.email"
+            [label]="t().clients.form.email"
+            type="email"
+            autocomplete="off"
+          />
+          <app-text-field
+            [field]="clientForm.phone"
+            [label]="t().clients.form.phone"
+            type="tel"
+            autocomplete="off"
+          />
+          <app-text-field
+            [field]="clientForm.mobile"
+            [label]="t().clients.form.mobile"
+            type="tel"
+            autocomplete="off"
+          />
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="sec-address">
+        <h2 id="sec-address" class="form-section-title">{{ t().clients.form.address }}</h2>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-5 sm:gap-x-5">
+          <app-text-field
+            class="col-span-2"
+            [field]="clientForm.address"
+            [label]="t().clients.form.street"
+            autocomplete="off"
+          />
+          <app-text-field
+            [field]="clientForm.city"
+            [label]="t().clients.form.city"
+            autocomplete="off"
+          />
+          <app-text-field
+            [field]="clientForm.state"
+            [label]="t().clients.form.state"
+            autocomplete="off"
+          />
+          <app-text-field
+            [field]="clientForm.zipCode"
+            [label]="t().clients.form.zipCode"
+            autocomplete="off"
+          />
+          <app-text-field
+            [field]="clientForm.country"
+            [label]="t().clients.form.country"
+            autocomplete="off"
+          />
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="sec-notes">
+        <h2 id="sec-notes" class="form-section-title">{{ t().clients.form.notesSection }}</h2>
+        <div class="space-y-5">
+          <div>
+            <label for="client-notes" class="sr-only">{{ t().clients.form.notes }}</label>
+            <textarea
+              id="client-notes"
+              rows="4"
+              [formField]="clientForm.notes"
+              [placeholder]="t().clients.form.notesHint"
+              class="block w-full resize-y rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-[0.9375rem] leading-relaxed text-ink transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-ink-muted focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20"
+            ></textarea>
+          </div>
+          <label class="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              [formField]="clientForm.active"
+              aria-describedby="client-active-hint"
+              class="mt-0.5 size-[1.125rem] shrink-0 accent-brand-600"
+            />
+            <span>
+              <span class="block text-[0.9375rem] font-semibold text-ink">{{
+                t().clients.form.active
+              }}</span>
+              <span id="client-active-hint" class="mt-0.5 block text-sm text-ink-muted">{{
+                t().clients.form.activeHint
+              }}</span>
+            </span>
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <div class="border-t border-line bg-canvas/60 px-6 py-4 sm:px-8">
+      <div aria-live="polite" class="mb-4 empty:hidden">
+        @if (error(); as key) {
+          <app-form-alert>{{ t().errors[key] }}</app-form-alert>
+        } @else if (duplicate(); as name) {
+          <app-form-alert>{{ t().clients.form.duplicate(name) }}</app-form-alert>
+        }
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <button type="submit" class="btn-primary" [disabled]="clientForm().submitting()">
+          @if (clientForm().submitting()) {
+            <svg lucideLoaderCircle class="size-4 animate-spin" aria-hidden="true"></svg>
+            {{ t().clients.form.submitting }}
+          } @else if (duplicate()) {
+            {{ t().clients.form.saveAnyway }}
+          } @else {
+            {{ t().clients.form.submit }}
+          }
+        </button>
+        <a routerLink="/clients" class="btn-secondary">{{ t().clients.form.cancel }}</a>
+        @if (editing() && isAdmin()) {
+          <button type="button" class="btn-danger-ghost ml-auto" (click)="askDelete()">
+            <svg lucideTrash2 class="size-4" aria-hidden="true"></svg>
+            {{ t().clients.form.delete }}
+          </button>
+        }
+      </div>
+    </div>
+  </form>
+}
+
+<dialog
+  #deleteDialog
+  aria-labelledby="delete-title"
+  aria-describedby="delete-body"
+  class="m-auto w-[min(28rem,calc(100vw-2rem))] rounded-2xl bg-white p-0 text-ink shadow-panel backdrop:bg-brand-900/40"
+>
+  <div class="p-6">
+    <h2 id="delete-title" class="text-lg font-bold text-ink">
+      {{ t().clients.form.deleteTitle(savedName()) }}
+    </h2>
+    <p id="delete-body" class="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">
+      {{ t().clients.form.deleteBody }}
+    </p>
+    @if (deleteError(); as key) {
+      <app-form-alert class="mt-4">{{ t().errors[key] }}</app-form-alert>
+    }
+  </div>
+  <div class="flex flex-wrap justify-end gap-3 border-t border-line bg-canvas/60 px-6 py-4">
+    <button type="button" class="btn-secondary" (click)="closeDelete()" autofocus>
+      {{ t().clients.form.cancel }}
+    </button>
+    <button type="button" class="btn-danger" [disabled]="deleting()" (click)="confirmDelete()">
+      @if (deleting()) {
+        <svg lucideLoaderCircle class="size-4 animate-spin" aria-hidden="true"></svg>
+        {{ t().clients.form.deleting }}
+      } @else {
+        {{ t().clients.form.deleteConfirm }}
+      }
+    </button>
+  </div>
+</dialog>

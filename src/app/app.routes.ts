@@ -7,6 +7,8 @@ import {
   setupGuard,
 } from './core/auth/auth.guards';
 
+const clientForm = () => import('./features/clients/client-form').then((m) => m.ClientForm);
+
 const upcoming = () =>
   import('./features/placeholder/upcoming-section').then((m) => m.UpcomingSection);
 
@@ -52,9 +54,16 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'clients' },
       {
         path: 'clients',
-        title: 'nav.clients',
-        loadComponent: upcoming,
-        data: { section: 'clients' },
+        children: [
+          {
+            path: '',
+            title: 'nav.clients',
+            loadComponent: () =>
+              import('./features/clients/clients-page').then((m) => m.ClientsPage),
+          },
+          { path: 'new', title: 'clients.form.newTitle', loadComponent: clientForm },
+          { path: ':id', title: 'clients.form.editTitle', loadComponent: clientForm },
+        ],
       },
       {
         path: 'products',

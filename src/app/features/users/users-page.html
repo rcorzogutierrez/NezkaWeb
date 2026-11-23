@@ -83,21 +83,9 @@
                 </select>
               </td>
               <td class="px-5 py-3.5 max-md:p-0">
-                @if (user.active) {
-                  <span
-                    class="inline-flex items-center gap-1.5 rounded-full bg-success-50 px-2.5 py-1 text-xs font-semibold text-success-700"
-                  >
-                    <span class="size-1.5 rounded-full bg-current" aria-hidden="true"></span
-                    >{{ t().users.active }}
-                  </span>
-                } @else {
-                  <span
-                    class="inline-flex items-center gap-1.5 rounded-full bg-line px-2.5 py-1 text-xs font-semibold text-ink-muted"
-                  >
-                    <span class="size-1.5 rounded-full bg-current" aria-hidden="true"></span
-                    >{{ t().users.inactive }}
-                  </span>
-                }
+                <app-status-badge [active]="user.active">{{
+                  user.active ? t().users.active : t().users.inactive
+                }}</app-status-badge>
               </td>
               <td class="px-5 py-3.5 max-md:p-0">
                 <div class="flex flex-wrap justify-end gap-1 max-md:justify-start">

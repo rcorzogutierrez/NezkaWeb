@@ -14,7 +14,8 @@ Versión web de la app de **Elpidio Jr. Produce Co.** para gestionar clientes, p
 - **Usuarios** (`/users`, `/users/new`, solo administradores): el administrador agrega personas con nombre, correo y rol (administrador o usuario). Firebase les envía un correo para elegir su contraseña. Se pueden activar, desactivar, cambiar de rol y reenviar el correo. Las cuentas no se borran.
 - **Sin acceso** (`/no-access`): una cuenta de Firebase sin perfil activo en `users/{uid}` no entra a la app.
 - **Inglés y español**: el selector de idioma está en el menú y en las pantallas de acceso. Se recuerda en el navegador; la primera vez se usa el idioma del navegador. Todas las rutas están en inglés.
-- **Marco de la app**: menú lateral con Clientes, Productos, Estimados y Catálogo (`/clients`, `/products`, `/estimates`, `/catalog`). Las secciones todavía muestran lo que traerán cuando pasen desde la app de escritorio.
+- **Clientes** (`/clients`, `/clients/new`, `/clients/:id`): lista con búsqueda (sin importar mayúsculas ni acentos) y filtro de activos e inactivos, que se guardan en la URL. Formulario con los mismos campos que la app de escritorio, aviso de nombre duplicado y eliminación solo para administradores.
+- **Marco de la app**: menú lateral con Clientes, Productos, Estimados y Catálogo. Productos, Estimados y Catálogo todavía muestran lo que traerán cuando pasen desde la app de escritorio.
 
 ## Trabajar en local
 
@@ -63,9 +64,11 @@ src/app/
   core/firebase/   Firebase como proveedores de Angular; Firestore se carga bajo demanda
   core/auth/       Sesión con signals, guards y mensajes de error
   core/users/      Perfiles en Firestore y alta de usuarios
+  core/clients/    Modelo y servicio de clientes en Firestore
   core/i18n/       Textos en español e inglés y el servicio de idioma
   features/auth/   Acceso, contraseña olvidada, primer administrador, sin acceso
   features/users/  Lista y alta de usuarios
+  features/clients/ Lista y formulario de clientes
   layout/          Marco de la app con el menú lateral
   shared/ui/       Campo de texto y avisos de formulario
 src/testing/       Dobles de prueba (AuthService y UsersService sin Firebase)

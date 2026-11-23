@@ -14,6 +14,7 @@ import { USER_ROLES, type UserProfile, type UserRole } from '../../core/users/us
 import { UsersService } from '../../core/users/users.service';
 import { FormAlert } from '../../shared/ui/form-alert';
 import { type Notice, NoticeService } from '../../shared/ui/notice.service';
+import { StatusBadge } from '../../shared/ui/status-badge';
 
 /** Admin-only list of the people who can sign in. */
 @Component({
@@ -26,6 +27,7 @@ import { type Notice, NoticeService } from '../../shared/ui/notice.service';
     LucideUserPlus,
     LucideUserX,
     FormAlert,
+    StatusBadge,
   ],
   templateUrl: './users-page.html',
 })
