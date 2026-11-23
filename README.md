@@ -47,7 +47,7 @@ Una sola vez, en el proyecto `nezka-web`:
 
 1. **Authentication › Método de acceso**: activa Correo electrónico/contraseña.
 2. **Firestore Database**: crea la base de datos.
-3. Crea una cuenta de servicio en Google Cloud (IAM › Cuentas de servicio) con los roles Firebase Hosting Admin, Firebase Rules Admin, API Keys Viewer y Service Account User. Descarga una clave JSON.
+3. Crea una cuenta de servicio en Google Cloud (IAM › Cuentas de servicio) con los roles Firebase Hosting Admin, Firebase Rules Admin, API Keys Viewer, Service Account User y Service Usage Consumer. Descarga una clave JSON.
 4. En GitHub, en **Settings › Secrets and variables › Actions**, crea el secreto `FIREBASE_SERVICE_ACCOUNT` con el contenido de ese JSON. Luego borra el archivo.
 
 Desde entonces, cada fusión a `main` publica Hosting y las reglas de Firestore con el flujo `Deploy`. Sin el secreto el flujo se omite. También se puede publicar a mano con `npx firebase login` y `npm run deploy`.
