@@ -27,7 +27,7 @@ Move the nezka-invoice desktop app (Python/PySide6 + SQLite, one PC) to the web 
 ## Capabilities and Constraints
 
 - Sign-in: email and password only, with self-service sign-up and password reset. No Google sign-in.
-- UI language: Spanish.
+- UI languages: Spanish (default) and English, switchable anywhere; routes in English. Only administrators add people; there is no public sign-up.
 - Open decision: who may sign up. Today anyone with the URL can create an account; restricting it (invitation or approval) is pending.
 - Open decision: user roles (none yet).
 
@@ -46,4 +46,4 @@ Desktop app screenshots and README in rcorzogutierrez/nezka-invoice (`docs/`). N
 
 1. Same truth as the desktop app: features migrate as they work there, then improve.
 2. Familiar office tool first; the brand lives in the details.
-3. Every message in plain Spanish that says what happened and what to do.
+3. Every message in plain Spanish (or English) that says what happened and what to do.

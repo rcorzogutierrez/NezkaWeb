@@ -7,53 +7,99 @@ import {
   type UrlTree,
   provideRouter,
 } from '@angular/router';
-import { createAuthServiceMock, provideAuthServiceMock } from '../../../testing/auth-service.mock';
-import { authGuard, guestGuard } from './auth.guards';
+import {
+  createAuthServiceMock,
+  provideAuthServiceMock,
+  testUser,
+} from '../../../testing/auth-service.mock';
+import {
+  createUsersServiceMock,
+  provideUsersServiceMock,
+} from '../../../testing/users-service.mock';
+import type { UserProfile } from '../users/user-profile';
+import { adminGuard, authGuard, guestGuard, noAccessGuard, setupGuard } from './auth.guards';
 
-const route: Route = {};
 const segments = (...paths: string[]) => paths.map((p) => new UrlSegment(p, {}));
 
-function setup(signedIn: boolean) {
-  const auth = createAuthServiceMock(
-    signedIn ? { uid: '1', email: 'ana@ejemplo.com', displayName: 'Ana' } : null,
-  );
-  TestBed.configureTestingModule({ providers: [provideRouter([]), provideAuthServiceMock(auth)] });
+function setup(profile: UserProfile | null, { noAccess = false, setupPending = false } = {}) {
+  TestBed.configureTestingModule({
+    providers: [
+      provideRouter([]),
+      provideAuthServiceMock(createAuthServiceMock(profile, noAccess)),
+      provideUsersServiceMock(createUsersServiceMock([], setupPending)),
+    ],
+  });
   return TestBed.inject(Router);
 }
 
-const run = (guard: typeof authGuard, segs: UrlSegment[]) =>
-  TestBed.runInInjectionContext(() =>
-    guard(route, segs, {} as PartialMatchRouteSnapshot),
-  ) as Promise<boolean | UrlTree>;
+async function url(guard: typeof authGuard, segs: UrlSegment[] = []) {
+  const result = await (TestBed.runInInjectionContext(() =>
+    guard({} as Route, segs, {} as PartialMatchRouteSnapshot),
+  ) as Promise<boolean | UrlTree>);
+  return result === true ? true : TestBed.inject(Router).serializeUrl(result as UrlTree);
+}
 
 describe('authGuard', () => {
-  it('lets signed-in users through', async () => {
-    setup(true);
-    expect(await run(authGuard, segments('clientes'))).toBe(true);
+  it('lets users with access through', async () => {
+    setup(testUser());
+    expect(await url(authGuard, segments('clients'))).toBe(true);
   });
 
-  it('sends visitors to the login page and remembers where they were going', async () => {
-    const router = setup(false);
-    const result = await run(authGuard, segments('productos'));
-    expect(router.serializeUrl(result as UrlTree)).toBe('/acceso?volver=%2Fproductos');
+  it('sends visitors to sign in and remembers where they were going', async () => {
+    setup(null);
+    expect(await url(authGuard, segments('products'))).toBe('/login?returnUrl=%2Fproducts');
+    expect(await url(authGuard)).toBe('/login');
   });
 
-  it('does not add a return path for the home page', async () => {
-    const router = setup(false);
-    const result = await run(authGuard, []);
-    expect(router.serializeUrl(result as UrlTree)).toBe('/acceso');
+  it('sends signed-in people without access to the no-access page', async () => {
+    setup(testUser({ active: false }));
+    expect(await url(authGuard, segments('clients'))).toBe('/no-access');
+  });
+});
+
+describe('adminGuard', () => {
+  it('only lets administrators in', async () => {
+    setup(testUser({ role: 'admin' }));
+    expect(await url(adminGuard)).toBe(true);
+  });
+
+  it('sends regular users home', async () => {
+    setup(testUser());
+    expect(await url(adminGuard)).toBe('/');
   });
 });
 
 describe('guestGuard', () => {
-  it('lets visitors open the login pages', async () => {
-    setup(false);
-    expect(await run(guestGuard, [])).toBe(true);
+  it('lets visitors see the sign-in pages', async () => {
+    setup(null);
+    expect(await url(guestGuard)).toBe(true);
   });
 
-  it('sends signed-in users to the app', async () => {
-    const router = setup(true);
-    const result = await run(guestGuard, []);
-    expect(router.serializeUrl(result as UrlTree)).toBe('/');
+  it('sends signed-in users to the app or the no-access page', async () => {
+    setup(testUser());
+    expect(await url(guestGuard)).toBe('/');
+    TestBed.resetTestingModule();
+    setup(null, { noAccess: true });
+    expect(await url(guestGuard)).toBe('/no-access');
+  });
+});
+
+describe('noAccessGuard', () => {
+  it('only shows the page to people without access', async () => {
+    setup(null, { noAccess: true });
+    expect(await url(noAccessGuard)).toBe(true);
+    TestBed.resetTestingModule();
+    setup(testUser());
+    expect(await url(noAccessGuard)).toBe('/');
+  });
+});
+
+describe('setupGuard', () => {
+  it('opens the first-admin page only while no administrator exists', async () => {
+    setup(null, { setupPending: true });
+    expect(await url(setupGuard)).toBe(true);
+    TestBed.resetTestingModule();
+    setup(null, { setupPending: false });
+    expect(await url(setupGuard)).toBe('/login');
   });
 });
