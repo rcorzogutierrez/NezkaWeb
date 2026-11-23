@@ -1,0 +1,52 @@
+import { NgOptimizedImage } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { LucideDynamicIcon, LucideLogOut, LucideMenu, LucideX } from '@lucide/angular';
+import { filter } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AuthService } from '../core/auth/auth.service';
+import { NAV_ITEMS } from './nav-items';
+
+/** Signed-in frame: brand rule, sidebar navigation and the current page. */
+@Component({
+  selector: 'app-shell',
+  imports: [
+    NgOptimizedImage,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    LucideDynamicIcon,
+    LucideLogOut,
+    LucideMenu,
+    LucideX,
+  ],
+  templateUrl: './shell.html',
+  host: { '(document:keydown.escape)': 'menuOpen.set(false)' },
+})
+export class Shell {
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+
+  protected readonly navItems = NAV_ITEMS;
+  protected readonly menuOpen = signal(false);
+  protected readonly user = this.auth.user;
+  protected readonly initials = computed(() => {
+    const name = this.user()?.displayName ?? '';
+    const parts = name.split(/[\s@.]+/).filter(Boolean);
+    return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?';
+  });
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.menuOpen.set(false));
+  }
+
+  protected async logout(): Promise<void> {
+    await this.auth.logout();
+    await this.router.navigateByUrl('/acceso');
+  }
+}

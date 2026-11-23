@@ -1,0 +1,120 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/figtree';
+
+/*
+ * Elpidio Jr. Produce Co. identity, taken from the proforma and the desktop app:
+ * royal blue #1e3f9e, signal red #d7191f, cool office greys.
+ */
+@theme {
+  --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #eef2fb;
+  --color-brand-100: #dae2f6;
+  --color-brand-200: #b7c6ec;
+  --color-brand-500: #2f52b8;
+  --color-brand-600: #1e3f9e;
+  --color-brand-700: #183384;
+  --color-brand-800: #13296b;
+  --color-brand-900: #0e1f52;
+
+  --color-accent-500: #e3262c;
+  --color-accent-600: #d7191f;
+  --color-accent-700: #b01418;
+
+  --color-ink: #1b2133;
+  --color-ink-muted: #545c73;
+  --color-ink-subtle: #868da0;
+  --color-line: #e2e6ee;
+  --color-line-strong: #c9cfdb;
+  --color-canvas: #f3f5f9;
+
+  --color-danger-50: #fdeeee;
+  --color-danger-600: #d7191f;
+  --color-danger-700: #a8131a;
+  --color-success-50: #e5f4eb;
+  --color-success-700: #17693a;
+
+  --shadow-panel: 0 1px 2px rgb(14 31 82 / 0.08), 0 18px 40px -12px rgb(14 31 82 / 0.45);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    font-feature-settings: 'tnum' 0;
+  }
+
+  ::selection {
+    background: var(--color-brand-100);
+    color: var(--color-brand-900);
+  }
+
+  input {
+    caret-color: var(--color-brand-600);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+
+  * {
+    scrollbar-color: var(--color-line-strong) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+@layer components {
+  /* The proforma's letterhead: a blue band over a thin red one. */
+  .brand-rule {
+    height: 0.5rem;
+    background: linear-gradient(
+      to bottom,
+      var(--color-brand-600) 0 0.3125rem,
+      var(--color-accent-600) 0.3125rem 100%
+    );
+  }
+
+  .btn-primary {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-brand-600 px-5 text-[0.9375rem] font-semibold text-white shadow-sm transition-[background-color,transform] duration-150 ease-out select-none hover:bg-brand-700 active:translate-y-px disabled:cursor-progress disabled:bg-brand-500;
+  }
+
+  .btn-icon {
+    @apply inline-grid size-10 place-items-center rounded-lg text-ink-muted transition-colors duration-150 hover:bg-canvas hover:text-ink;
+  }
+
+  .link {
+    @apply text-brand-600 underline decoration-brand-200 decoration-[0.09em] underline-offset-[0.2em] transition-colors hover:text-brand-800 hover:decoration-brand-600;
+  }
+
+  .nav-link {
+    @apply flex h-11 items-center gap-3 rounded-lg px-3.5 text-[0.9375rem] font-medium text-ink-muted transition-colors duration-150 hover:bg-canvas hover:text-ink;
+  }
+
+  .nav-link.is-active {
+    @apply bg-brand-600 font-semibold text-white hover:bg-brand-700 hover:text-white;
+  }
+
+  .skip-link {
+    @apply fixed top-3 left-3 z-50 -translate-y-24 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-transform focus:translate-y-0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
