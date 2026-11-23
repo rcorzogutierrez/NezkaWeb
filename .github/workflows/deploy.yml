@@ -2,8 +2,8 @@ name: Deploy
 
 # Publishes the app to Firebase Hosting and the Firestore security rules on every push to
 # main. It needs the repository secret FIREBASE_SERVICE_ACCOUNT (the JSON key of a service
-# account with Firebase Hosting Admin, Firebase Rules Admin, API Keys Viewer and Service
-# Account User). Without the secret the job is skipped.
+# account with Firebase Hosting Admin, Firebase Rules Admin, API Keys Viewer, Service Usage
+# Consumer and Service Account User). Without the secret the job is skipped.
 
 on:
   push:

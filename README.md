@@ -14,7 +14,8 @@ Versión web de la app de **Elpidio Jr. Produce Co.** para gestionar clientes, p
 - **Usuarios** (`/users`, `/users/new`, solo administradores): el administrador agrega personas con nombre, correo y rol (administrador o usuario). Firebase les envía un correo para elegir su contraseña. Se pueden activar, desactivar, cambiar de rol y reenviar el correo. Las cuentas no se borran.
 - **Sin acceso** (`/no-access`): una cuenta de Firebase sin perfil activo en `users/{uid}` no entra a la app.
 - **Inglés y español**: el selector de idioma está en el menú y en las pantallas de acceso. Se recuerda en el navegador; la primera vez se usa el idioma del navegador. Todas las rutas están en inglés.
-- **Marco de la app**: menú lateral con Clientes, Productos, Estimados y Catálogo (`/clients`, `/products`, `/estimates`, `/catalog`). Las secciones todavía muestran lo que traerán cuando pasen desde la app de escritorio.
+- **Clientes** (`/clients`, `/clients/new`, `/clients/:id`): lista con búsqueda (sin importar mayúsculas ni acentos) y filtro de activos e inactivos, que se guardan en la URL. Formulario con los mismos campos que la app de escritorio, aviso de nombre duplicado y eliminación solo para administradores.
+- **Marco de la app**: menú lateral con Clientes, Productos, Estimados y Catálogo. Productos, Estimados y Catálogo todavía muestran lo que traerán cuando pasen desde la app de escritorio.
 
 ## Trabajar en local
 
@@ -47,7 +48,7 @@ Una sola vez, en el proyecto `nezka-web`:
 
 1. **Authentication › Método de acceso**: activa Correo electrónico/contraseña.
 2. **Firestore Database**: crea la base de datos.
-3. Crea una cuenta de servicio en Google Cloud (IAM › Cuentas de servicio) con los roles Firebase Hosting Admin, Firebase Rules Admin, API Keys Viewer y Service Account User. Descarga una clave JSON.
+3. Crea una cuenta de servicio en Google Cloud (IAM › Cuentas de servicio) con los roles Firebase Hosting Admin, Firebase Rules Admin, API Keys Viewer, Service Account User y Service Usage Consumer. Descarga una clave JSON.
 4. En GitHub, en **Settings › Secrets and variables › Actions**, crea el secreto `FIREBASE_SERVICE_ACCOUNT` con el contenido de ese JSON. Luego borra el archivo.
 
 Desde entonces, cada fusión a `main` publica Hosting y las reglas de Firestore con el flujo `Deploy`. Sin el secreto el flujo se omite. También se puede publicar a mano con `npx firebase login` y `npm run deploy`.
@@ -63,9 +64,11 @@ src/app/
   core/firebase/   Firebase como proveedores de Angular; Firestore se carga bajo demanda
   core/auth/       Sesión con signals, guards y mensajes de error
   core/users/      Perfiles en Firestore y alta de usuarios
+  core/clients/    Modelo y servicio de clientes en Firestore
   core/i18n/       Textos en español e inglés y el servicio de idioma
   features/auth/   Acceso, contraseña olvidada, primer administrador, sin acceso
   features/users/  Lista y alta de usuarios
+  features/clients/ Lista y formulario de clientes
   layout/          Marco de la app con el menú lateral
   shared/ui/       Campo de texto y avisos de formulario
 src/testing/       Dobles de prueba (AuthService y UsersService sin Firebase)

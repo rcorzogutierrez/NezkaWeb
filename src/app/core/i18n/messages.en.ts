@@ -64,6 +64,7 @@ export const en: Messages = {
     email: 'That email address is not valid.',
     minLength: (min) => `Use at least ${min} characters.`,
     mismatch: 'The passwords do not match.',
+    maxLength: (max) => `Use at most ${max} characters.`,
   },
   errors: {
     invalidCredentials: 'The email or password is not correct.',
@@ -93,15 +94,6 @@ export const en: Messages = {
     heading: 'Coming in a future release',
     intro:
       'This section still lives in the desktop app. Once it moves to the web you will be able to:',
-    clients: {
-      summary: 'Create and maintain the clients you send estimates and invoices to.',
-      features: [
-        'Create clients with contact, email, phones, address and Tax ID.',
-        'Edit, mark as inactive or delete existing ones.',
-        'Search by name, contact, email, phone, city or Tax ID.',
-        'Import the client list exported from QuickBooks.',
-      ],
-    },
     products: {
       summary: 'The product catalog with photo, UPC, size, pack and price per case.',
       features: [
@@ -125,6 +117,84 @@ export const en: Messages = {
         'Show or hide the price per case.',
         'Print the catalog or save it as PDF.',
       ],
+    },
+  },
+  clients: {
+    title: 'Clients',
+    intro: 'The clients you send estimates and invoices to.',
+    new: 'New client',
+    search: 'Search',
+    searchPlaceholder: 'Name, contact, email, city…',
+    filterLabel: 'Show',
+    filters: { all: 'All', active: 'Active', inactive: 'Inactive' },
+    caption: 'Clients',
+    colClient: 'Client',
+    colContact: 'Contact',
+    colPhone: 'Phone',
+    colLocation: 'Location',
+    colStatus: 'Status',
+    colActions: 'Actions',
+    active: 'Active',
+    inactive: 'Inactive',
+    edit: 'Edit',
+    editNamed: (name: string) => `Edit ${name}`,
+    loading: 'Loading clients…',
+    loadFailed: 'The client list could not be loaded. Check your connection and reload the page.',
+    showing: (shown: number, total: number) =>
+      shown === total
+        ? `${total} ${total === 1 ? 'client' : 'clients'}`
+        : `Showing ${shown} of ${total} clients`,
+    emptyTitle: 'No clients yet',
+    emptyBody:
+      'Add the first one with their contact details and address. They appear in the CUSTOMER block of every estimate.',
+    noMatchesTitle: 'No client matches',
+    noMatchesBody: (search: string) =>
+      search
+        ? `No clients match “${search}” in this filter.`
+        : 'There are no clients in this filter.',
+    clearSearch: 'Show all clients',
+    created: (name: string) => `${name} was saved.`,
+    updated: (name: string) => `Changes to ${name} were saved.`,
+    deleted: (name: string) => `${name} was deleted.`,
+    form: {
+      newTitle: 'New client',
+      editTitle: 'Edit client',
+      intro:
+        'These details appear in the CUSTOMER block of estimates and invoices. Only the name is required.',
+      back: 'Back to clients',
+      general: 'General',
+      contact: 'Contact',
+      address: 'Address',
+      notesSection: 'Notes',
+      name: 'Client name',
+      branch: 'Branch or legal name',
+      contactName: 'Contact person',
+      taxId: 'Tax ID / EIN',
+      email: 'Email',
+      phone: 'Phone',
+      mobile: 'Mobile',
+      street: 'Street address',
+      city: 'City',
+      state: 'State',
+      zipCode: 'ZIP code',
+      country: 'Country',
+      notes: 'Notes',
+      notesHint: 'Payment terms, delivery hours…',
+      active: 'Active client',
+      activeHint: 'Inactive clients are not offered when creating estimates.',
+      submit: 'Save client',
+      submitting: 'Saving…',
+      cancel: 'Cancel',
+      notFound: 'That client does not exist or was deleted.',
+      duplicate: (name: string) =>
+        `A client named “${name}” already exists. If this is a different client, press “Save anyway”.`,
+      saveAnyway: 'Save anyway',
+      delete: 'Delete client',
+      deleteTitle: (name: string) => `Delete ${name}?`,
+      deleteBody:
+        'It is removed for good. If you just stopped selling to them, untick “Active client” and keep their history.',
+      deleteConfirm: 'Delete',
+      deleting: 'Deleting…',
     },
   },
   users: {

@@ -77,6 +77,47 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Clients: every active user reads, creates and edits them; only administrators delete.
+    function shortText(data, field, max) {
+      return data[field] is string && data[field].size() <= max;
+    }
+
+    function validClient(data) {
+      return data.keys().hasOnly(['name', 'branch', 'contactName', 'taxId', 'email', 'phone',
+          'mobile', 'address', 'city', 'state', 'zipCode', 'country', 'notes', 'active',
+          'createdAt', 'createdBy', 'updatedAt', 'updatedBy'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && shortText(data, 'branch', 200)
+        && shortText(data, 'contactName', 200)
+        && shortText(data, 'taxId', 50)
+        && shortText(data, 'email', 200)
+        && (data.email == '' || data.email.matches('^[^@\\s]+@[^@\\s]+$'))
+        && shortText(data, 'phone', 50)
+        && shortText(data, 'mobile', 50)
+        && shortText(data, 'address', 300)
+        && shortText(data, 'city', 100)
+        && shortText(data, 'state', 100)
+        && shortText(data, 'zipCode', 20)
+        && shortText(data, 'country', 100)
+        && shortText(data, 'notes', 2000)
+        && data.active is bool
+        && data.updatedAt == request.time
+        && data.updatedBy == request.auth.uid;
+    }
+
+    match /clients/{clientId} {
+      allow read: if isActive();
+      allow create: if isActive()
+        && validClient(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isActive()
+        && validClient(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy;
+      allow delete: if isAdmin();
+    }
+
     match /settings/setup {
       // The login page asks whether the first administrator still has to be created.
       allow get: if true;

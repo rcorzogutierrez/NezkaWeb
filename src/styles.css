@@ -95,6 +95,23 @@
     @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-line-strong bg-white px-5 text-[0.9375rem] font-semibold text-ink transition-colors duration-150 hover:bg-canvas;
   }
 
+  .btn-danger {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-danger-600 px-5 text-[0.9375rem] font-semibold text-white shadow-sm transition-colors duration-150 select-none hover:bg-danger-700 disabled:cursor-progress disabled:opacity-80;
+  }
+
+  .btn-danger-ghost {
+    @apply inline-flex h-11 items-center gap-2 rounded-lg px-4 text-[0.9375rem] font-semibold text-danger-700 transition-colors duration-150 hover:bg-danger-50;
+  }
+
+  /* A form section: its title beside the fields on wide screens, above them on narrow ones. */
+  .form-section {
+    @apply grid gap-x-10 gap-y-4 px-6 py-6 sm:px-8 lg:grid-cols-[12rem_1fr];
+  }
+
+  .form-section-title {
+    @apply text-base font-semibold text-ink lg:pt-1;
+  }
+
   .link {
     @apply text-brand-600 underline decoration-brand-200 decoration-[0.09em] underline-offset-[0.2em] transition-colors hover:text-brand-800 hover:decoration-brand-600;
   }

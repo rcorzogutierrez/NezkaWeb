@@ -17,7 +17,7 @@ let nextId = 0;
         [formField]="field()"
         [type]="inputType()"
         [attr.autocomplete]="autocomplete()"
-        [attr.inputmode]="type() === 'email' ? 'email' : null"
+        [attr.inputmode]="type() === 'email' || type() === 'tel' ? type() : null"
         [attr.aria-invalid]="showError()"
         [attr.aria-describedby]="describedBy()"
         spellcheck="false"
@@ -55,7 +55,7 @@ let nextId = 0;
 export class TextField {
   readonly field = input.required<FieldTree<string>>();
   readonly label = input.required<string>();
-  readonly type = input<'text' | 'email' | 'password'>('text');
+  readonly type = input<'text' | 'email' | 'password' | 'tel'>('text');
   readonly autocomplete = input<string>();
   readonly hint = input<string>();
 
@@ -84,6 +84,8 @@ export class TextField {
         return v.minLength((error as unknown as { minLength: number }).minLength);
       case 'mismatch':
         return v.mismatch;
+      case 'maxLength':
+        return v.maxLength((error as unknown as { maxLength: number }).maxLength);
       default:
         return error.message ?? '';
     }

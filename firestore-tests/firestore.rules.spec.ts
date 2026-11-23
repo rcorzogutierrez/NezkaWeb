@@ -149,6 +149,86 @@ describe('users', () => {
   });
 });
 
+describe('clients', () => {
+  const client = (uid: string, extra: Record<string, unknown> = {}) => ({
+    name: 'Tree Logistics',
+    branch: 'A Tree Corporation Branch',
+    contactName: '',
+    taxId: '',
+    email: 'compras@treelogistics.com',
+    phone: '305-555-0142',
+    mobile: '',
+    address: '',
+    city: 'Miami',
+    state: 'FL',
+    zipCode: '33142',
+    country: '',
+    notes: '',
+    active: true,
+    createdAt: serverTimestamp(),
+    createdBy: uid,
+    updatedAt: serverTimestamp(),
+    updatedBy: uid,
+    ...extra,
+  });
+
+  beforeEach(async () => {
+    await seed({
+      'users/ana': profile('Ana', 'admin'),
+      'users/beto': profile('Beto', 'user'),
+      'users/carla': profile('Carla', 'user', { active: false }),
+    });
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'clients/tree'), client('ana'));
+    });
+  });
+
+  it('active users read, create and edit clients', async () => {
+    await assertSucceeds(getDoc(doc(as('beto'), 'clients/tree')));
+    await assertSucceeds(setDoc(doc(as('beto'), 'clients/nuevo'), client('beto')));
+    await assertSucceeds(
+      updateDoc(doc(as('beto'), 'clients/tree'), {
+        city: 'Doral',
+        updatedAt: serverTimestamp(),
+        updatedBy: 'beto',
+      }),
+    );
+  });
+
+  it('people without access see nothing', async () => {
+    await assertFails(getDoc(doc(as('carla'), 'clients/tree')));
+    await assertFails(getDoc(doc(as('nadie'), 'clients/tree')));
+    await assertFails(getDoc(doc(anonymous(), 'clients/tree')));
+    await assertFails(setDoc(doc(as('carla'), 'clients/nuevo'), client('carla')));
+  });
+
+  it('rejects clients without a name, with a bad email or extra fields', async () => {
+    await assertFails(setDoc(doc(as('beto'), 'clients/x'), client('beto', { name: '' })));
+    await assertFails(setDoc(doc(as('beto'), 'clients/x'), client('beto', { email: 'no' })));
+    await assertFails(setDoc(doc(as('beto'), 'clients/x'), client('beto', { saldo: 10 })));
+    await assertFails(
+      setDoc(doc(as('beto'), 'clients/x'), client('beto', { notes: 'x'.repeat(2001) })),
+    );
+  });
+
+  it('the author and the audit fields cannot be faked', async () => {
+    await assertFails(setDoc(doc(as('beto'), 'clients/x'), client('ana')));
+    await assertFails(
+      updateDoc(doc(as('beto'), 'clients/tree'), {
+        createdBy: 'beto',
+        updatedAt: serverTimestamp(),
+        updatedBy: 'beto',
+      }),
+    );
+    await assertFails(updateDoc(doc(as('beto'), 'clients/tree'), { city: 'Doral' }));
+  });
+
+  it('only administrators delete clients', async () => {
+    await assertFails(deleteDoc(doc(as('beto'), 'clients/tree')));
+    await assertSucceeds(deleteDoc(doc(as('ana'), 'clients/tree')));
+  });
+});
+
 describe('everything else', () => {
   it('is closed until a feature opens it', async () => {
     await seed({ 'users/ana': profile('Ana', 'admin') });
