@@ -1,16 +1,37 @@
-import { Service, inject } from '@angular/core';
+import { Service, effect, inject, signal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { type RouterStateSnapshot, TitleStrategy } from '@angular/router';
+import { I18nService } from './i18n/i18n.service';
 
-const APP_NAME = 'Elpidio Jr. Produce';
+/** Looks up a dotted key such as `nav.clients` in the current catalog. */
+function lookup(catalog: unknown, key: string): string | null {
+  const value = key
+    .split('.')
+    .reduce<unknown>(
+      (node, part) => (node as Record<string, unknown> | undefined)?.[part],
+      catalog,
+    );
+  return typeof value === 'string' ? value : null;
+}
 
-/** "Clientes · Elpidio Jr. Produce" in the browser tab. */
+/** "Clientes · Elpidio Jr. Produce", translated, and updated when the language changes. */
 @Service({ autoProvided: false })
 export class PageTitleStrategy extends TitleStrategy {
   private readonly title = inject(Title);
+  private readonly i18n = inject(I18nService);
+  private readonly key = signal<string | undefined>(undefined);
+
+  constructor() {
+    super();
+    effect(() => {
+      const t = this.i18n.t();
+      const key = this.key();
+      const page = key ? (lookup(t, key) ?? key) : null;
+      this.title.setTitle(page ? `${page} · ${t.app.name}` : t.app.name);
+    });
+  }
 
   override updateTitle(snapshot: RouterStateSnapshot): void {
-    const page = this.buildTitle(snapshot);
-    this.title.setTitle(page ? `${page} · ${APP_NAME}` : APP_NAME);
+    this.key.set(this.buildTitle(snapshot));
   }
 }

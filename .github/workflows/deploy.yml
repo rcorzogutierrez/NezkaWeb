@@ -1,0 +1,51 @@
+name: Deploy
+
+# Publishes the app to Firebase Hosting and the Firestore security rules on every push to
+# main. It needs the repository secret FIREBASE_SERVICE_ACCOUNT (the JSON key of a service
+# account with Firebase Hosting Admin, Firebase Rules Admin, API Keys Viewer and Service
+# Account User). Without the secret the job is skipped.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Firebase Hosting y reglas
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HAS_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+    steps:
+      - name: Falta el secreto FIREBASE_SERVICE_ACCOUNT
+        if: env.HAS_KEY != 'true'
+        run: echo "::notice::Deploy omitido. Agrega el secreto FIREBASE_SERVICE_ACCOUNT en GitHub."
+      - uses: actions/checkout@v4
+        if: env.HAS_KEY == 'true'
+      - uses: actions/setup-node@v4
+        if: env.HAS_KEY == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - if: env.HAS_KEY == 'true'
+        run: npm ci
+      - if: env.HAS_KEY == 'true'
+        run: npm run build
+      - name: Credenciales
+        if: env.HAS_KEY == 'true'
+        env:
+          KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$KEY" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+      - name: firebase deploy
+        if: env.HAS_KEY == 'true'
+        run: npx firebase deploy --only hosting,firestore:rules --project nezka-web --non-interactive
+      - name: Borrar credenciales
+        if: always() && env.HAS_KEY == 'true'
+        run: rm -f "$RUNNER_TEMP/sa.json"

@@ -87,6 +87,14 @@
     @apply inline-grid size-10 place-items-center rounded-lg text-ink-muted transition-colors duration-150 hover:bg-canvas hover:text-ink;
   }
 
+  .btn-ghost {
+    @apply inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-brand-600 transition-colors duration-150 hover:bg-brand-50 hover:text-brand-800 disabled:cursor-progress disabled:text-ink-subtle disabled:hover:bg-transparent;
+  }
+
+  .btn-secondary {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-line-strong bg-white px-5 text-[0.9375rem] font-semibold text-ink transition-colors duration-150 hover:bg-canvas;
+  }
+
   .link {
     @apply text-brand-600 underline decoration-brand-200 decoration-[0.09em] underline-offset-[0.2em] transition-colors hover:text-brand-800 hover:decoration-brand-600;
   }

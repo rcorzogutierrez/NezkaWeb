@@ -7,6 +7,13 @@ import {
   createAuthServiceMock,
   provideAuthServiceMock,
 } from '../../../testing/auth-service.mock';
+import { submit, type } from '../../../testing/dom';
+import { useLanguage } from '../../../testing/setup';
+import {
+  createUsersServiceMock,
+  provideUsersServiceMock,
+} from '../../../testing/users-service.mock';
+import type { Language } from '../../core/i18n/i18n.service';
 import { Login } from './login';
 
 describe('Login', () => {
@@ -14,67 +21,73 @@ describe('Login', () => {
   let harness: RouterTestingHarness;
   let page: HTMLElement;
 
-  async function open(url = '/acceso') {
+  async function open(
+    url = '/login',
+    { setupPending = false, language = 'en' }: { setupPending?: boolean; language?: Language } = {},
+  ) {
     auth = createAuthServiceMock();
     TestBed.configureTestingModule({
       providers: [
         provideRouter(
           [
-            { path: 'acceso', component: Login },
+            { path: 'login', component: Login },
             { path: '**', children: [] },
           ],
           withComponentInputBinding(),
         ),
         provideAuthServiceMock(auth),
+        provideUsersServiceMock(createUsersServiceMock([], setupPending)),
       ],
     });
+    useLanguage(language);
     harness = await RouterTestingHarness.create(url);
     page = harness.routeNativeElement as HTMLElement;
   }
 
-  const input = (label: string) =>
-    [...page.querySelectorAll('label')]
-      .find((l) => l.textContent?.trim() === label)
-      ?.parentElement?.querySelector('input') as HTMLInputElement;
-
-  function type(label: string, value: string) {
-    const el = input(label);
-    el.value = value;
-    el.dispatchEvent(new Event('input'));
-    el.dispatchEvent(new Event('blur'));
-  }
-
-  async function submit() {
-    page.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+  async function send() {
+    submit(page);
     await harness.fixture.whenStable();
   }
 
   it('asks for the email and password before calling Firebase', async () => {
     await open();
-    await submit();
-    expect(page.textContent).toContain('Escribe tu correo.');
-    expect(page.textContent).toContain('Escribe tu contraseña.');
+    await send();
+    expect(page.textContent).toContain('This field is required.');
     expect(auth.login).not.toHaveBeenCalled();
   });
 
   it('signs in and goes to the page the user asked for', async () => {
-    await open('/acceso?volver=%2Fproductos');
-    type('Correo', 'ana@ejemplo.com');
-    type('Contraseña', 'secreto123');
-    await submit();
-    expect(auth.login).toHaveBeenCalledWith('ana@ejemplo.com', 'secreto123');
-    expect(TestBed.inject(Router).url).toBe('/productos');
+    await open('/login?returnUrl=%2Fproducts');
+    type(page, 'Email', 'ana@example.com');
+    type(page, 'Password', 'secret123');
+    await send();
+    expect(auth.login).toHaveBeenCalledWith('ana@example.com', 'secret123');
+    expect(TestBed.inject(Router).url).toBe('/products');
   });
 
-  it('shows a Spanish message when the credentials are wrong', async () => {
-    await open();
+  it('explains wrong credentials in the current language', async () => {
+    await open('/login', { language: 'es' });
     auth.login.mockRejectedValueOnce(new FirebaseError('auth/invalid-credential', 'x'));
-    type('Correo', 'ana@ejemplo.com');
-    type('Contraseña', 'mala');
-    await submit();
+    type(page, 'Correo', 'ana@example.com');
+    type(page, 'Contraseña', 'wrong');
+    await send();
     expect(page.querySelector('[role=alert]')?.textContent).toContain(
       'El correo o la contraseña no son correctos.',
     );
-    expect(TestBed.inject(Router).url).toBe('/acceso');
+    expect(TestBed.inject(Router).url).toBe('/login');
+  });
+
+  it('points to the administrator instead of a sign-up form', async () => {
+    await open();
+    expect(page.textContent).toContain('Ask your administrator');
+    expect(page.querySelector('a[href="/setup"]')).toBeNull();
+  });
+
+  it('offers the first-administrator setup on a fresh install', async () => {
+    await open('/login', { setupPending: true });
+    await harness.fixture.whenStable();
+    expect(page.querySelector('a[href="/setup"]')?.textContent).toContain(
+      'Create the administrator account',
+    );
   });
 });

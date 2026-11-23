@@ -1,94 +1,94 @@
-import { type Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/auth/auth.guards';
+import type { Route, Routes } from '@angular/router';
+import {
+  adminGuard,
+  authGuard,
+  guestGuard,
+  noAccessGuard,
+  setupGuard,
+} from './core/auth/auth.guards';
 
 const upcoming = () =>
   import('./features/placeholder/upcoming-section').then((m) => m.UpcomingSection);
 
+/**
+ * Every URL is in English. `title` holds a key under `nav`/`auth` that PageTitleStrategy
+ * translates.
+ */
+const authLayout = () => import('./features/auth/auth-layout').then((m) => m.AuthLayout);
+
+/** A sign-in page inside the split-screen layout. */
+function authPage(
+  path: string,
+  title: string,
+  canMatch: Route['canMatch'],
+  loadComponent: Route['loadComponent'],
+): Route {
+  return {
+    path,
+    canMatch,
+    loadComponent: authLayout,
+    children: [{ path: '', title, loadComponent }],
+  };
+}
+
 export const routes: Routes = [
-  {
-    path: 'acceso',
-    canMatch: [guestGuard],
-    loadComponent: () => import('./features/auth/auth-layout').then((m) => m.AuthLayout),
-    children: [
-      {
-        path: '',
-        title: 'Iniciar sesión',
-        loadComponent: () => import('./features/auth/login').then((m) => m.Login),
-      },
-      {
-        path: 'registro',
-        title: 'Crear cuenta',
-        loadComponent: () => import('./features/auth/register').then((m) => m.Register),
-      },
-      {
-        path: 'recuperar',
-        title: 'Recuperar contraseña',
-        loadComponent: () => import('./features/auth/reset-password').then((m) => m.ResetPassword),
-      },
-    ],
-  },
+  authPage('login', 'auth.login.title', [guestGuard], () =>
+    import('./features/auth/login').then((m) => m.Login),
+  ),
+  authPage('forgot-password', 'auth.reset.title', [guestGuard], () =>
+    import('./features/auth/reset-password').then((m) => m.ResetPassword),
+  ),
+  authPage('setup', 'auth.setup.title', [guestGuard, setupGuard], () =>
+    import('./features/auth/first-admin').then((m) => m.FirstAdmin),
+  ),
+  authPage('no-access', 'auth.noAccess.title', [noAccessGuard], () =>
+    import('./features/auth/no-access').then((m) => m.NoAccess),
+  ),
   {
     path: '',
     canMatch: [authGuard],
     loadComponent: () => import('./layout/shell').then((m) => m.Shell),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'clientes' },
+      { path: '', pathMatch: 'full', redirectTo: 'clients' },
       {
-        path: 'clientes',
-        title: 'Clientes',
+        path: 'clients',
+        title: 'nav.clients',
         loadComponent: upcoming,
-        data: {
-          title: 'Clientes',
-          summary: 'Crea y mantén los clientes a los que emites proformas y facturas.',
-          features: [
-            'Crear clientes con contacto, correo, teléfonos, dirección y Tax ID.',
-            'Editar, marcar como inactivos o eliminar los existentes.',
-            'Buscar por nombre, contacto, correo, teléfono, ciudad o Tax ID.',
-            'Importar la lista de clientes exportada de QuickBooks.',
-          ],
-        },
+        data: { section: 'clients' },
       },
       {
-        path: 'productos',
-        title: 'Productos',
+        path: 'products',
+        title: 'nav.products',
         loadComponent: upcoming,
-        data: {
-          title: 'Productos',
-          summary: 'El catálogo de productos con su foto, UPC, tamaño, pack y precio por caja.',
-          features: [
-            'Ver los productos del catálogo con su foto y referencia.',
-            'Agregar, editar, desactivar o eliminar productos.',
-            'Encontrar los productos a los que les falta UPC u otro dato.',
-          ],
-        },
+        data: { section: 'products' },
       },
       {
-        path: 'estimados',
-        title: 'Estimados',
+        path: 'estimates',
+        title: 'nav.estimates',
         loadComponent: upcoming,
-        data: {
-          title: 'Estimados',
-          summary: 'Proformas por cliente, con la serie PF-año-número y sus totales.',
-          features: [
-            'Crear estimados buscando productos del catálogo.',
-            'Editar cajas y precio por caja con los totales al día.',
-            'Ver, imprimir y guardar el PDF con el formato de la proforma.',
-          ],
-        },
+        data: { section: 'estimates' },
       },
       {
-        path: 'catalogo',
-        title: 'Catálogo',
+        path: 'catalog',
+        title: 'nav.catalog',
         loadComponent: upcoming,
-        data: {
-          title: 'Catálogo',
-          summary: 'La lista de productos para entregar a los clientes, con o sin precios.',
-          features: [
-            'Elegir qué productos entran en el catálogo.',
-            'Mostrar u ocultar los precios por caja.',
-            'Imprimir o guardar el catálogo en PDF.',
-          ],
-        },
+        data: { section: 'catalog' },
+      },
+      {
+        path: 'users',
+        canMatch: [adminGuard],
+        children: [
+          {
+            path: '',
+            title: 'nav.users',
+            loadComponent: () => import('./features/users/users-page').then((m) => m.UsersPage),
+          },
+          {
+            path: 'new',
+            title: 'users.form.title',
+            loadComponent: () => import('./features/users/new-user').then((m) => m.NewUser),
+          },
+        ],
       },
     ],
   },

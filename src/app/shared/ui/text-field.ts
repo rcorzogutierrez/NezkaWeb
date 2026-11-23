@@ -1,6 +1,7 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { type FieldTree, FormField } from '@angular/forms/signals';
 import { LucideEye, LucideEyeOff } from '@lucide/angular';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 let nextId = 0;
 
@@ -29,7 +30,7 @@ let nextId = 0;
         <button
           type="button"
           class="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-lg text-ink-muted transition-colors hover:text-ink focus-visible:text-brand-600"
-          [attr.aria-label]="revealed() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          [attr.aria-label]="revealed() ? t().auth.hidePassword : t().auth.showPassword"
           [attr.aria-pressed]="revealed()"
           (click)="revealed.set(!revealed())"
         >
@@ -58,7 +59,8 @@ export class TextField {
   readonly autocomplete = input<string>();
   readonly hint = input<string>();
 
-  protected readonly id = `campo-${nextId++}`;
+  protected readonly t = inject(I18nService).t;
+  protected readonly id = `field-${nextId++}`;
   protected readonly revealed = signal(false);
 
   protected readonly inputType = computed(() =>
@@ -68,7 +70,24 @@ export class TextField {
     const state = this.field()();
     return state.touched() && state.invalid();
   });
-  protected readonly errorMessage = computed(() => this.field()().errors()[0]?.message ?? '');
+  /** Validation errors are translated by kind, so they follow the language switch. */
+  protected readonly errorMessage = computed(() => {
+    const error = this.field()().errors()[0];
+    if (!error) return '';
+    const v = this.t().validation;
+    switch (error.kind) {
+      case 'required':
+        return v.required;
+      case 'email':
+        return v.email;
+      case 'minLength':
+        return v.minLength((error as unknown as { minLength: number }).minLength);
+      case 'mismatch':
+        return v.mismatch;
+      default:
+        return error.message ?? '';
+    }
+  });
   protected readonly describedBy = computed(() => {
     if (this.showError()) return `${this.id}-error`;
     return this.hint() ? `${this.id}-hint` : null;

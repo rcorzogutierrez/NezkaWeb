@@ -1,6 +1,6 @@
 <div class="brand-rule sticky top-0 z-30" aria-hidden="true"></div>
 
-<a href="#contenido" class="skip-link">Saltar al contenido</a>
+<a href="#content" class="skip-link">{{ t().app.skipToContent }}</a>
 
 <!-- Phone and tablet: compact bar with the menu button -->
 <header
@@ -10,15 +10,15 @@
     ngSrc="brand/logo.webp"
     width="600"
     height="253"
-    alt="Elpidio Jr. Produce Co."
+    [alt]="t().app.company"
     class="h-10 w-auto"
   />
   <button
     type="button"
     class="btn-icon"
-    aria-controls="navegacion"
+    aria-controls="navigation"
     [attr.aria-expanded]="menuOpen()"
-    [attr.aria-label]="menuOpen() ? 'Cerrar menú' : 'Abrir menú'"
+    [attr.aria-label]="menuOpen() ? t().nav.closeMenu : t().nav.openMenu"
     (click)="menuOpen.set(!menuOpen())"
   >
     @if (menuOpen()) {
@@ -39,11 +39,11 @@
 
 <div class="lg:grid lg:grid-cols-[16.5rem_minmax(0,1fr)]">
   <aside
-    id="navegacion"
+    id="navigation"
     class="fixed inset-y-0 left-0 z-40 flex w-[17rem] flex-col border-r border-line bg-white transition-transform duration-200 ease-out lg:sticky lg:top-2 lg:z-auto lg:h-[calc(100dvh-0.5rem)] lg:w-auto lg:translate-x-0"
     [class.-translate-x-full]="!menuOpen()"
     [class.max-lg:invisible]="!menuOpen()"
-    aria-label="Secciones"
+    [attr.aria-label]="t().nav.sections"
   >
     <div class="px-6 pt-7 pb-6">
       <img
@@ -51,10 +51,10 @@
         width="600"
         height="253"
         priority
-        alt="Elpidio Jr. Produce Co."
+        [alt]="t().app.company"
         class="h-auto w-full max-w-[13.5rem]"
       />
-      <p class="mt-2 text-xs text-ink-muted">5400 NW 32nd Ct · Miami, FL</p>
+      <p class="mt-2 text-xs text-ink-muted">{{ t().app.address }}</p>
     </div>
 
     <nav class="flex-1 overflow-y-auto px-3">
@@ -72,29 +72,60 @@
                 class="size-[1.125rem] shrink-0"
                 aria-hidden="true"
               ></svg>
-              {{ item.label }}
+              {{ t().nav[item.label] }}
             </a>
           </li>
         }
       </ul>
+      @if (isAdmin()) {
+        <p
+          id="nav-admin"
+          class="mt-6 mb-2 px-3.5 text-xs font-semibold tracking-wide text-ink-subtle uppercase"
+        >
+          {{ t().nav.admin }}
+        </p>
+        <ul class="space-y-1" aria-labelledby="nav-admin">
+          @for (item of adminItems; track item.path) {
+            <li>
+              <a
+                [routerLink]="item.path"
+                routerLinkActive="is-active"
+                ariaCurrentWhenActive="page"
+                class="nav-link"
+              >
+                <svg
+                  [lucideIcon]="item.icon"
+                  class="size-[1.125rem] shrink-0"
+                  aria-hidden="true"
+                ></svg>
+                {{ t().nav[item.label] }}
+              </a>
+            </li>
+          }
+        </ul>
+      }
     </nav>
 
+    <div class="px-3 pb-1">
+      <app-language-switch />
+    </div>
+
     @if (user(); as u) {
-      <div class="m-3 flex items-center gap-3 rounded-xl bg-canvas p-3">
+      <div class="m-3 mt-2 flex items-center gap-3 rounded-xl bg-canvas p-3">
         <span
           class="grid size-9 shrink-0 place-items-center rounded-full bg-brand-600 text-sm font-bold text-white"
           aria-hidden="true"
           >{{ initials() }}</span
         >
         <div class="min-w-0 flex-1">
-          <p class="truncate text-sm font-semibold text-ink">{{ u.displayName }}</p>
+          <p class="truncate text-sm font-semibold text-ink">{{ u.name }}</p>
           <p class="truncate text-xs text-ink-muted">{{ u.email }}</p>
         </div>
         <button
           type="button"
           class="btn-icon size-9"
-          aria-label="Cerrar sesión"
-          title="Cerrar sesión"
+          [attr.aria-label]="t().nav.logout"
+          [attr.title]="t().nav.logout"
           (click)="logout()"
         >
           <svg lucideLogOut class="size-[1.125rem]" aria-hidden="true"></svg>
@@ -103,11 +134,7 @@
     }
   </aside>
 
-  <main
-    id="contenido"
-    tabindex="-1"
-    class="min-w-0 px-4 py-8 outline-none sm:px-8 lg:px-10 lg:py-10"
-  >
+  <main id="content" tabindex="-1" class="min-w-0 px-4 py-8 outline-none sm:px-8 lg:px-10 lg:py-10">
     <router-outlet />
   </main>
 </div>

@@ -12,8 +12,9 @@
     "lint": "ng lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run format:check && npm run lint && npm run test:ci && npm run build",
-    "deploy": "npm run build && firebase deploy --only hosting,firestore:rules"
+    "check": "npm run format:check && npm run lint && npm run test:ci && npm run test:rules && npm run build",
+    "deploy": "npm run build && firebase deploy --only hosting,firestore:rules",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-nezka-rules \"vitest run --config vitest.rules.config.mts\""
   },
   "private": true,
   "packageManager": "npm@10.9.9",
@@ -35,6 +36,7 @@
     "@angular/cli": "^22.3.0",
     "@angular/compiler-cli": "^22.3.0",
     "@eslint/js": "^10.0.1",
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@vitest/coverage-v8": "^5.1.1",
     "angular-eslint": "22.8.0",

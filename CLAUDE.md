@@ -59,11 +59,15 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 ## This project (NezkaWeb)
 
-- Web version of the nezka-invoice desktop app for Elpidio Jr. Produce Co. All UI text is in **Spanish**.
+- Web version of the nezka-invoice desktop app for Elpidio Jr. Produce Co. UI is bilingual (Spanish default, English): every string lives in
+  `src/app/core/i18n/messages.es.ts` and `messages.en.ts` and is read through `I18nService.t()`. Routes, URLs and
+  Firestore names are in **English**.
 - Firebase is used through the plain modular `firebase` SDK, **never AngularFire**. Instances come from the
-  injection tokens in `src/app/core/firebase/firebase.providers.ts`; add Firestore there when the first
-  feature stores data.
-- Sign-in is email and password only (no Google or other providers).
+  injection tokens in `src/app/core/firebase/firebase.providers.ts`; Firestore is loaded lazily with `FirestoreLoader`
+  (`src/app/core/firebase/firestore.loader.ts`); add the functions you need to `firestore.lazy.ts`.
+- Sign-in is email and password only (no Google or other providers). There is no public sign-up: admins
+  create users in `/users`; access comes from `users/{uid}` (`role`, `active`). Every new collection needs
+  rules in `firestore.rules` and tests in `firestore-tests/`.
 - Icons come from `@lucide/angular` (`<svg lucideUsers aria-hidden="true">`). Do not use emoji or other icon sets.
 - Styling is Tailwind v4; brand tokens and shared component classes live in `src/styles.css`. Visual
   decisions are recorded in `DESIGN.md`; product facts in `PRODUCT.md`.

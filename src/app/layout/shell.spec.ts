@@ -5,7 +5,11 @@ import {
   type AuthServiceMock,
   createAuthServiceMock,
   provideAuthServiceMock,
+  testUser,
 } from '../../testing/auth-service.mock';
+import { buttonByText } from '../../testing/dom';
+import { useLanguage } from '../../testing/setup';
+import type { UserProfile } from '../core/users/user-profile';
 import { Shell } from './shell';
 
 describe('Shell', () => {
@@ -13,47 +17,60 @@ describe('Shell', () => {
   let harness: RouterTestingHarness;
   let page: HTMLElement;
 
-  beforeEach(async () => {
-    auth = createAuthServiceMock({ uid: '1', email: 'ana@ejemplo.com', displayName: 'Ana Pérez' });
+  async function open(user: UserProfile) {
+    auth = createAuthServiceMock(user);
     TestBed.configureTestingModule({
       providers: [
         provideRouter([
-          { path: 'acceso', children: [] },
-          { path: '', component: Shell, children: [{ path: 'clientes', children: [] }] },
+          { path: 'login', children: [] },
+          { path: '', component: Shell, children: [{ path: '**', children: [] }] },
         ]),
         provideAuthServiceMock(auth),
       ],
     });
-    harness = await RouterTestingHarness.create('/clientes');
+    useLanguage('en');
+    harness = await RouterTestingHarness.create('/clients');
     page = harness.routeNativeElement as HTMLElement;
+  }
+
+  const navLabels = () => [...page.querySelectorAll('nav a')].map((a) => a.textContent?.trim());
+
+  it('shows the work sections and marks the current one', async () => {
+    await open(testUser());
+    expect(navLabels()).toEqual(['Clients', 'Products', 'Estimates', 'Catalog']);
+    expect(page.querySelector('nav a')?.getAttribute('aria-current')).toBe('page');
   });
 
-  it('shows every section and marks the current one', () => {
-    const links = [...page.querySelectorAll('nav a')];
-    expect(links.map((a) => a.textContent?.trim())).toEqual([
-      'Clientes',
-      'Productos',
-      'Estimados',
-      'Catálogo',
-    ]);
-    expect(links[0].getAttribute('aria-current')).toBe('page');
+  it('adds Users for administrators only', async () => {
+    await open(testUser({ role: 'admin' }));
+    expect(navLabels()).toContain('Users');
   });
 
-  it('shows who is signed in', () => {
+  it('shows who is signed in', async () => {
+    await open(testUser());
     expect(page.textContent).toContain('Ana Pérez');
-    expect(page.textContent).toContain('ana@ejemplo.com');
+    expect(page.textContent).toContain('ana@example.com');
     expect(page.textContent).toContain('AP');
   });
 
+  it('switches language from the sidebar', async () => {
+    await open(testUser());
+    buttonByText(page, 'es Español').click();
+    await harness.fixture.whenStable();
+    expect(navLabels()).toEqual(['Clientes', 'Productos', 'Estimados', 'Catálogo']);
+  });
+
   it('signs out and returns to the login page', async () => {
-    (page.querySelector('[aria-label="Cerrar sesión"]') as HTMLButtonElement).click();
+    await open(testUser());
+    (page.querySelector('[aria-label="Sign out"]') as HTMLButtonElement).click();
     await harness.fixture.whenStable();
     expect(auth.logout).toHaveBeenCalled();
-    expect(TestBed.inject(Router).url).toBe('/acceso');
+    expect(TestBed.inject(Router).url).toBe('/login');
   });
 
   it('opens and closes the menu on small screens', async () => {
-    const toggle = page.querySelector('[aria-controls=navegacion]') as HTMLButtonElement;
+    await open(testUser());
+    const toggle = page.querySelector('[aria-controls=navigation]') as HTMLButtonElement;
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     toggle.click();
     await harness.fixture.whenStable();
