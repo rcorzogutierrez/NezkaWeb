@@ -5,10 +5,16 @@
     </h1>
     <p class="mt-1.5 text-base text-ink-muted">{{ t().clients.intro }}</p>
   </div>
-  <a routerLink="new" class="btn-primary">
-    <svg lucidePlus class="size-[1.125rem]" aria-hidden="true"></svg>
-    {{ t().clients.new }}
-  </a>
+  <div class="flex flex-wrap gap-3">
+    <a routerLink="import" class="btn-secondary">
+      <svg lucideUpload class="size-[1.125rem]" aria-hidden="true"></svg>
+      {{ t().clients.import.open }}
+    </a>
+    <a routerLink="new" class="btn-primary">
+      <svg lucidePlus class="size-[1.125rem]" aria-hidden="true"></svg>
+      {{ t().clients.new }}
+    </a>
+  </div>
 </header>
 
 <div aria-live="polite" class="mt-6 empty:hidden">
@@ -77,10 +83,16 @@
           <p class="mx-auto mt-1.5 max-w-[46ch] text-[0.9375rem] leading-relaxed text-ink-muted">
             {{ t().clients.emptyBody }}
           </p>
-          <a routerLink="new" class="btn-primary mt-6">
-            <svg lucidePlus class="size-[1.125rem]" aria-hidden="true"></svg>
-            {{ t().clients.new }}
-          </a>
+          <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <a routerLink="import" class="btn-secondary">
+              <svg lucideUpload class="size-[1.125rem]" aria-hidden="true"></svg>
+              {{ t().clients.import.open }}
+            </a>
+            <a routerLink="new" class="btn-primary">
+              <svg lucidePlus class="size-[1.125rem]" aria-hidden="true"></svg>
+              {{ t().clients.new }}
+            </a>
+          </div>
         </div>
       } @else if (shown().length === 0) {
         <div class="px-6 py-12 text-center" role="status">

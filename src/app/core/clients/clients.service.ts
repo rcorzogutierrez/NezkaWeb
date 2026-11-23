@@ -76,6 +76,25 @@ export class ClientsService {
     return ref.id;
   }
 
+  /** Saves many clients at once (QuickBooks import), in batches of 400 writes. */
+  async createMany(list: readonly ClientData[]): Promise<void> {
+    const { db, collection, doc, writeBatch, serverTimestamp } = await this.firestore.load();
+    const uid = this.auth.currentUser?.uid ?? null;
+    for (let start = 0; start < list.length; start += 400) {
+      const batch = writeBatch(db);
+      for (const data of list.slice(start, start + 400)) {
+        batch.set(doc(collection(db, CLIENTS_COLLECTION)), {
+          ...normalizeClient(data),
+          createdAt: serverTimestamp(),
+          createdBy: uid,
+          updatedAt: serverTimestamp(),
+          updatedBy: uid,
+        });
+      }
+      await batch.commit();
+    }
+  }
+
   async update(id: string, data: ClientData): Promise<void> {
     const { db, doc, updateDoc, serverTimestamp } = await this.firestore.load();
     await updateDoc(doc(db, CLIENTS_COLLECTION, id), {

@@ -146,7 +146,7 @@ export const en: Messages = {
         : `Showing ${shown} of ${total} clients`,
     emptyTitle: 'No clients yet',
     emptyBody:
-      'Add the first one with their contact details and address. They appear in the CUSTOMER block of every estimate.',
+      'Add the first one by hand or import the list from QuickBooks. Their details appear in the CUSTOMER block of every estimate.',
     noMatchesTitle: 'No client matches',
     noMatchesBody: (search: string) =>
       search
@@ -156,6 +156,56 @@ export const en: Messages = {
     created: (name: string) => `${name} was saved.`,
     updated: (name: string) => `Changes to ${name} were saved.`,
     deleted: (name: string) => `${name} was deleted.`,
+    import: {
+      title: 'Import clients from QuickBooks',
+      open: 'Import from QuickBooks',
+      intro:
+        'Choose the client list exported from QuickBooks. Clients that already exist (same name) are not duplicated.',
+      howTitle: 'How to export the list',
+      howDesktop:
+        'QuickBooks Desktop: Customers › Customer Center › Excel › Export Customer List, and save as Excel or CSV. File › Utilities › Export › Lists to IIF Files with Customer List ticked also works.',
+      howOnline: 'QuickBooks Online: Sales › Customers › Export.',
+      choose: 'Choose file',
+      chooseAnother: 'Choose another file',
+      drop: 'or drop it here',
+      formats: 'Excel (.xlsx, .xlsm), CSV or IIF',
+      reading: 'Reading the file…',
+      caption: 'Clients found in the file',
+      colStatus: 'Status',
+      statusNew: 'New',
+      skip: { noName: 'No name', exists: 'Already exists', repeated: 'Repeated in the file' },
+      summary: (fresh, skipped, jobs) =>
+        [
+          `${fresh} new ${fresh === 1 ? 'client' : 'clients'}`,
+          skipped ? `${skipped} skipped` : '',
+          jobs ? `${jobs} ${jobs === 1 ? 'job' : 'jobs'} (Customer:Job) not imported` : '',
+        ]
+          .filter(Boolean)
+          .join(' · '),
+      submit: (n) => (n ? `Import ${n} ${n === 1 ? 'client' : 'clients'}` : 'Import clients'),
+      submitting: 'Importing…',
+      cancel: 'Cancel',
+      done: (n) => `${n} ${n === 1 ? 'client was' : 'clients were'} imported from QuickBooks.`,
+      errors: {
+        noNameColumn:
+          'The client name column (Customer or Name) was not found. Check that this is the client list exported from QuickBooks.',
+        oldExcel:
+          '.xls files (Excel 97-2003) cannot be read. Export as CSV or save it in Excel as .xlsx.',
+        noIifCustomers: 'The IIF file has no client list (!CUST section).',
+        unreadable: 'The file could not be read. Check that it is not damaged and try again.',
+      },
+      notes: {
+        otherEmails: 'Other emails',
+        website: 'Website',
+        invalidEmail: 'Invalid email in QuickBooks',
+        otherPhone: 'Other phone',
+        fax: 'Fax',
+        otherContact: 'Other contact',
+        terms: 'Payment terms',
+        account: 'Account',
+        shipTo: 'Ship to',
+      },
+    },
     form: {
       newTitle: 'New client',
       editTitle: 'Edit client',
