@@ -1,0 +1,139 @@
+<a routerLink="/clients" class="link inline-flex items-center gap-1.5 text-sm font-semibold">
+  <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
+  {{ t().clients.form.back }}
+</a>
+
+<header class="mt-4 max-w-2xl">
+  <h1 class="text-[1.75rem] leading-tight font-bold tracking-tight text-ink">
+    {{ t().clients.import.title }}
+  </h1>
+  <p class="mt-1.5 text-base leading-relaxed text-ink-muted">{{ t().clients.import.intro }}</p>
+</header>
+
+<div class="mt-8 grid max-w-5xl gap-6 lg:grid-cols-[1fr_20rem]">
+  <label
+    class="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed bg-white px-6 py-10 text-center transition-colors has-focus-visible:ring-3 has-focus-visible:ring-brand-600/30"
+    [class]="
+      dragging() ? 'border-brand-600 bg-brand-50' : 'border-line-strong hover:border-brand-500'
+    "
+    (dragover)="onDragOver($event)"
+    (dragleave)="dragging.set(false)"
+    (drop)="onDrop($event)"
+  >
+    <span class="grid size-12 place-items-center rounded-full bg-brand-50 text-brand-600">
+      @if (reading()) {
+        <svg lucideLoaderCircle class="size-6 animate-spin" aria-hidden="true"></svg>
+      } @else {
+        <svg lucideUpload class="size-6" aria-hidden="true"></svg>
+      }
+    </span>
+    <span class="btn-secondary pointer-events-none h-10">
+      {{ fileName() ? t().clients.import.chooseAnother : t().clients.import.choose }}
+    </span>
+    <span class="text-sm text-ink-muted">
+      {{ t().clients.import.drop }} · {{ t().clients.import.formats }}
+    </span>
+    @if (fileName()) {
+      <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-ink">
+        <svg lucideFileSpreadsheet class="size-4 text-brand-600" aria-hidden="true"></svg>
+        {{ fileName() }}
+      </span>
+    }
+    <input type="file" class="sr-only" [accept]="accept" (change)="onPick($event)" />
+  </label>
+
+  <aside class="rounded-2xl border border-line bg-white p-5 text-sm leading-relaxed text-ink-muted">
+    <h2 class="text-[0.9375rem] font-semibold text-ink">{{ t().clients.import.howTitle }}</h2>
+    <p class="mt-2">{{ t().clients.import.howDesktop }}</p>
+    <p class="mt-2">{{ t().clients.import.howOnline }}</p>
+  </aside>
+</div>
+
+<div aria-live="polite" class="mt-6 max-w-5xl empty:hidden">
+  @if (reading()) {
+    <p class="sr-only">{{ t().clients.import.reading }}</p>
+  } @else if (fileError(); as code) {
+    <app-form-alert>{{ t().clients.import.errors[code] }}</app-form-alert>
+  }
+</div>
+
+@if (preview(); as p) {
+  <section class="mt-6 max-w-5xl overflow-hidden rounded-2xl border border-line bg-white">
+    <div class="max-h-[28rem] overflow-auto">
+      <table class="w-full text-left text-sm">
+        <caption class="sr-only">
+          {{
+            t().clients.import.caption
+          }}
+        </caption>
+        <thead
+          class="sticky top-0 bg-brand-600 text-xs font-bold tracking-wide text-white uppercase"
+        >
+          <tr>
+            <th scope="col" class="px-4 py-3">{{ t().clients.import.colStatus }}</th>
+            <th scope="col" class="px-4 py-3">{{ t().clients.colClient }}</th>
+            <th scope="col" class="px-4 py-3 max-md:hidden">{{ t().clients.colContact }}</th>
+            <th scope="col" class="px-4 py-3 max-md:hidden">{{ t().clients.colPhone }}</th>
+            <th scope="col" class="px-4 py-3 max-sm:hidden">{{ t().clients.colLocation }}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+          @for (row of p.rows; track row.line) {
+            <tr [class.text-ink-muted]="row.skip" [class.text-ink]="!row.skip">
+              <td class="px-4 py-2.5 whitespace-nowrap">
+                @if (row.skip) {
+                  {{ t().clients.import.skip[row.skip] }}
+                } @else {
+                  <span class="font-semibold text-success-700">{{
+                    t().clients.import.statusNew
+                  }}</span>
+                }
+              </td>
+              <td class="px-4 py-2.5">
+                <span [class.font-semibold]="!row.skip">{{ row.client.name }}</span>
+                @if (row.client.branch) {
+                  <span class="block text-ink-muted">{{ row.client.branch }}</span>
+                }
+              </td>
+              <td class="px-4 py-2.5 max-md:hidden">
+                {{ row.client.contactName }}
+                @if (row.client.email) {
+                  <span class="block break-all text-ink-muted">{{ row.client.email }}</span>
+                }
+              </td>
+              <td class="px-4 py-2.5 whitespace-nowrap tabular-nums max-md:hidden">
+                {{ row.client.phone || row.client.mobile }}
+              </td>
+              <td class="px-4 py-2.5 max-sm:hidden">{{ location(row.client) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="border-t border-line bg-canvas/60 px-5 py-4">
+      @if (saveError(); as key) {
+        <app-form-alert class="mb-4">{{ t().errors[key] }}</app-form-alert>
+      }
+      <div class="flex flex-wrap items-center gap-3">
+        <p class="mr-auto text-sm font-medium text-ink" role="status">
+          {{ t().clients.import.summary(fresh().length, skipped(), p.jobsSkipped) }}
+        </p>
+        <a routerLink="/clients" class="btn-secondary">{{ t().clients.import.cancel }}</a>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="saving() || fresh().length === 0"
+          (click)="save()"
+        >
+          @if (saving()) {
+            <svg lucideLoaderCircle class="size-4 animate-spin" aria-hidden="true"></svg>
+            {{ t().clients.import.submitting }}
+          } @else {
+            {{ t().clients.import.submit(fresh().length) }}
+          }
+        </button>
+      </div>
+    </div>
+  </section>
+}

@@ -14,7 +14,7 @@ Versión web de la app de **Elpidio Jr. Produce Co.** para gestionar clientes, p
 - **Usuarios** (`/users`, `/users/new`, solo administradores): el administrador agrega personas con nombre, correo y rol (administrador o usuario). Firebase les envía un correo para elegir su contraseña. Se pueden activar, desactivar, cambiar de rol y reenviar el correo. Las cuentas no se borran.
 - **Sin acceso** (`/no-access`): una cuenta de Firebase sin perfil activo en `users/{uid}` no entra a la app.
 - **Inglés y español**: el selector de idioma está en el menú y en las pantallas de acceso. Se recuerda en el navegador; la primera vez se usa el idioma del navegador. Todas las rutas están en inglés.
-- **Clientes** (`/clients`, `/clients/new`, `/clients/:id`): lista con búsqueda (sin importar mayúsculas ni acentos) y filtro de activos e inactivos, que se guardan en la URL. Formulario con los mismos campos que la app de escritorio, aviso de nombre duplicado y eliminación solo para administradores.
+- **Clientes** (`/clients`, `/clients/new`, `/clients/:id`, `/clients/import`): lista con búsqueda (sin importar mayúsculas ni acentos) y filtro de activos e inactivos, que se guardan en la URL. Formulario con los mismos campos que la app de escritorio, aviso de nombre duplicado y eliminación solo para administradores. Importación de la lista de clientes de QuickBooks (Excel, CSV o IIF) con vista previa, con las mismas reglas que la app de escritorio.
 - **Marco de la app**: menú lateral con Clientes, Productos, Estimados y Catálogo. Productos, Estimados y Catálogo todavía muestran lo que traerán cuando pasen desde la app de escritorio.
 
 ## Trabajar en local

@@ -144,7 +144,7 @@ export const es = {
         : `Mostrando ${shown} de ${total} clientes`,
     emptyTitle: 'Todavía no hay clientes',
     emptyBody:
-      'Agrega el primero con sus datos de contacto y dirección. Esos datos salen en el bloque CUSTOMER de cada proforma.',
+      'Agrega el primero a mano o importa la lista de QuickBooks. Sus datos salen en el bloque CUSTOMER de cada proforma.',
     noMatchesTitle: 'Ningún cliente coincide',
     noMatchesBody: (search: string) =>
       search
@@ -154,6 +154,59 @@ export const es = {
     created: (name: string) => `Guardamos a ${name}.`,
     updated: (name: string) => `Guardamos los cambios de ${name}.`,
     deleted: (name: string) => `Eliminamos a ${name}.`,
+    import: {
+      title: 'Importar clientes de QuickBooks',
+      open: 'Importar de QuickBooks',
+      intro:
+        'Elige la lista de clientes exportada de QuickBooks. Los que ya existen (mismo nombre) no se duplican.',
+      howTitle: 'Cómo exportar la lista',
+      howDesktop:
+        'QuickBooks Desktop: Customers › Customer Center › Excel › Export Customer List, y guarda como Excel o CSV. También sirve File › Utilities › Export › Lists to IIF Files, marcando Customer List.',
+      howOnline: 'QuickBooks Online: Sales › Customers › Export.',
+      choose: 'Elegir archivo',
+      chooseAnother: 'Elegir otro archivo',
+      drop: 'o arrástralo aquí',
+      formats: 'Excel (.xlsx, .xlsm), CSV o IIF',
+      reading: 'Leyendo el archivo…',
+      caption: 'Clientes encontrados en el archivo',
+      colStatus: 'Estado',
+      statusNew: 'Nuevo',
+      skip: { noName: 'Sin nombre', exists: 'Ya existe', repeated: 'Repetido en el archivo' },
+      summary: (fresh: number, skipped: number, jobs: number) =>
+        [
+          `${fresh} ${fresh === 1 ? 'cliente nuevo' : 'clientes nuevos'}`,
+          skipped ? `${skipped} se ${skipped === 1 ? 'omite' : 'omiten'}` : '',
+          jobs
+            ? `${jobs} ${jobs === 1 ? 'trabajo' : 'trabajos'} (Customer:Job) no se ${jobs === 1 ? 'importa' : 'importan'}`
+            : '',
+        ]
+          .filter(Boolean)
+          .join(' · '),
+      submit: (n: number) =>
+        n ? `Importar ${n} ${n === 1 ? 'cliente' : 'clientes'}` : 'Importar clientes',
+      submitting: 'Importando…',
+      cancel: 'Cancelar',
+      done: (n: number) => `Importamos ${n} ${n === 1 ? 'cliente' : 'clientes'} de QuickBooks.`,
+      errors: {
+        noNameColumn:
+          'No encontramos la columna con el nombre del cliente (Customer o Name). Revisa que sea la lista de clientes exportada de QuickBooks.',
+        oldExcel:
+          'Los archivos .xls (Excel 97-2003) no se pueden leer. Expórtalo como CSV o guárdalo en Excel como .xlsx.',
+        noIifCustomers: 'El archivo IIF no tiene una lista de clientes (sección !CUST).',
+        unreadable: 'No se pudo leer el archivo. Revisa que no esté dañado y vuelve a intentarlo.',
+      },
+      notes: {
+        otherEmails: 'Otros correos',
+        website: 'Sitio web',
+        invalidEmail: 'Correo no válido en QuickBooks',
+        otherPhone: 'Otro teléfono',
+        fax: 'Fax',
+        otherContact: 'Otro contacto',
+        terms: 'Términos de pago',
+        account: 'Cuenta',
+        shipTo: 'Enviar a',
+      },
+    },
     form: {
       newTitle: 'Nuevo cliente',
       editTitle: 'Editar cliente',

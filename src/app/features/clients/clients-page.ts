@@ -1,6 +1,13 @@
 import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { LucidePencil, LucidePlus, LucideSearch, LucideUsers, LucideX } from '@lucide/angular';
+import {
+  LucidePencil,
+  LucidePlus,
+  LucideSearch,
+  LucideUpload,
+  LucideUsers,
+  LucideX,
+} from '@lucide/angular';
 import { type Client, clientLocation, matchesSearch } from '../../core/clients/client';
 import { ClientsService } from '../../core/clients/clients.service';
 import { I18nService } from '../../core/i18n/i18n.service';
@@ -19,6 +26,7 @@ const FILTERS: readonly ClientFilter[] = ['all', 'active', 'inactive'];
     LucidePencil,
     LucidePlus,
     LucideSearch,
+    LucideUpload,
     LucideUsers,
     LucideX,
     FormAlert,

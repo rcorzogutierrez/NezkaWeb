@@ -62,6 +62,12 @@ export const routes: Routes = [
               import('./features/clients/clients-page').then((m) => m.ClientsPage),
           },
           { path: 'new', title: 'clients.form.newTitle', loadComponent: clientForm },
+          {
+            path: 'import',
+            title: 'clients.import.title',
+            loadComponent: () =>
+              import('./features/clients/import-clients').then((m) => m.ImportClients),
+          },
           { path: ':id', title: 'clients.form.editTitle', loadComponent: clientForm },
         ],
       },
