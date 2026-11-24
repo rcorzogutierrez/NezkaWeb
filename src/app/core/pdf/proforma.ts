@@ -1,6 +1,7 @@
 import type { jsPDF } from 'jspdf';
 import { type Client, clientLocation } from '../clients/client';
 import { type Estimate, type EstimateLine, lineTotal, longDate } from '../estimates/estimate';
+import { unitPrice } from '../products/product';
 import {
   BLUE,
   type BrandImages,
@@ -212,7 +213,8 @@ function tableRow(p: Painter, cols: readonly Column[], row: Row, y: number, shad
   at('size', line.size, 6.8, { color: MUTED });
   at('pack', line.pack, TEXT, {});
   at('box', line.boxes.toLocaleString('en-US'), TEXT, { bold: true });
-  at('unit', line.pricePerUnit ? money(line.pricePerUnit) : '—', TEXT, { color: MUTED });
+  const unit = unitPrice(line);
+  at('unit', unit ? money(unit) : '—', TEXT, { color: MUTED });
   at('price', money(line.pricePerBox), TEXT, {});
   at('total', money(lineTotal(line)), TEXT, { bold: true });
 }

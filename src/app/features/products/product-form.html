@@ -154,13 +154,20 @@
             <app-text-field
               [field]="productForm.unitPrice"
               [label]="t().products.form.unitPrice"
-              [hint]="t().products.form.unitPriceHint"
+              [hint]="
+                unitManual()
+                  ? t().products.form.unitPriceManual
+                  : unitAuto()
+                    ? t().products.form.unitPriceAuto(unitAuto()!.units)
+                    : t().products.form.unitPriceHint
+              "
               inputMode="decimal"
               autocomplete="off"
+              (input)="unitTyped()"
             />
-            @if (unitSuggestion(); as s) {
-              <button type="button" class="btn-ghost mt-1 -ml-3" (click)="useUnitSuggestion()">
-                {{ t().products.form.unitPriceUse(s.text, s.units) }}
+            @if (unitManual() && unitAuto(); as auto) {
+              <button type="button" class="btn-ghost mt-1 -ml-3" (click)="unitBackToAuto()">
+                {{ t().products.form.unitPriceUseAuto(auto.text, auto.units) }}
               </button>
             }
           </div>

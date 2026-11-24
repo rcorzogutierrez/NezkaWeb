@@ -411,9 +411,9 @@
                         (blur)="tidyPrice(i)"
                       />
                     </div>
-                    @if (d.line.pricePerUnit) {
+                    @if (unitPrice(d.line); as unit) {
                       <p class="mt-1 text-right text-xs text-ink-muted tabular-nums">
-                        {{ t().products.perUnit(money(d.line.pricePerUnit)) }}
+                        {{ t().products.perUnit(money(unit)) }}
                       </p>
                     }
                   </td>

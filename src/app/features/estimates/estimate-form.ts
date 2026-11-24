@@ -53,6 +53,7 @@ import {
   matchesProductSearch,
   parsePrice,
   priceText,
+  unitPrice,
 } from '../../core/products/product';
 import { ProductsService } from '../../core/products/products.service';
 import { FormAlert } from '../../shared/ui/form-alert';
@@ -222,6 +223,7 @@ export class EstimateForm {
     ),
   );
   protected readonly money = formatMoney;
+  protected readonly unitPrice = unitPrice;
   protected count(n: number): string {
     return n.toLocaleString('en-US');
   }

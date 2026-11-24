@@ -16,7 +16,10 @@ export type ProductTextField = (typeof PRODUCT_TEXT_FIELDS)[number];
 
 export type ProductData = Record<ProductTextField, string> & {
   pricePerBox: number;
-  /** Price of one unit inside the box; 0 when it is not given. */
+  /**
+   * Price of one unit typed by hand. 0 means automatic: the price per box ÷ the pack
+   * (see `unitPrice`).
+   */
   pricePerUnit: number;
   active: boolean;
 };
@@ -184,6 +187,11 @@ export function unitPriceFromBox(pricePerBox: number, pack: string): number | nu
   const units = /^\s*(\d+)\s*$/.exec(pack)?.[1];
   if (!units || !pricePerBox || Number(units) <= 0) return null;
   return Math.round((pricePerBox / Number(units)) * 100) / 100;
+}
+
+/** The price per unit to show: the one typed by hand, else the price per box ÷ the pack. */
+export function unitPrice(p: Pick<ProductData, 'pricePerUnit' | 'pricePerBox' | 'pack'>): number {
+  return p.pricePerUnit || unitPriceFromBox(p.pricePerBox, p.pack) || 0;
 }
 
 export function priceText(value: number): string {

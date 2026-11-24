@@ -443,7 +443,10 @@ export const es = {
       refSuggested: 'Siguiente número libre.',
       unitPrice: 'Precio por unidad',
       unitPriceHint: 'Opcional, por ejemplo 1.00',
-      unitPriceUse: (price: string, units: string) => `Usar ${price} (caja ÷ ${units})`,
+      unitPriceAuto: (units: string) => `Automático: caja ÷ ${units}. Puedes cambiarlo.`,
+      unitPriceManual: 'Escrito a mano.',
+      unitPriceUseAuto: (price: string, units: string) =>
+        `Volver al automático (${price}, caja ÷ ${units})`,
       priceInvalid: 'Escribe un precio válido, por ejemplo 24.00.',
       pallet: 'Cajas por pallet',
       notes: 'Notas',

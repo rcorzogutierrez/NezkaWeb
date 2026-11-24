@@ -1,6 +1,6 @@
 import type { jsPDF } from 'jspdf';
 import { longDate } from '../estimates/estimate';
-import type { Product } from '../products/product';
+import { type Product, unitPrice } from '../products/product';
 import {
   BLUE,
   type BrandImages,
@@ -152,7 +152,7 @@ export function drawCatalog(doc: jsPDF, input: CatalogInput, brand: BrandImages)
     at(5, row.product.qtyPerPallet, 7.2);
     if (input.showPrices) {
       const last = cols.length - 1;
-      const unit = row.product.pricePerUnit;
+      const unit = unitPrice(row.product);
       at(last - 1, unit ? money(unit) : '—', TEXT, { color: MUTED });
       at(last, row.product.pricePerBox ? money(row.product.pricePerBox) : '—', TEXT, {
         bold: true,
