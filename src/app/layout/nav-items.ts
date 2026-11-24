@@ -1,5 +1,6 @@
 import {
   LucideBookOpen,
+  LucideDatabase,
   LucideFileText,
   LucidePackage,
   LucideUserCog,
@@ -23,4 +24,5 @@ export const NAV_ITEMS: readonly NavItem[] = [
 
 export const ADMIN_NAV_ITEMS: readonly NavItem[] = [
   { path: '/users', label: 'users', icon: LucideUserCog },
+  { path: '/import', label: 'import', icon: LucideDatabase },
 ];

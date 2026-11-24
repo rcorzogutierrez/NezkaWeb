@@ -44,6 +44,7 @@ beforeAll(async () => {
   env = await initializeTestEnvironment({
     projectId: 'demo-nezka-rules',
     firestore: { rules: readFileSync('firestore.rules', 'utf8'), host: '127.0.0.1', port: 8080 },
+    storage: { rules: readFileSync('storage.rules', 'utf8'), host: '127.0.0.1', port: 9199 },
   });
 });
 
@@ -248,6 +249,115 @@ describe('clients', () => {
   it('only administrators delete clients', async () => {
     await assertFails(deleteDoc(doc(as('beto'), 'clients/tree')));
     await assertSucceeds(deleteDoc(doc(as('ana'), 'clients/tree')));
+  });
+});
+
+describe('products', () => {
+  const product = (uid: string, extra: Record<string, unknown> = {}) => ({
+    ref: '01',
+    description: 'NEZKA CHICOTICOS JAMON',
+    upc: '612789567096',
+    size: '6 OZ',
+    pack: '6',
+    qtyPerPallet: '63',
+    pricePerBox: 24,
+    notes: '',
+    active: true,
+    photoPath: '',
+    photoUrl: '',
+    createdAt: serverTimestamp(),
+    createdBy: uid,
+    updatedAt: serverTimestamp(),
+    updatedBy: uid,
+    ...extra,
+  });
+
+  beforeEach(async () => {
+    await seed({
+      'users/ana': profile('Ana', 'admin'),
+      'users/beto': profile('Beto', 'user'),
+      'users/carla': profile('Carla', 'user', { active: false }),
+    });
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'products/p1'), product('ana'));
+    });
+  });
+
+  it('active users read, create and edit products', async () => {
+    await assertSucceeds(getDoc(doc(as('beto'), 'products/p1')));
+    await assertSucceeds(setDoc(doc(as('beto'), 'products/p2'), product('beto')));
+    await assertSucceeds(
+      updateDoc(doc(as('beto'), 'products/p1'), {
+        pricePerBox: 25.5,
+        photoPath: 'products/p1/a.webp',
+        photoUrl: 'https://example.com/a.webp',
+        photoThumb: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+        updatedAt: serverTimestamp(),
+        updatedBy: 'beto',
+      }),
+    );
+  });
+
+  it('people without access see nothing', async () => {
+    await assertFails(getDoc(doc(as('carla'), 'products/p1')));
+    await assertFails(getDoc(doc(anonymous(), 'products/p1')));
+  });
+
+  it('rejects bad prices, missing descriptions and photos outside the product folder', async () => {
+    await assertFails(setDoc(doc(as('beto'), 'products/x'), product('beto', { pricePerBox: -1 })));
+    await assertFails(
+      setDoc(doc(as('beto'), 'products/x'), product('beto', { pricePerBox: '24' })),
+    );
+    await assertFails(setDoc(doc(as('beto'), 'products/x'), product('beto', { description: '' })));
+    await assertFails(
+      setDoc(doc(as('beto'), 'products/x'), product('beto', { photoPath: 'users/ana/a.webp' })),
+    );
+    await assertFails(
+      setDoc(
+        doc(as('beto'), 'products/x'),
+        product('beto', { photoThumb: 'data:text/html;base64,PHNjcmlwdD4=' }),
+      ),
+    );
+  });
+
+  it('only administrators delete products', async () => {
+    await assertFails(deleteDoc(doc(as('beto'), 'products/p1')));
+    await assertSucceeds(deleteDoc(doc(as('ana'), 'products/p1')));
+  });
+});
+
+describe('product photos (Storage)', () => {
+  const image = new Uint8Array([82, 73, 70, 70]);
+  const put = (uid: string | null, path: string, size = image, contentType = 'image/webp') => {
+    const storage = uid
+      ? env.authenticatedContext(uid).storage()
+      : env.unauthenticatedContext().storage();
+    return storage.ref(path).put(size, { contentType });
+  };
+
+  beforeEach(() =>
+    seed({
+      'users/beto': profile('Beto', 'user'),
+      'users/carla': profile('Carla', 'user', { active: false }),
+    }),
+  );
+
+  it('an active user uploads, reads and deletes a product photo', async () => {
+    await assertSucceeds(put('beto', 'products/p1/a.webp'));
+    const storage = env.authenticatedContext('beto').storage();
+    await assertSucceeds(storage.ref('products/p1/a.webp').getMetadata());
+    await assertSucceeds(storage.ref('products/p1/a.webp').delete());
+  });
+
+  it('nobody else uploads', async () => {
+    await assertFails(put('carla', 'products/p1/a.webp'));
+    await assertFails(put(null, 'products/p1/a.webp'));
+  });
+
+  it('only images, only in the product folders, and not too big', async () => {
+    await assertFails(put('beto', 'products/p1/a.pdf', image, 'application/pdf'));
+    await assertFails(put('beto', 'otros/a.webp'));
+    await assertFails(put('beto', 'products/p1/big.webp', new Uint8Array(2 * 1024 * 1024)));
   });
 });
 

@@ -64,7 +64,9 @@ You are an expert in TypeScript, Angular, and scalable web application developme
   Firestore names are in **English**.
 - Firebase is used through the plain modular `firebase` SDK, **never AngularFire**. Instances come from the
   injection tokens in `src/app/core/firebase/firebase.providers.ts`; Firestore is loaded lazily with `FirestoreLoader`
-  (`src/app/core/firebase/firestore.loader.ts`); add the functions you need to `firestore.lazy.ts`.
+  (`src/app/core/firebase/firestore.loader.ts`); add the functions you need to `firestore.lazy.ts`. Storage
+  (product photos at `products/{id}/{uuid}.webp`, resized in the browser by `core/products/photo.ts`) loads the
+  same way through `StorageLoader` and `storage.lazy.ts`; its rules are in `storage.rules`.
 - Sign-in is email and password only (no Google or other providers). There is no public sign-up: admins
   create users in `/users` with a temporary password (`mustChangePassword`, replaced at `/change-password`)
   or an email link; access comes from `users/{uid}` (`role`, `active`). Every new collection needs

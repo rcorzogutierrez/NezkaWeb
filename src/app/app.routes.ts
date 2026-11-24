@@ -10,6 +10,8 @@ import {
 
 const clientForm = () => import('./features/clients/client-form').then((m) => m.ClientForm);
 
+const productForm = () => import('./features/products/product-form').then((m) => m.ProductForm);
+
 const upcoming = () =>
   import('./features/placeholder/upcoming-section').then((m) => m.UpcomingSection);
 
@@ -77,9 +79,16 @@ export const routes: Routes = [
       },
       {
         path: 'products',
-        title: 'nav.products',
-        loadComponent: upcoming,
-        data: { section: 'products' },
+        children: [
+          {
+            path: '',
+            title: 'nav.products',
+            loadComponent: () =>
+              import('./features/products/products-page').then((m) => m.ProductsPage),
+          },
+          { path: 'new', title: 'products.form.newTitle', loadComponent: productForm },
+          { path: ':id', title: 'products.form.editTitle', loadComponent: productForm },
+        ],
       },
       {
         path: 'estimates',
@@ -92,6 +101,13 @@ export const routes: Routes = [
         title: 'nav.catalog',
         loadComponent: upcoming,
         data: { section: 'catalog' },
+      },
+      {
+        path: 'import',
+        canMatch: [adminGuard],
+        title: 'desktopImport.title',
+        loadComponent: () =>
+          import('./features/desktop-import/desktop-import').then((m) => m.DesktopImport),
       },
       {
         path: 'users',

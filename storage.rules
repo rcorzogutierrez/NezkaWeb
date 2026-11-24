@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Product photos: any active user of the app reads and uploads them (images up to 2 MB);
+// every other path is closed. Access comes from `users/{uid}` in Firestore, as in
+// firestore.rules.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isActive() {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.active == true;
+    }
+
+    match /products/{productId}/{fileName} {
+      allow read: if isActive();
+      allow create, update: if isActive()
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/(webp|png|jpeg)');
+      allow delete: if isActive();
+    }
+  }
+}

@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "emulators": "firebase emulators:start --only auth,firestore --project demo-nezka",
+    "emulators": "firebase emulators:start --only auth,firestore,storage --project demo-nezka",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -13,8 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm run lint && npm run test:ci && npm run test:rules && npm run build",
-    "deploy": "npm run build && firebase deploy --only hosting,firestore:rules",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-nezka-rules \"vitest run --config vitest.rules.config.mts\""
+    "deploy": "npm run build && firebase deploy --only hosting,firestore:rules,storage",
+    "test:rules": "firebase emulators:exec --only firestore,storage --project demo-nezka-rules \"vitest run --config vitest.rules.config.mts\""
   },
   "private": true,
   "packageManager": "npm@10.9.9",
@@ -30,6 +30,7 @@
     "firebase": "^13.4.0",
     "read-excel-file": "9.3.14",
     "rxjs": "~7.8.0",
+    "sql.js": "1.15.2",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
@@ -39,6 +40,7 @@
     "@eslint/js": "^10.0.1",
     "@firebase/rules-unit-testing": "^6.0.0",
     "@tailwindcss/postcss": "^4.1.12",
+    "@types/sql.js": "1.4.9",
     "@vitest/coverage-v8": "^5.1.1",
     "angular-eslint": "22.8.0",
     "eslint": "^10.14.0",
