@@ -103,6 +103,13 @@ export const routes: Routes = [
         data: { section: 'catalog' },
       },
       {
+        path: 'import',
+        canMatch: [adminGuard],
+        title: 'desktopImport.title',
+        loadComponent: () =>
+          import('./features/desktop-import/desktop-import').then((m) => m.DesktopImport),
+      },
+      {
         path: 'users',
         canMatch: [adminGuard],
         children: [

@@ -12,6 +12,50 @@ export const es = {
     es: 'Español',
     en: 'English',
   },
+  desktopImport: {
+    title: 'Importar desde la app de escritorio',
+    intro:
+      'Trae a la web los productos, con sus fotos, y los clientes de Nezka Invoice. Lo que ya existe aquí no se duplica.',
+    choose: 'Elegir nezka.db',
+    chooseAnother: 'Elegir otro archivo',
+    drop: 'o arrástralo aquí',
+    whereTitle: 'Dónde está el archivo',
+    whereBody:
+      'En la computadora con la app de escritorio, cierra Nezka Invoice. Luego, en la ventana para elegir el archivo, pega esta carpeta en la barra de direcciones:',
+    whereCopy: 'Copiar carpeta',
+    whereCopied: 'Copiada',
+    whereFile:
+      'Ahí está nezka.db. Si la app está abierta, los últimos cambios pueden no estar en el archivo.',
+    reading: 'Leyendo el archivo…',
+    errors: {
+      notSqlite: 'Ese archivo no es una base de datos. Elige nezka.db.',
+      notDesktopDb: 'Esa base de datos no es la de Nezka Invoice.',
+      unreadable: 'No se pudo leer el archivo. Puede estar dañado.',
+    },
+    products: 'Productos',
+    clients: 'Clientes',
+    found: (fresh: number, existing: number) =>
+      `${fresh} ${fresh === 1 ? 'nuevo' : 'nuevos'}` +
+      (existing ? ` · ${existing} ya ${existing === 1 ? 'está' : 'están'} en la web` : ''),
+    withPhoto: (count: number) => `${count} con foto`,
+    statusNew: 'Nuevo',
+    statusExists: 'Ya existe',
+    include: (count: number, what: string) => `Importar ${count} ${what.toLowerCase()}`,
+    nothingNew: 'Todo lo de este archivo ya está en la web.',
+    submit: 'Importar',
+    importing: 'Importando…',
+    progress: (done: number, total: number) => `Subiendo ${done} de ${total}…`,
+    progressLabel: 'Progreso de la importación',
+    keepOpen: 'No cierres esta página hasta que termine.',
+    cancel: 'Cancelar',
+    done: (products: number, clients: number) =>
+      `Importamos ${products} ${products === 1 ? 'producto' : 'productos'} y ${clients} ${clients === 1 ? 'cliente' : 'clientes'}.`,
+    failed: (names: string) =>
+      `No se pudieron guardar: ${names}. Vuelve a importar el archivo para reintentarlo.`,
+    colStatus: 'Estado',
+    colPhoto: 'Foto',
+    noPhoto: 'Sin foto',
+  },
   auth: {
     statement: 'Clientes, productos y proformas en un solo lugar.',
     pitch:
@@ -98,6 +142,7 @@ export const es = {
     products: 'Productos',
     estimates: 'Estimados',
     catalog: 'Catálogo',
+    import: 'Importar datos',
     users: 'Usuarios',
     openMenu: 'Abrir menú',
     closeMenu: 'Cerrar menú',
