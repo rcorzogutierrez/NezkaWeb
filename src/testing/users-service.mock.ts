@@ -12,6 +12,7 @@ export function createUsersServiceMock(list: readonly UserProfile[] = [], setupP
     create: vi.fn(async () => undefined),
     update: vi.fn(async () => undefined),
     remove: vi.fn(async () => undefined),
+    setPassword: vi.fn(async () => undefined),
     sendPasswordSetup: vi.fn(async () => undefined),
     isSetupPending: vi.fn(async () => setupPending),
     createFirstAdmin: vi.fn(async () => undefined),

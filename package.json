@@ -4,15 +4,16 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "emulators": "firebase emulators:start --only auth,firestore,storage --project demo-nezka",
+    "emulators": "firebase emulators:start --only auth,functions,firestore,storage --project demo-nezka",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --watch=false --coverage",
+    "test:functions": "npm --prefix functions test",
     "lint": "ng lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run format:check && npm run lint && npm run test:ci && npm run test:rules && npm run build",
+    "check": "npm run format:check && npm run lint && npm run test:ci && npm run test:functions && npm run test:rules && npm run build",
     "deploy": "npm run build && firebase deploy --only hosting,firestore:rules,storage",
     "test:rules": "firebase emulators:exec --only firestore,storage --project demo-nezka-rules \"vitest run --config vitest.rules.config.mts\""
   },
