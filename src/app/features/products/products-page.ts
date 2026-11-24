@@ -19,6 +19,7 @@ import {
   formatMoney,
   matchesProductSearch,
   missingInfo,
+  unitPrice,
 } from '../../core/products/product';
 import { ProductsService } from '../../core/products/products.service';
 import { FormAlert } from '../../shared/ui/form-alert';
@@ -96,6 +97,7 @@ export class ProductsPage {
   });
 
   protected readonly money = formatMoney;
+  protected readonly unitPrice = unitPrice;
   protected readonly skeletonRows = [0, 1, 2, 3, 4];
 
   protected missingText(lacks: readonly MissingInfo[]): string {

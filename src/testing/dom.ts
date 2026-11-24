@@ -10,7 +10,7 @@ export function inputByLabel(root: HTMLElement, label: string): HTMLInputElement
 export function type(root: HTMLElement, label: string, value: string): void {
   const el = inputByLabel(root, label);
   el.value = value;
-  el.dispatchEvent(new Event('input'));
+  el.dispatchEvent(new Event('input', { bubbles: true }));
   el.dispatchEvent(new Event('blur'));
 }
 

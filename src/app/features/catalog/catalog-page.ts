@@ -12,7 +12,12 @@ import { todayIso } from '../../core/estimates/estimate';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { catalogFileName } from '../../core/pdf/catalog';
 import { PdfService } from '../../core/pdf/pdf.service';
-import { type Product, formatMoney, matchesProductSearch } from '../../core/products/product';
+import {
+  type Product,
+  formatMoney,
+  matchesProductSearch,
+  unitPrice,
+} from '../../core/products/product';
 import { ProductsService } from '../../core/products/products.service';
 import { FormAlert } from '../../shared/ui/form-alert';
 
@@ -58,6 +63,7 @@ export class CatalogPage {
   );
 
   protected readonly money = formatMoney;
+  protected readonly unitPrice = unitPrice;
 
   protected isIncluded(p: Product): boolean {
     return !this.excluded().has(p.id);

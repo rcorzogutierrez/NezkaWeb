@@ -3,11 +3,13 @@ import {
   DestroyRef,
   type ElementRef,
   computed,
+  effect,
   inject,
   input,
   linkedSignal,
   resource,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { FormField, FormRoot, form, maxLength, required, validate } from '@angular/forms/signals';
@@ -31,6 +33,7 @@ import {
   type ProductTextField,
   normalizeUpc,
   formatMoney,
+  nextRef,
   parsePrice,
   priceText,
   unitPriceFromBox,
@@ -44,6 +47,8 @@ import { TextField } from '../../shared/ui/text-field';
 type ProductModel = Record<ProductTextField, string> & {
   price: string;
   unitPrice: string;
+  /** True once the price per unit was typed by hand; else it follows price per box ÷ pack. */
+  unitManual: boolean;
   active: boolean;
 };
 
@@ -56,12 +61,15 @@ function toModel(p?: Product | null): ProductModel {
     ...text,
     price: priceText(p?.pricePerBox ?? 0),
     unitPrice: priceText(p?.pricePerUnit ?? 0),
+    unitManual: !!p?.pricePerUnit,
     active: p?.active ?? true,
   };
 }
 
-function toData({ price, unitPrice, ...rest }: ProductModel): ProductData {
-  return { ...rest, pricePerBox: parsePrice(price) ?? 0, pricePerUnit: parsePrice(unitPrice) ?? 0 };
+/** An automatic price per unit is stored as 0, so it keeps following the price and the pack. */
+function toData({ price, unitPrice, unitManual, ...rest }: ProductModel): ProductData {
+  const pricePerUnit = unitManual ? (parsePrice(unitPrice) ?? 0) : 0;
+  return { ...rest, pricePerBox: parsePrice(price) ?? 0, pricePerUnit };
 }
 
 interface DuplicateWarning {
@@ -118,6 +126,13 @@ export class ProductForm {
 
   private readonly model = linkedSignal<ProductModel>(() => toModel(this.existing.value()));
 
+  /** New products get the next free catalog reference, which the person can change. */
+  private readonly suggestedRef = resource({
+    params: () => (this.id() ? undefined : true),
+    loader: async () => nextRef(await this.products.list()),
+  });
+  protected readonly refSuggested = signal(false);
+
   // The photo: kept, replaced by a prepared file, or removed. Saved together with the form.
   protected readonly photo = signal<PhotoChange>({ kind: 'keep' });
   protected readonly photoBusy = signal(false);
@@ -133,6 +148,21 @@ export class ProductForm {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.setNewPhotoUrl(null));
+    // An automatic price per unit shows the calculation and follows price and pack.
+    effect(() => {
+      const auto = this.unitAuto();
+      if (this.model().unitManual) return;
+      const text = auto ? priceText(auto.value) : '';
+      if (untracked(this.model).unitPrice !== text) {
+        this.model.update((m) => ({ ...m, unitPrice: text }));
+      }
+    });
+    effect(() => {
+      const ref = this.suggestedRef.hasValue() ? this.suggestedRef.value() : null;
+      if (!ref || this.editing() || untracked(this.model).ref) return;
+      this.model.update((m) => ({ ...m, ref }));
+      this.refSuggested.set(true);
+    });
   }
 
   protected async pickPhoto(file: File | undefined): Promise<void> {
@@ -181,16 +211,21 @@ export class ProductForm {
   }
 
   /** Price per box ÷ units per box, offered while the price per unit is something else. */
-  protected readonly unitSuggestion = computed(() => {
+  // Price per unit: price per box ÷ pack while the person has not typed one.
+  protected readonly unitAuto = computed(() => {
     const m = this.model();
     const value = unitPriceFromBox(parsePrice(m.price) ?? 0, m.pack);
-    if (value === null || value === parsePrice(m.unitPrice)) return null;
-    return { value, text: formatMoney(value), units: m.pack.trim() };
+    return value === null ? null : { value, text: formatMoney(value), units: m.pack.trim() };
   });
+  protected readonly unitManual = computed(() => this.model().unitManual);
 
-  protected useUnitSuggestion(): void {
-    const s = this.unitSuggestion();
-    if (s) this.model.update((m) => ({ ...m, unitPrice: priceText(s.value) }));
+  /** Typing in the field makes the price per unit manual. */
+  protected unitTyped(): void {
+    if (!this.model().unitManual) this.model.update((m) => ({ ...m, unitManual: true }));
+  }
+
+  protected unitBackToAuto(): void {
+    this.model.update((m) => ({ ...m, unitManual: false }));
   }
 
   protected readonly error = signal<ErrorKey | null>(null);

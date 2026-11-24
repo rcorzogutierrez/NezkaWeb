@@ -1,6 +1,6 @@
 import type { jsPDF } from 'jspdf';
 import { longDate } from '../estimates/estimate';
-import type { Product } from '../products/product';
+import { type Product, unitPrice } from '../products/product';
 import {
   BLUE,
   type BrandImages,
@@ -41,13 +41,10 @@ interface Column {
   readonly align: 'left' | 'center' | 'right';
 }
 
-/**
- * Columns of the desktop catalog; without prices the description takes the space. The price per
- * unit gets a column only when some product has one.
- */
-function columns(showPrices: boolean, withUnit: boolean): Column[] {
-  const unit = showPrices && withUnit;
-  const extra = (showPrices ? 0 : PRICE_W) - (unit ? UNIT_W : 0);
+/** Columns of the desktop catalog; without prices the description takes their space. */
+function columns(showPrices: boolean): Column[] {
+  const unit = showPrices;
+  const extra = showPrices ? -UNIT_W : PRICE_W;
   const cols: Column[] = [
     { title: ['PHOTO'], x: MARGIN, w: 60, align: 'center' },
     { title: ['REF. / ITEM DESCRIPTION'], x: 100, w: 184 + extra, align: 'left' },
@@ -82,8 +79,7 @@ export function catalogFileName(date: string): string {
 /** Draws the catalog, starting on the current page. Returns the pages it used. */
 export function drawCatalog(doc: jsPDF, input: CatalogInput, brand: BrandImages): number {
   const p = new Painter(doc);
-  const withUnit = input.products.some((product) => product.pricePerUnit);
-  const cols = columns(input.showPrices, withUnit);
+  const cols = columns(input.showPrices);
 
   const rows = input.products.map((product) => {
     const photo = input.photos.get(product.id) ?? null;
@@ -156,10 +152,8 @@ export function drawCatalog(doc: jsPDF, input: CatalogInput, brand: BrandImages)
     at(5, row.product.qtyPerPallet, 7.2);
     if (input.showPrices) {
       const last = cols.length - 1;
-      if (withUnit) {
-        const unit = row.product.pricePerUnit;
-        at(last - 1, unit ? money(unit) : '—', TEXT, { color: MUTED });
-      }
+      const unit = unitPrice(row.product);
+      at(last - 1, unit ? money(unit) : '—', TEXT, { color: MUTED });
       at(last, row.product.pricePerBox ? money(row.product.pricePerBox) : '—', TEXT, {
         bold: true,
       });

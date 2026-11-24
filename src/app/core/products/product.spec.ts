@@ -5,8 +5,10 @@ import {
   missingInfo,
   normalizeProduct,
   normalizeUpc,
+  nextRef,
   parsePrice,
   priceText,
+  unitPrice,
   unitPriceFromBox,
 } from './product';
 import { testProduct } from '../../../testing/products-service.mock';
@@ -79,5 +81,21 @@ describe('unitPriceFromBox', () => {
     expect(unitPriceFromBox(24, 'N12')).toBeNull();
     expect(unitPriceFromBox(24, '0')).toBeNull();
     expect(unitPriceFromBox(0, '24')).toBeNull();
+  });
+});
+
+describe('nextRef', () => {
+  it('proposes one more than the highest numeric reference, with two digits', () => {
+    expect(nextRef([])).toBe('01');
+    expect(nextRef([{ ref: '01' }, { ref: '9' }, { ref: 'A-7' }, { ref: '' }])).toBe('10');
+    expect(nextRef([{ ref: '103' }, { ref: '56' }])).toBe('104');
+  });
+});
+
+describe('unitPrice', () => {
+  it('prefers the price typed by hand, else works it out', () => {
+    expect(unitPrice({ pricePerUnit: 1.1, pricePerBox: 21, pack: '24' })).toBe(1.1);
+    expect(unitPrice({ pricePerUnit: 0, pricePerBox: 21, pack: '24' })).toBe(0.88);
+    expect(unitPrice({ pricePerUnit: 0, pricePerBox: 21, pack: 'N12' })).toBe(0);
   });
 });

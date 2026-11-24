@@ -16,7 +16,10 @@ export type ProductTextField = (typeof PRODUCT_TEXT_FIELDS)[number];
 
 export type ProductData = Record<ProductTextField, string> & {
   pricePerBox: number;
-  /** Price of one unit inside the box; 0 when it is not given. */
+  /**
+   * Price of one unit typed by hand. 0 means automatic: the price per box ÷ the pack
+   * (see `unitPrice`).
+   */
   pricePerUnit: number;
   active: boolean;
 };
@@ -98,6 +101,19 @@ export function normalizeUpc(upc: string): string {
   return upc.replace(/[\s-]/g, '');
 }
 
+/**
+ * The reference proposed for a new product: one more than the highest numeric reference, with
+ * at least two digits like the catalog (01, 02 … 104).
+ */
+export function nextRef(products: readonly Pick<Product, 'ref'>[]): string {
+  const numbers = products
+    .map((p) => p.ref.trim())
+    .filter((r) => /^\d+$/.test(r))
+    .map(Number);
+  const next = (numbers.length ? Math.max(...numbers) : 0) + 1;
+  return String(next).padStart(2, '0');
+}
+
 /** Numeric references first, in numeric order (2 before 10), like the desktop app. */
 export function compareRefs(a: Pick<Product, 'ref' | 'description'>, b: typeof a): number {
   const na = /^\d+$/.test(a.ref) ? Number(a.ref) : null;
@@ -171,6 +187,11 @@ export function unitPriceFromBox(pricePerBox: number, pack: string): number | nu
   const units = /^\s*(\d+)\s*$/.exec(pack)?.[1];
   if (!units || !pricePerBox || Number(units) <= 0) return null;
   return Math.round((pricePerBox / Number(units)) * 100) / 100;
+}
+
+/** The price per unit to show: the one typed by hand, else the price per box ÷ the pack. */
+export function unitPrice(p: Pick<ProductData, 'pricePerUnit' | 'pricePerBox' | 'pack'>): number {
+  return p.pricePerUnit || unitPriceFromBox(p.pricePerBox, p.pack) || 0;
 }
 
 export function priceText(value: number): string {
