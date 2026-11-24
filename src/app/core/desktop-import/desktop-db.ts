@@ -1,6 +1,7 @@
 import { CLIENT_FIELDS, type ClientData, type ClientField, fold } from '../clients/client';
 import { type EstimateLine, type EstimateStatus, isIsoDate, totals } from '../estimates/estimate';
 import {
+  PRODUCT_MAX_LENGTH,
   PRODUCT_TEXT_FIELDS,
   type ProductData,
   type ProductTextField,
@@ -133,7 +134,10 @@ export function toClientData(row: Row): ClientData {
 
 export function toDesktopProduct(row: Row): DesktopProduct {
   const values = Object.fromEntries(
-    PRODUCT_TEXT_FIELDS.map((f) => [f, text(row[PRODUCT_COLUMNS[f]])]),
+    PRODUCT_TEXT_FIELDS.map((f) => [
+      f,
+      text(row[PRODUCT_COLUMNS[f]]).slice(0, PRODUCT_MAX_LENGTH[f]),
+    ]),
   ) as Record<ProductTextField, string>;
   const price = Number(row['price_per_box']);
   const image = row['image'];

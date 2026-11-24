@@ -21,11 +21,13 @@ import {
 } from '../../core/desktop-import/desktop-db';
 import {
   DesktopImportService,
+  type ImportFailure,
   type ImportProgress,
 } from '../../core/desktop-import/desktop-import.service';
 import { displayDate } from '../../core/estimates/estimate';
 import { EstimatesService } from '../../core/estimates/estimates.service';
 import { I18nService } from '../../core/i18n/i18n.service';
+import type { Messages } from '../../core/i18n/messages.es';
 import { formatMoney } from '../../core/products/product';
 import { ProductsService } from '../../core/products/products.service';
 import { FormAlert } from '../../shared/ui/form-alert';
@@ -197,7 +199,7 @@ export class DesktopImport {
       tone: failed.length ? 'error' : 'success',
       text: () =>
         t().desktopImport.done(result.products, result.clients, result.estimates) +
-        (failed.length ? ' ' + t().desktopImport.failed(failed.join(', ')) : ''),
+        (failed.length ? ' ' + failureText(t().desktopImport, failed) : ''),
     });
     const target = products.length
       ? '/products'
@@ -213,4 +215,15 @@ export class DesktopImport {
     for (const url of this.thumbs()) if (url) URL.revokeObjectURL(url);
     this.thumbs.set([]);
   }
+}
+
+/** Failures grouped by their cause, so the reason shows once instead of once per product. */
+export function failureText(
+  t: Pick<Messages['desktopImport'], 'failed' | 'failedGroup'>,
+  failed: readonly ImportFailure[],
+): string {
+  const groups = new Map<string, string[]>();
+  for (const { name, reason } of failed) groups.set(reason, [...(groups.get(reason) ?? []), name]);
+  const details = [...groups].map(([reason, names]) => t.failedGroup(reason, names)).join(' ');
+  return t.failed(failed.length, details);
 }

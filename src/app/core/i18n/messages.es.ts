@@ -53,8 +53,22 @@ export const es = {
     cancel: 'Cancelar',
     done: (products: number, clients: number, estimates: number) =>
       `Importamos ${products} ${products === 1 ? 'producto' : 'productos'}, ${clients} ${clients === 1 ? 'cliente' : 'clientes'} y ${estimates} ${estimates === 1 ? 'estimado' : 'estimados'}.`,
-    failed: (names: string) =>
-      `No se pudieron guardar: ${names}. Vuelve a importar el archivo para reintentarlo.`,
+    failed: (count: number, details: string) =>
+      `${count === 1 ? 'Uno no se pudo guardar' : `${count} no se pudieron guardar`}. ${details} Vuelve a importar el archivo para reintentarlo.`,
+    failedGroup: (reason: string, names: readonly string[]) => {
+      const known: Record<string, string> = {
+        'storage/unauthorized': 'Firebase Storage no dio permiso para subir la foto',
+        'storage/unauthenticated': 'La sesión expiró mientras se subían las fotos',
+        'storage/quota-exceeded': 'Se llenó la cuota de Firebase Storage',
+        'permission-denied': 'Firestore rechazó los datos',
+        unavailable: 'Sin conexión con Firebase',
+        'client not found': 'Su cliente no está en la web',
+        'no lines': 'No tiene líneas con cajas',
+      };
+      const shown = names.slice(0, 3).join(', ');
+      const more = names.length > 3 ? ` y ${names.length - 3} más` : '';
+      return `${known[reason] ?? 'Error'} [${reason}]: ${shown}${more}.`;
+    },
     colStatus: 'Estado',
     colPhoto: 'Foto',
     noPhoto: 'Sin foto',

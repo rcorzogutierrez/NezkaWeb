@@ -12,12 +12,26 @@ export interface ImportProgress {
   readonly total: number;
 }
 
+/** A product (by description) or estimate (by number) that could not be saved, and why. */
+export interface ImportFailure {
+  readonly name: string;
+  /** The Firebase error code (`storage/unauthorized`, `permission-denied`…) or the message. */
+  readonly reason: string;
+}
+
 export interface ImportResult {
   readonly products: number;
   readonly clients: number;
   readonly estimates: number;
-  /** Products (by description) and estimates (by number) that could not be saved. */
-  readonly failed: readonly string[];
+  readonly failed: readonly ImportFailure[];
+}
+
+/** What went wrong, as short as it can be said: the Firebase code when there is one. */
+export function failureReason(e: unknown): string {
+  const { code, message } = (e ?? {}) as { code?: unknown; message?: unknown };
+  if (typeof code === 'string' && code) return code;
+  if (typeof message === 'string' && message) return message;
+  return String(e);
 }
 
 /** Products go up a few at a time: each one is a photo upload plus a write. */
@@ -46,7 +60,7 @@ export class DesktopImportService {
       step();
     }
 
-    const failed: string[] = [];
+    const failed: ImportFailure[] = [];
     let saved = 0;
     const queue = [...products];
     const worker = async () => {
@@ -54,8 +68,8 @@ export class DesktopImportService {
         try {
           await this.products.save(undefined, next.data, await this.photo(next));
           saved++;
-        } catch {
-          failed.push(next.data.description);
+        } catch (e) {
+          failed.push({ name: next.data.description, reason: failureReason(e) });
         }
         step();
       }
@@ -69,8 +83,8 @@ export class DesktopImportService {
         try {
           await this.saveEstimate(e, clientIds, productIds);
           savedEstimates++;
-        } catch {
-          failed.push(e.number);
+        } catch (err) {
+          failed.push({ name: e.number, reason: failureReason(err) });
         }
         step();
       }
