@@ -2,6 +2,7 @@ import type { Route, Routes } from '@angular/router';
 import {
   adminGuard,
   authGuard,
+  changePasswordGuard,
   guestGuard,
   noAccessGuard,
   setupGuard,
@@ -42,6 +43,9 @@ export const routes: Routes = [
   ),
   authPage('setup', 'auth.setup.title', [guestGuard, setupGuard], () =>
     import('./features/auth/first-admin').then((m) => m.FirstAdmin),
+  ),
+  authPage('change-password', 'auth.changePassword.title', [changePasswordGuard], () =>
+    import('./features/auth/change-password').then((m) => m.ChangePassword),
   ),
   authPage('no-access', 'auth.noAccess.title', [noAccessGuard], () =>
     import('./features/auth/no-access').then((m) => m.NoAccess),

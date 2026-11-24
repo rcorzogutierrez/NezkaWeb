@@ -17,7 +17,14 @@ import {
   provideUsersServiceMock,
 } from '../../../testing/users-service.mock';
 import type { UserProfile } from '../users/user-profile';
-import { adminGuard, authGuard, guestGuard, noAccessGuard, setupGuard } from './auth.guards';
+import {
+  adminGuard,
+  authGuard,
+  changePasswordGuard,
+  guestGuard,
+  noAccessGuard,
+  setupGuard,
+} from './auth.guards';
 
 const segments = (...paths: string[]) => paths.map((p) => new UrlSegment(p, {}));
 
@@ -43,6 +50,11 @@ describe('authGuard', () => {
   it('lets users with access through', async () => {
     setup(testUser());
     expect(await url(authGuard, segments('clients'))).toBe(true);
+  });
+
+  it('sends someone with a temporary password to choose their own first', async () => {
+    setup(testUser({ mustChangePassword: true }));
+    expect(await url(authGuard, segments('clients'))).toBe('/change-password');
   });
 
   it('sends visitors to sign in and remembers where they were going', async () => {
@@ -101,5 +113,20 @@ describe('setupGuard', () => {
     TestBed.resetTestingModule();
     setup(null, { setupPending: false });
     expect(await url(setupGuard)).toBe('/login');
+  });
+});
+
+describe('changePasswordGuard', () => {
+  it('is for signed-in users with access', async () => {
+    setup(testUser());
+    expect(await url(changePasswordGuard)).toBe(true);
+  });
+
+  it('sends visitors to sign in and people without access away', async () => {
+    setup(null);
+    expect(await url(changePasswordGuard)).toBe('/login');
+    TestBed.resetTestingModule();
+    setup(null, { noAccess: true });
+    expect(await url(changePasswordGuard)).toBe('/no-access');
   });
 });

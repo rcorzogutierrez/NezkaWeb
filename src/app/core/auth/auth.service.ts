@@ -5,6 +5,7 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  updatePassword,
 } from 'firebase/auth';
 import { FIREBASE_AUTH } from '../firebase/firebase.providers';
 import { FirestoreLoader } from '../firebase/firestore.loader';
@@ -43,6 +44,8 @@ export class AuthService {
   /** Active profile of the signed-in user, or `null`. */
   readonly user = computed(() => (this.status() === 'active' ? this.profileState()! : null));
   readonly isAdmin = computed(() => this.user()?.role === 'admin');
+  /** Signed in with a temporary password that still has to be replaced. */
+  readonly mustChangePassword = computed(() => this.user()?.mustChangePassword === true);
   /** Email of whoever is signed in, even without access. */
   readonly email = computed(() => this.firebaseUser()?.email ?? '');
 
@@ -113,6 +116,17 @@ export class AuthService {
 
   async sendPasswordReset(email: string): Promise<void> {
     await sendPasswordResetEmail(this.auth, email.trim());
+  }
+
+  /** Sets a new password for whoever is signed in and clears the temporary-password flag. */
+  async changePassword(password: string): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) throw new Error('Not signed in');
+    await updatePassword(user, password);
+    if (this.mustChangePassword()) {
+      const { db, doc, updateDoc } = await this.firestore.load();
+      await updateDoc(doc(db, USERS_COLLECTION, user.uid), { mustChangePassword: false });
+    }
   }
 
   async logout(): Promise<void> {

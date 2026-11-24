@@ -8,8 +8,12 @@ import { AuthService } from './auth.service';
 /** Lets users with access through; everyone else goes to login or to the no-access page. */
 export const authGuard: CanMatchFn = async (_route, segments) => {
   const router = inject(Router);
-  const status = await inject(AuthService).whenSettled();
-  if (status === 'active') return true;
+  const auth = inject(AuthService);
+  const status = await auth.whenSettled();
+  if (status === 'active') {
+    // A temporary password has to be replaced before using the app.
+    return !auth.mustChangePassword() || router.createUrlTree(['/change-password']);
+  }
   if (status === 'no-access') return router.createUrlTree(['/no-access']);
   const redirect = '/' + segments.map((s) => s.path).join('/');
   return router.createUrlTree(['/login'], {
@@ -47,4 +51,12 @@ export const setupGuard: CanMatchFn = async () => {
     .isSetupPending()
     .catch(() => false);
   return pending || router.createUrlTree(['/login']);
+};
+
+/** Choosing a new password: any signed-in user with access. */
+export const changePasswordGuard: CanMatchFn = async () => {
+  const router = inject(Router);
+  const status = await inject(AuthService).whenSettled();
+  if (status === 'active') return true;
+  return router.createUrlTree([status === 'no-access' ? '/no-access' : '/login']);
 };

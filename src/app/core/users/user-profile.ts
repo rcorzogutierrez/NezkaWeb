@@ -10,6 +10,8 @@ export interface UserProfile {
   readonly email: string;
   readonly role: UserRole;
   readonly active: boolean;
+  /** Created with a temporary password: must choose their own before using the app. */
+  readonly mustChangePassword: boolean;
   readonly createdAt?: Timestamp;
 }
 
@@ -24,6 +26,7 @@ export function toUserProfile(uid: string, data: Record<string, unknown>): UserP
     email: String(data['email'] ?? ''),
     role: data['role'] === 'admin' ? 'admin' : 'user',
     active: data['active'] === true,
+    mustChangePassword: data['mustChangePassword'] === true,
     createdAt: data['createdAt'] as Timestamp | undefined,
   };
 }

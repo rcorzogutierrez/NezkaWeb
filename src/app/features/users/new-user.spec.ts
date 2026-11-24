@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { FirebaseError } from 'firebase/app';
-import { submit, type } from '../../../testing/dom';
+import { inputByLabel, submit, type } from '../../../testing/dom';
 import { useLanguage } from '../../../testing/setup';
 import {
   type UsersServiceMock,
@@ -46,16 +46,46 @@ describe('NewUser', () => {
     expect(users.create).not.toHaveBeenCalled();
   });
 
-  it('creates a regular user by default and returns to the list with a confirmation', async () => {
+  it('creates a regular user with a temporary password by default', async () => {
     type(page, 'Name', 'Dora Gil');
     type(page, 'Email', 'Dora@Example.com');
+    const password = inputByLabel(page, 'Temporary password').value;
+    expect(password).toMatch(/^[A-Za-z2-9]{4}-[A-Za-z2-9]{4}-[A-Za-z2-9]{4}$/);
     await send();
     expect(users.create).toHaveBeenCalledWith({
       name: 'Dora Gil',
       email: 'Dora@Example.com',
       role: 'user',
+      temporaryPassword: password,
     });
     expect(TestBed.inject(Router).url).toBe('/users');
+    expect(TestBed.inject(NoticeService).take()?.text()).toContain(password);
+  });
+
+  it('accepts a password typed by the administrator, if it is long enough', async () => {
+    type(page, 'Name', 'Dora Gil');
+    type(page, 'Email', 'dora@example.com');
+    type(page, 'Temporary password', 'corta');
+    await send();
+    expect(users.create).not.toHaveBeenCalled();
+    expect(page.textContent).toContain('at least 8');
+    type(page, 'Temporary password', 'Bienvenida2026');
+    await send();
+    expect(users.create).toHaveBeenCalledWith(
+      expect.objectContaining({ temporaryPassword: 'Bienvenida2026' }),
+    );
+  });
+
+  it('can send an email link instead', async () => {
+    type(page, 'Name', 'Dora Gil');
+    type(page, 'Email', 'Dora@Example.com');
+    (page.querySelector('input[type=radio][value=email]') as HTMLInputElement).click();
+    harness.fixture.detectChanges();
+    expect(page.textContent).not.toContain('Generate another');
+    await send();
+    expect(users.create).toHaveBeenCalledWith(
+      expect.objectContaining({ temporaryPassword: undefined }),
+    );
     expect(TestBed.inject(NoticeService).take()?.text()).toContain('dora@example.com');
   });
 

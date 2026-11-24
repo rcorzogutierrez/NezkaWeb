@@ -66,7 +66,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
   injection tokens in `src/app/core/firebase/firebase.providers.ts`; Firestore is loaded lazily with `FirestoreLoader`
   (`src/app/core/firebase/firestore.loader.ts`); add the functions you need to `firestore.lazy.ts`.
 - Sign-in is email and password only (no Google or other providers). There is no public sign-up: admins
-  create users in `/users`; access comes from `users/{uid}` (`role`, `active`). Every new collection needs
+  create users in `/users` with a temporary password (`mustChangePassword`, replaced at `/change-password`)
+  or an email link; access comes from `users/{uid}` (`role`, `active`). Every new collection needs
   rules in `firestore.rules` and tests in `firestore-tests/`.
 - Icons come from `@lucide/angular` (`<svg lucideUsers aria-hidden="true">`). Do not use emoji or other icon sets.
 - Styling is Tailwind v4; brand tokens and shared component classes live in `src/styles.css`. Visual

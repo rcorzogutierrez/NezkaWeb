@@ -121,9 +121,17 @@
           <p class="truncate text-sm font-semibold text-ink">{{ u.name }}</p>
           <p class="truncate text-xs text-ink-muted">{{ u.email }}</p>
         </div>
+        <a
+          routerLink="/change-password"
+          class="btn-icon size-9 shrink-0"
+          [attr.aria-label]="t().nav.changePassword"
+          [attr.title]="t().nav.changePassword"
+        >
+          <svg lucideKeyRound class="size-[1.125rem]" aria-hidden="true"></svg>
+        </a>
         <button
           type="button"
-          class="btn-icon size-9"
+          class="btn-icon size-9 shrink-0"
           [attr.aria-label]="t().nav.logout"
           [attr.title]="t().nav.logout"
           (click)="logout()"

@@ -31,13 +31,15 @@ service cloud.firestore {
     }
 
     function validNewProfile(data) {
-      return data.keys().hasOnly(['name', 'email', 'role', 'active', 'createdAt', 'createdBy'])
+      return data.keys().hasOnly(['name', 'email', 'role', 'active', 'createdAt', 'createdBy',
+          'mustChangePassword'])
         && data.keys().hasAll(['name', 'email', 'role', 'active', 'createdAt'])
         && data.name is string && data.name.size() > 0 && data.name.size() <= 120
         && data.email is string && data.email.matches('^[^@\\s]+@[^@\\s]+$')
         && validRole(data.role)
         && data.active is bool
         && data.createdAt == request.time
+        && (!('mustChangePassword' in data) || data.mustChangePassword is bool)
         && (!('createdBy' in data) || data.createdBy == request.auth.uid);
     }
 
@@ -72,6 +74,12 @@ service cloud.firestore {
         && request.resource.data.active is bool
         && (uid != request.auth.uid
           || (request.resource.data.role == 'admin' && request.resource.data.active == true));
+
+      // After choosing their own password, a person clears the "temporary password" flag.
+      // Only clearing it: nobody can switch it back on for themselves.
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword'])
+        && request.resource.data.mustChangePassword == false;
 
       // Accounts are deactivated, never deleted, so estimates keep their author.
       allow delete: if false;

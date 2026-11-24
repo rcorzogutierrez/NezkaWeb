@@ -51,6 +51,19 @@ export const es = {
       haveAccount: '¿Ya tienes cuenta?',
       loginLink: 'Inicia sesión',
     },
+    changePassword: {
+      title: 'Cambia tu contraseña',
+      firstTitle: 'Elige tu contraseña',
+      intro: 'Escribe la contraseña nueva dos veces.',
+      firstIntro:
+        'Entraste con una contraseña temporal. Elige una nueva que solo tú sepas para seguir.',
+      newPassword: 'Contraseña nueva',
+      submit: 'Guardar contraseña',
+      submitting: 'Guardando…',
+      saved: 'Tu contraseña nueva quedó guardada.',
+      cancel: 'Volver a la app',
+      logout: 'Cerrar sesión',
+    },
     noAccess: {
       title: 'Tu cuenta no tiene acceso',
       body: (email: string) =>
@@ -74,6 +87,7 @@ export const es = {
     tooManyRequests: 'Demasiados intentos seguidos. Espera unos minutos o recupera la contraseña.',
     network: 'No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo.',
     notEnabled: 'El acceso con correo y contraseña no está activado en Firebase.',
+    recentLogin: 'Por seguridad, cierra sesión y vuelve a entrar antes de cambiar la contraseña.',
     permissionDenied: 'No tienes permiso para hacer esto.',
     unknown: 'No se pudo completar la operación. Inténtalo de nuevo.',
   },
@@ -87,6 +101,7 @@ export const es = {
     users: 'Usuarios',
     openMenu: 'Abrir menú',
     closeMenu: 'Cerrar menú',
+    changePassword: 'Cambiar contraseña',
     logout: 'Cerrar sesión',
   },
   upcoming: {
@@ -279,13 +294,27 @@ export const es = {
     activated: (name: string) => `${name} vuelve a tener acceso.`,
     deactivated: (name: string) => `${name} ya no puede entrar a la app.`,
     emailSent: (email: string) => `Enviamos a ${email} el enlace para elegir su contraseña.`,
+    createdWithPassword: (name: string, password: string) =>
+      `Creamos la cuenta de ${name}. Su contraseña temporal es ${password}: dásela y la cambiará al entrar.`,
+    tempPassword: 'Contraseña temporal',
     created: (name: string, email: string) =>
       `Creamos la cuenta de ${name}. Le enviamos a ${email} un enlace para elegir su contraseña.`,
     form: {
       title: 'Nuevo usuario',
-      intro:
-        'La persona recibirá un correo con un enlace para elegir su contraseña. Si no le llega, revisa su carpeta de correo no deseado o reenvíalo desde la lista.',
+      intro: 'Elige cómo va a recibir su contraseña la persona.',
       role: 'Rol',
+      access: 'Contraseña',
+      accessOptions: {
+        temporary: 'Contraseña temporal',
+        email: 'Enlace por correo',
+      },
+      accessHelp: {
+        temporary: 'Se la das tú. La app le pide cambiarla la primera vez que entra.',
+        email: 'Le llega un correo para elegirla. Algunos proveedores, como AOL, lo bloquean.',
+      },
+      password: 'Contraseña temporal',
+      passwordHint: 'Puedes cambiarla. La persona elegirá la suya la primera vez que entre.',
+      newPassword: 'Generar otra',
       submit: 'Crear usuario',
       submitting: 'Creando usuario…',
       cancel: 'Cancelar',
