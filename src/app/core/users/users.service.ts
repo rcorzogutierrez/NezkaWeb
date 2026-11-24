@@ -1,16 +1,17 @@
 import { DestroyRef, Service, inject, signal } from '@angular/core';
-import { type FirebaseApp, getApps, initializeApp } from 'firebase/app';
+import { type FirebaseApp, FirebaseError, getApps, initializeApp } from 'firebase/app';
 import {
   type Auth,
   createUserWithEmailAndPassword,
   deleteUser,
   inMemoryPersistence,
   sendPasswordResetEmail,
+  signInWithEmailAndPassword,
   signOut,
+  updatePassword,
 } from 'firebase/auth';
 import { APP_ENVIRONMENT, FIREBASE_AUTH, createAuth } from '../firebase/firebase.providers';
 import { FirestoreLoader } from '../firebase/firestore.loader';
-import { FunctionsLoader } from '../firebase/functions.loader';
 import {
   SETUP_DOC,
   USERS_COLLECTION,
@@ -28,6 +29,11 @@ export interface NewUser {
    * first sign-in. Without it, the person gets an email to choose their password.
    */
   readonly temporaryPassword?: string;
+  /**
+   * The current password of a sign-in account that already exists for this email (someone
+   * deleted from the list). With it the account is reused instead of created.
+   */
+  readonly currentPassword?: string;
 }
 
 export interface FirstAdmin {
@@ -37,6 +43,9 @@ export interface FirstAdmin {
 }
 
 export type UserChanges = Partial<Pick<UserProfile, 'name' | 'role' | 'active'>>;
+
+/** Error code when the email already belongs to someone in the list. */
+export const USER_EXISTS = 'app/user-exists';
 
 /** Name of the second Firebase app used to create accounts without signing the admin out. */
 const PROVISIONING_APP = 'user-provisioning';
@@ -64,7 +73,6 @@ const normalizeEmail = (email: string) => email.trim().toLowerCase();
 export class UsersService {
   private readonly auth = inject(FIREBASE_AUTH);
   private readonly firestore = inject(FirestoreLoader);
-  private readonly functions = inject(FunctionsLoader);
   private readonly env = inject(APP_ENVIRONMENT);
   private provisioningAuth: Auth | null = null;
 
@@ -97,17 +105,20 @@ export class UsersService {
    * change it when they first sign in; otherwise they get an email to choose their password.
    * The account is created through a second Firebase app so the administrator stays signed in.
    */
-  async create({ name, email, role, temporaryPassword }: NewUser): Promise<void> {
+  async create({ name, email, role, temporaryPassword, currentPassword }: NewUser): Promise<void> {
     const address = normalizeEmail(email);
-    const { db, doc, setDoc, serverTimestamp } = await this.firestore.load();
-    const provisioning = this.getProvisioningAuth();
-    const { user } = await createUserWithEmailAndPassword(
-      provisioning,
-      address,
-      temporaryPassword || randomPassword(),
+    const { db, collection, doc, getDocs, query, setDoc, serverTimestamp, where } =
+      await this.firestore.load();
+    const listed = await getDocs(
+      query(collection(db, USERS_COLLECTION), where('email', '==', address)),
     );
-    await signOut(provisioning);
-    await setDoc(doc(db, USERS_COLLECTION, user.uid), {
+    if (!listed.empty) throw new FirebaseError(USER_EXISTS, 'That email is already in the list.');
+
+    const password = temporaryPassword || randomPassword();
+    const uid = currentPassword
+      ? await this.reuseAccount(address, currentPassword, password)
+      : await this.createAccount(address, password);
+    await setDoc(doc(db, USERS_COLLECTION, uid), {
       name: name.trim(),
       email: address,
       role,
@@ -119,26 +130,42 @@ export class UsersService {
     if (!temporaryPassword) await this.sendPasswordSetup(address);
   }
 
+  private async createAccount(email: string, password: string): Promise<string> {
+    const provisioning = this.getProvisioningAuth();
+    const { user } = await createUserWithEmailAndPassword(provisioning, email, password);
+    await signOut(provisioning);
+    return user.uid;
+  }
+
+  /**
+   * Signs in to an existing account with its current password and gives it the new one. This
+   * is how a deleted person comes back without the Blaze plan: the browser cannot delete or
+   * reset another person's sign-in account.
+   */
+  private async reuseAccount(email: string, current: string, next: string): Promise<string> {
+    const provisioning = this.getProvisioningAuth();
+    const { user } = await signInWithEmailAndPassword(provisioning, email, current);
+    try {
+      if (next !== current) await updatePassword(user, next);
+      return user.uid;
+    } finally {
+      await signOut(provisioning);
+    }
+  }
+
+  /**
+   * Removes the person from the app: without a profile they cannot get in. Their sign-in
+   * account stays in Firebase Authentication (deleting it needs the Admin SDK), so they can be
+   * added again later with the same email. Estimates keep their author's id.
+   */
+  async remove(uid: string): Promise<void> {
+    const { db, doc, deleteDoc } = await this.firestore.load();
+    await deleteDoc(doc(db, USERS_COLLECTION, uid));
+  }
+
   async update(uid: string, changes: UserChanges): Promise<void> {
     const { db, doc, updateDoc } = await this.firestore.load();
     await updateDoc(doc(db, USERS_COLLECTION, uid), changes);
-  }
-
-  /**
-   * Deletes the sign-in account and the profile, so the same email can be used again. The
-   * server refuses your own account and the last active administrator. Estimates keep their
-   * author's id.
-   */
-  async remove(uid: string): Promise<void> {
-    await this.functions.call('deleteUser', { uid });
-  }
-
-  /**
-   * Sets someone else's password (any password Firebase accepts: 6 characters or more). With
-   * `mustChange` they choose a new one at their next sign-in.
-   */
-  async setPassword(uid: string, password: string, mustChange: boolean): Promise<void> {
-    await this.functions.call('setUserPassword', { uid, password, mustChange });
   }
 
   /** Emails the "choose your password" link (Firebase's password reset email). */

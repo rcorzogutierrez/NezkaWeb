@@ -22,6 +22,10 @@ import { TextField } from '../../shared/ui/text-field';
 type Access = 'temporary' | 'email';
 const ACCESS: readonly Access[] = ['temporary', 'email'];
 
+/** Where an administrator deletes a sign-in account (the browser cannot). */
+const CONSOLE_USERS_URL =
+  'https://console.firebase.google.com/project/nezka-web/authentication/users';
+
 /**
  * Admin creates an account, either with a temporary password to hand over (changed at the
  * first sign-in) or with an email link to choose one.
@@ -57,6 +61,28 @@ const ACCESS: readonly Access[] = ['temporary', 'email'];
     >
       @if (error(); as key) {
         <app-form-alert>{{ t().errors[key] }}</app-form-alert>
+      }
+      @if (reuse()) {
+        <div class="space-y-4 rounded-xl border border-brand-200 bg-brand-50 p-4">
+          <div>
+            <p class="font-semibold text-ink">{{ t().users.form.reuseTitle }}</p>
+            <p class="mt-1 text-sm leading-relaxed text-ink-muted">
+              {{ t().users.form.reuseBody }}
+            </p>
+          </div>
+          <app-text-field
+            [field]="userForm.currentPassword"
+            [label]="t().users.form.currentPassword"
+            type="password"
+            autocomplete="off"
+          />
+          <p class="text-sm leading-relaxed text-ink-muted">
+            {{ t().users.form.reuseConsole }}
+            <a class="link font-semibold" [href]="consoleUrl" target="_blank" rel="noopener">{{
+              t().users.form.reuseConsoleLink
+            }}</a>
+          </p>
+        </div>
       }
       <app-text-field [field]="userForm.name" [label]="t().auth.name" autocomplete="off" />
       <app-text-field
@@ -157,6 +183,9 @@ export class NewUser {
   protected readonly roles = USER_ROLES;
   protected readonly accessOptions = ACCESS;
   protected readonly error = signal<ErrorKey | null>(null);
+  /** The email already has a sign-in account (someone deleted from the list): offer to reuse it. */
+  protected readonly reuse = signal(false);
+  protected readonly consoleUrl = CONSOLE_USERS_URL;
 
   protected readonly model = signal({
     name: '',
@@ -164,6 +193,7 @@ export class NewUser {
     role: 'user' as UserRole,
     access: 'temporary' as Access,
     password: temporaryPassword(),
+    currentPassword: '',
   });
 
   protected regenerate(): void {
@@ -189,12 +219,25 @@ export class NewUser {
       submission: {
         action: async (f) => {
           this.error.set(null);
-          const { name, email, role, access, password } = f().value();
+          const { name, email, role, access, password, currentPassword } = f().value();
           const temporary = access === 'temporary' ? password : undefined;
+          const current = this.reuse() && currentPassword ? currentPassword : undefined;
           try {
-            await this.users.create({ name, email, role, temporaryPassword: temporary });
+            await this.users.create({
+              name,
+              email,
+              role,
+              temporaryPassword: temporary,
+              currentPassword: current,
+            });
           } catch (e) {
-            this.error.set(errorKey(e));
+            const key = errorKey(e);
+            if (key === 'emailInUse') {
+              this.reuse.set(true);
+              this.error.set(null);
+            } else {
+              this.error.set(key);
+            }
             return;
           }
           this.notices.show({

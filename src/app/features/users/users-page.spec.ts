@@ -7,7 +7,7 @@ import {
   provideAuthServiceMock,
   testUser,
 } from '../../../testing/auth-service.mock';
-import { buttonByText, submit, type } from '../../../testing/dom';
+import { buttonByText } from '../../../testing/dom';
 import { useLanguage } from '../../../testing/setup';
 import {
   type UsersServiceMock,
@@ -98,14 +98,13 @@ describe('UsersPage', () => {
         this.removeAttribute('open');
       };
     }
-    const [remove, password] = [...page.querySelectorAll('dialog')] as HTMLDialogElement[];
-    return { remove, password };
+    const [remove] = [...page.querySelectorAll('dialog')] as HTMLDialogElement[];
+    return { remove };
   };
 
-  it('never offers to delete or set the password of your own account', () => {
+  it('never offers to delete your own account', () => {
     const mine = row('Ana Pérez');
     expect(mine.textContent).not.toContain('Delete');
-    expect(mine.textContent).not.toContain('Set password');
   });
 
   it('deletes someone after confirming', async () => {
@@ -122,46 +121,14 @@ describe('UsersPage', () => {
     expect(page.textContent).toContain('Beto Ruiz was deleted.');
   });
 
-  it('keeps the dialog open with the reason when the server refuses', async () => {
-    users.remove.mockRejectedValueOnce(new FirebaseError('functions/internal', 'x'));
+  it('keeps the dialog open with the reason when it fails', async () => {
+    users.remove.mockRejectedValueOnce(new FirebaseError('permission-denied', 'x'));
     const { remove } = dialogs();
     buttonByText(row('Beto Ruiz'), 'Delete').click();
     harness.detectChanges();
     buttonByText(remove, 'Delete user').click();
     await harness.fixture.whenStable();
     expect(remove.open).toBe(true);
-    expect(remove.textContent).toContain('The server did not answer.');
-  });
-
-  it('sets a simple password of 6 characters', async () => {
-    const { password } = dialogs();
-    buttonByText(row('Beto Ruiz'), 'Set password').click();
-    harness.detectChanges();
-    expect(password.open).toBe(true);
-
-    type(password, 'New password', '12345');
-    submit(password);
-    await harness.fixture.whenStable();
-    expect(users.setPassword).not.toHaveBeenCalled();
-    expect(password.textContent).toContain('Use at least 6 characters.');
-
-    type(password, 'New password', '123456');
-    submit(password);
-    await harness.fixture.whenStable();
-    expect(users.setPassword).toHaveBeenCalledWith('beto', '123456', false);
-    expect(password.open).toBe(false);
-    expect(page.textContent).toContain('Beto Ruiz can sign in with the new password.');
-  });
-
-  it('can ask them to change it when they sign in', async () => {
-    const { password } = dialogs();
-    buttonByText(row('Carla Díaz'), 'Set password').click();
-    harness.detectChanges();
-    type(password, 'New password', 'nezka1');
-    const check = password.querySelector('input[type=checkbox]') as HTMLInputElement;
-    check.click();
-    submit(password);
-    await harness.fixture.whenStable();
-    expect(users.setPassword).toHaveBeenCalledWith('carla', 'nezka1', true);
+    expect(remove.textContent).toContain('You do not have permission to do this.');
   });
 });
