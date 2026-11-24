@@ -10,6 +10,7 @@ export function testUser(overrides: Partial<UserProfile> = {}): UserProfile {
     email: 'ana@example.com',
     role: 'user',
     active: true,
+    mustChangePassword: false,
     ...overrides,
   };
 }
@@ -29,11 +30,16 @@ export function createAuthServiceMock(
     status,
     user: computed(() => (status() === 'active' ? state() : null)),
     isAdmin: computed(() => status() === 'active' && state()?.role === 'admin'),
+    mustChangePassword: computed(() => status() === 'active' && !!state()?.mustChangePassword),
     email: computed(() => state()?.email ?? (signedInWithoutAccess ? 'nuevo@example.com' : '')),
     whenSettled: vi.fn(async () => status()),
     reloadProfile: vi.fn(async () => status()),
     login: vi.fn(async () => undefined),
     sendPasswordReset: vi.fn(async () => undefined),
+    changePassword: vi.fn<(password: string) => Promise<void>>(async () => {
+      const p = state();
+      if (p) state.set({ ...p, mustChangePassword: false });
+    }),
     logout: vi.fn(async () => state.set(null)),
     setUser: (next: UserProfile | null) => state.set(next),
   };

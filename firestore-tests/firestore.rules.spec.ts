@@ -144,6 +144,28 @@ describe('users', () => {
     await assertFails(updateDoc(doc(as('beto'), 'users/beto'), { role: 'admin' }));
   });
 
+  it('an admin creates a user with a temporary password', async () => {
+    await assertSucceeds(
+      setDoc(
+        doc(as('ana'), 'users/dora'),
+        profile('Dora', 'user', { createdBy: 'ana', mustChangePassword: true }),
+      ),
+    );
+    await assertFails(
+      setDoc(doc(as('ana'), 'users/eva'), profile('Eva', 'user', { mustChangePassword: 'yes' })),
+    );
+  });
+
+  it('a user clears their own temporary-password flag, and nothing else', async () => {
+    await seed({ 'users/dora': profile('Dora', 'user', { mustChangePassword: true }) });
+    await assertFails(updateDoc(doc(as('beto'), 'users/dora'), { mustChangePassword: false }));
+    await assertFails(
+      updateDoc(doc(as('dora'), 'users/dora'), { mustChangePassword: false, role: 'admin' }),
+    );
+    await assertSucceeds(updateDoc(doc(as('dora'), 'users/dora'), { mustChangePassword: false }));
+    await assertFails(updateDoc(doc(as('dora'), 'users/dora'), { mustChangePassword: true }));
+  });
+
   it('nobody deletes profiles', async () => {
     await assertFails(deleteDoc(doc(as('ana'), 'users/beto')));
   });

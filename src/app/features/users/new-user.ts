@@ -1,16 +1,31 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormField, FormRoot, email, form, required } from '@angular/forms/signals';
+import {
+  FormField,
+  FormRoot,
+  applyWhen,
+  email,
+  form,
+  minLength,
+  required,
+} from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
-import { LucideArrowLeft, LucideLoaderCircle } from '@lucide/angular';
+import { LucideArrowLeft, LucideLoaderCircle, LucideRefreshCw } from '@lucide/angular';
 import { type ErrorKey, errorKey } from '../../core/auth/auth-errors';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { USER_ROLES, type UserRole } from '../../core/users/user-profile';
-import { UsersService } from '../../core/users/users.service';
+import { UsersService, temporaryPassword } from '../../core/users/users.service';
+import { MIN_PASSWORD_LENGTH } from '../auth/password-match';
 import { FormAlert } from '../../shared/ui/form-alert';
 import { NoticeService } from '../../shared/ui/notice.service';
 import { TextField } from '../../shared/ui/text-field';
 
-/** Admin creates an account; the person gets an email to choose their password. */
+type Access = 'temporary' | 'email';
+const ACCESS: readonly Access[] = ['temporary', 'email'];
+
+/**
+ * Admin creates an account, either with a temporary password to hand over (changed at the
+ * first sign-in) or with an email link to choose one.
+ */
 @Component({
   selector: 'app-new-user',
   imports: [
@@ -19,6 +34,7 @@ import { TextField } from '../../shared/ui/text-field';
     RouterLink,
     LucideArrowLeft,
     LucideLoaderCircle,
+    LucideRefreshCw,
     FormAlert,
     TextField,
   ],
@@ -76,6 +92,48 @@ import { TextField } from '../../shared/ui/text-field';
         </div>
       </fieldset>
 
+      <fieldset>
+        <legend class="mb-2 text-sm font-semibold text-ink">{{ t().users.form.access }}</legend>
+        <div class="grid gap-3 sm:grid-cols-2">
+          @for (option of accessOptions; track option) {
+            <label
+              class="flex cursor-pointer gap-3 rounded-xl border border-line-strong p-4 transition-colors has-checked:border-brand-600 has-checked:bg-brand-50 has-focus-visible:ring-3 has-focus-visible:ring-brand-600/25"
+            >
+              <input
+                type="radio"
+                [value]="option"
+                [formField]="userForm.access"
+                class="mt-0.5 size-4 accent-brand-600 focus:outline-none"
+              />
+              <span>
+                <span class="block text-[0.9375rem] font-semibold text-ink">
+                  {{ t().users.form.accessOptions[option] }}
+                </span>
+                <span class="mt-0.5 block text-sm leading-snug text-ink-muted">
+                  {{ t().users.form.accessHelp[option] }}
+                </span>
+              </span>
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      @if (model().access === 'temporary') {
+        <div class="flex items-start gap-3">
+          <app-text-field
+            class="min-w-0 flex-1 [&_input]:font-mono [&_input]:tracking-wide"
+            [field]="userForm.password"
+            [label]="t().users.form.password"
+            [hint]="t().users.form.passwordHint"
+            autocomplete="off"
+          />
+          <button type="button" class="btn-secondary mt-7 shrink-0" (click)="regenerate()">
+            <svg lucideRefreshCw class="size-4" aria-hidden="true"></svg>
+            {{ t().users.form.newPassword }}
+          </button>
+        </div>
+      }
+
       <div class="flex flex-wrap gap-3 border-t border-line pt-6">
         <button type="submit" class="btn-primary" [disabled]="userForm().submitting()">
           @if (userForm().submitting()) {
@@ -97,29 +155,54 @@ export class NewUser {
   protected readonly t = inject(I18nService).t;
 
   protected readonly roles = USER_ROLES;
+  protected readonly accessOptions = ACCESS;
   protected readonly error = signal<ErrorKey | null>(null);
 
+  protected readonly model = signal({
+    name: '',
+    email: '',
+    role: 'user' as UserRole,
+    access: 'temporary' as Access,
+    password: temporaryPassword(),
+  });
+
+  protected regenerate(): void {
+    this.model.update((m) => ({ ...m, password: temporaryPassword() }));
+  }
+
   protected readonly userForm = form(
-    signal({ name: '', email: '', role: 'user' as UserRole }),
+    this.model,
     (path) => {
       required(path.name);
       required(path.email);
       email(path.email);
+      applyWhen(
+        path,
+        ({ value }) => value().access === 'temporary',
+        (p) => {
+          required(p.password);
+          minLength(p.password, MIN_PASSWORD_LENGTH);
+        },
+      );
     },
     {
       submission: {
         action: async (f) => {
           this.error.set(null);
-          const { name, email, role } = f().value();
+          const { name, email, role, access, password } = f().value();
+          const temporary = access === 'temporary' ? password : undefined;
           try {
-            await this.users.create({ name, email, role });
+            await this.users.create({ name, email, role, temporaryPassword: temporary });
           } catch (e) {
             this.error.set(errorKey(e));
             return;
           }
           this.notices.show({
             tone: 'success',
-            text: () => this.t().users.created(name.trim(), email.trim().toLowerCase()),
+            text: () =>
+              temporary
+                ? this.t().users.createdWithPassword(name.trim(), temporary)
+                : this.t().users.created(name.trim(), email.trim().toLowerCase()),
           });
           await this.router.navigateByUrl('/users');
         },

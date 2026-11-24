@@ -52,6 +52,19 @@ export const en: Messages = {
       haveAccount: 'Already have an account?',
       loginLink: 'Sign in',
     },
+    changePassword: {
+      title: 'Change your password',
+      firstTitle: 'Choose your password',
+      intro: 'Type the new password twice.',
+      firstIntro:
+        'You signed in with a temporary password. Choose a new one only you know to continue.',
+      newPassword: 'New password',
+      submit: 'Save password',
+      submitting: 'Saving…',
+      saved: 'Your new password was saved.',
+      cancel: 'Back to the app',
+      logout: 'Sign out',
+    },
     noAccess: {
       title: 'Your account has no access',
       body: (email) =>
@@ -75,6 +88,7 @@ export const en: Messages = {
     tooManyRequests: 'Too many attempts in a row. Wait a few minutes or reset your password.',
     network: 'Cannot reach the server. Check your internet connection and try again.',
     notEnabled: 'Email and password sign-in is not turned on in Firebase.',
+    recentLogin: 'For security, sign out and sign in again before changing your password.',
     permissionDenied: 'You do not have permission to do this.',
     unknown: 'Something went wrong. Please try again.',
   },
@@ -88,6 +102,7 @@ export const en: Messages = {
     users: 'Users',
     openMenu: 'Open menu',
     closeMenu: 'Close menu',
+    changePassword: 'Change password',
     logout: 'Sign out',
   },
   upcoming: {
@@ -278,13 +293,28 @@ export const en: Messages = {
     activated: (name) => `${name} has access again.`,
     deactivated: (name) => `${name} can no longer sign in.`,
     emailSent: (email) => `We emailed ${email} the link to choose a password.`,
+    createdWithPassword: (name, password) =>
+      `${name}'s account was created. Their temporary password is ${password}: give it to them and they will change it when they sign in.`,
+    tempPassword: 'Temporary password',
     created: (name, email) =>
       `${name}’s account is ready. We emailed ${email} a link to choose a password.`,
     form: {
       title: 'New user',
-      intro:
-        'They will get an email with a link to choose their password. If it does not arrive, check their spam folder or resend it from the list.',
+      intro: 'Choose how the person gets their password.',
       role: 'Role',
+      access: 'Password',
+      accessOptions: {
+        temporary: 'Temporary password',
+        email: 'Email link',
+      },
+      accessHelp: {
+        temporary:
+          'You give it to them. The app asks them to change it the first time they sign in.',
+        email: 'They get an email to choose it. Some providers, like AOL, block it.',
+      },
+      password: 'Temporary password',
+      passwordHint: 'You can edit it. The person chooses their own the first time they sign in.',
+      newPassword: 'Generate another',
       submit: 'Create user',
       submitting: 'Creating user…',
       cancel: 'Cancel',

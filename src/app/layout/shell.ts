@@ -1,7 +1,13 @@
 import { NgOptimizedImage } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { LucideDynamicIcon, LucideLogOut, LucideMenu, LucideX } from '@lucide/angular';
+import {
+  LucideDynamicIcon,
+  LucideKeyRound,
+  LucideLogOut,
+  LucideMenu,
+  LucideX,
+} from '@lucide/angular';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../core/auth/auth.service';
@@ -18,6 +24,7 @@ import { ADMIN_NAV_ITEMS, NAV_ITEMS } from './nav-items';
     RouterLinkActive,
     RouterOutlet,
     LucideDynamicIcon,
+    LucideKeyRound,
     LucideLogOut,
     LucideMenu,
     LucideX,

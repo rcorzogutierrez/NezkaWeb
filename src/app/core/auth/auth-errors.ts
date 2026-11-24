@@ -16,6 +16,7 @@ const KEYS: Readonly<Record<string, ErrorKey>> = {
   'auth/too-many-requests': 'tooManyRequests',
   'auth/network-request-failed': 'network',
   'auth/operation-not-allowed': 'notEnabled',
+  'auth/requires-recent-login': 'recentLogin',
   'permission-denied': 'permissionDenied',
   unavailable: 'network',
 };
