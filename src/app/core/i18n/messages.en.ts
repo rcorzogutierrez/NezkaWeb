@@ -143,12 +143,16 @@ export const en: Messages = {
     invalidEmail: 'That email address is not valid.',
     userDisabled: 'This account is disabled. Ask your administrator to turn it on.',
     emailInUse: 'There is already an account with that email.',
-    weakPassword: 'That password is too weak. Use at least 8 characters.',
+    weakPassword: 'That password is too weak. Use at least 6 characters.',
     tooManyRequests: 'Too many attempts in a row. Wait a few minutes or reset your password.',
     network: 'Cannot reach the server. Check your internet connection and try again.',
     notEnabled: 'Email and password sign-in is not turned on in Firebase.',
     recentLogin: 'For security, sign out and sign in again before changing your password.',
     permissionDenied: 'You do not have permission to do this.',
+    protectedAccount:
+      'You cannot delete or change your own account here, or leave the app without administrators.',
+    serverUnavailable:
+      'The server did not answer. If this is the first time, this option may not be turned on in Firebase yet.',
     unknown: 'Something went wrong. Please try again.',
   },
   nav: {
@@ -633,6 +637,29 @@ export const en: Messages = {
     createdWithPassword: (name, password) =>
       `${name}'s account was created. Their temporary password is ${password}: give it to them and they will change it when they sign in.`,
     tempPassword: 'Temporary password',
+    setPassword: 'Set password',
+    setPasswordOf: (name) => `Set a password for ${name}`,
+    delete: 'Delete',
+    deleteOf: (name) => `Delete ${name}`,
+    cancel: 'Cancel',
+    deleteTitle: (name) => `Delete ${name}?`,
+    deleteBody: (email) =>
+      `Their account is deleted and they can no longer sign in. You can create it again with ${email} later. Their estimates are kept.`,
+    deleteConfirm: 'Delete user',
+    deleting: 'Deleting…',
+    deleted: (name) => `${name} was deleted.`,
+    passwordTitle: (name) => `${name}’s password`,
+    passwordIntro:
+      'Type the password you want to give them. It can be simple; Firebase asks for at least 6 characters.',
+    passwordLabel: 'New password',
+    passwordHint: (min) => `At least ${min} characters.`,
+    mustChange: 'Ask them to change it when they sign in',
+    mustChangeHelp: 'They will choose their own the next time they sign in.',
+    passwordSave: 'Save password',
+    passwordSaving: 'Saving…',
+    passwordSet: (name) => `Done: ${name} can sign in with the new password.`,
+    passwordSetMustChange: (name) =>
+      `Done: ${name} signs in with the new password and then chooses their own.`,
     created: (name, email) =>
       `${name}’s account is ready. We emailed ${email} a link to choose a password.`,
     form: {

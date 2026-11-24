@@ -68,11 +68,11 @@ describe('NewUser', () => {
     type(page, 'Temporary password', 'corta');
     await send();
     expect(users.create).not.toHaveBeenCalled();
-    expect(page.textContent).toContain('at least 8');
-    type(page, 'Temporary password', 'Bienvenida2026');
+    expect(page.textContent).toContain('at least 6');
+    type(page, 'Temporary password', 'nezka1');
     await send();
     expect(users.create).toHaveBeenCalledWith(
-      expect.objectContaining({ temporaryPassword: 'Bienvenida2026' }),
+      expect.objectContaining({ temporaryPassword: 'nezka1' }),
     );
   });
 

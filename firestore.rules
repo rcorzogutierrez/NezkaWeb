@@ -81,7 +81,8 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword'])
         && request.resource.data.mustChangePassword == false;
 
-      // Accounts are deactivated, never deleted, so estimates keep their author.
+      // The app never deletes a profile directly: an administrator deletes an account through
+      // the deleteUser Cloud Function (Admin SDK), which removes the sign-in and this document.
       allow delete: if false;
     }
 

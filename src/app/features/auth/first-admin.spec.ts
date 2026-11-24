@@ -50,7 +50,7 @@ describe('FirstAdmin', () => {
     type(page, 'Password', 'short');
     type(page, 'Repeat the password', 'other');
     await send();
-    expect(page.textContent).toContain('Use at least 8 characters.');
+    expect(page.textContent).toContain('Use at least 6 characters.');
     expect(page.textContent).toContain('The passwords do not match.');
     expect(users.createFirstAdmin).not.toHaveBeenCalled();
   });
