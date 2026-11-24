@@ -30,8 +30,10 @@ import {
   type ProductData,
   type ProductTextField,
   normalizeUpc,
+  formatMoney,
   parsePrice,
   priceText,
+  unitPriceFromBox,
 } from '../../core/products/product';
 import { type PhotoChange, ProductsService } from '../../core/products/products.service';
 import { FormAlert } from '../../shared/ui/form-alert';
@@ -39,18 +41,27 @@ import { NoticeService } from '../../shared/ui/notice.service';
 import { TextField } from '../../shared/ui/text-field';
 
 /** What the form edits: like ProductData, but the price is the text typed. */
-type ProductModel = Record<ProductTextField, string> & { price: string; active: boolean };
+type ProductModel = Record<ProductTextField, string> & {
+  price: string;
+  unitPrice: string;
+  active: boolean;
+};
 
 function toModel(p?: Product | null): ProductModel {
   const text = Object.fromEntries(PRODUCT_TEXT_FIELDS.map((f) => [f, p?.[f] ?? ''])) as Record<
     ProductTextField,
     string
   >;
-  return { ...text, price: priceText(p?.pricePerBox ?? 0), active: p?.active ?? true };
+  return {
+    ...text,
+    price: priceText(p?.pricePerBox ?? 0),
+    unitPrice: priceText(p?.pricePerUnit ?? 0),
+    active: p?.active ?? true,
+  };
 }
 
-function toData({ price, ...rest }: ProductModel): ProductData {
-  return { ...rest, pricePerBox: parsePrice(price) ?? 0 };
+function toData({ price, unitPrice, ...rest }: ProductModel): ProductData {
+  return { ...rest, pricePerBox: parsePrice(price) ?? 0, pricePerUnit: parsePrice(unitPrice) ?? 0 };
 }
 
 interface DuplicateWarning {
@@ -169,6 +180,19 @@ export class ProductForm {
     this.newPhotoUrl.set(url);
   }
 
+  /** Price per box ÷ units per box, offered while the price per unit is something else. */
+  protected readonly unitSuggestion = computed(() => {
+    const m = this.model();
+    const value = unitPriceFromBox(parsePrice(m.price) ?? 0, m.pack);
+    if (value === null || value === parsePrice(m.unitPrice)) return null;
+    return { value, text: formatMoney(value), units: m.pack.trim() };
+  });
+
+  protected useUnitSuggestion(): void {
+    const s = this.unitSuggestion();
+    if (s) this.model.update((m) => ({ ...m, unitPrice: priceText(s.value) }));
+  }
+
   protected readonly error = signal<ErrorKey | null>(null);
   private readonly checked = signal<DuplicateWarning | null>(null);
   /** Products that already use this ref or UPC, once the person has been warned. */
@@ -183,6 +207,9 @@ export class ProductForm {
       required(path.description);
       for (const f of PRODUCT_TEXT_FIELDS) maxLength(path[f], PRODUCT_MAX_LENGTH[f]);
       validate(path.price, ({ value }) =>
+        parsePrice(value()) === null ? { kind: 'price' } : null,
+      );
+      validate(path.unitPrice, ({ value }) =>
         parsePrice(value()) === null ? { kind: 'price' } : null,
       );
     },

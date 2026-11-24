@@ -7,6 +7,7 @@ import {
   normalizeUpc,
   parsePrice,
   priceText,
+  unitPriceFromBox,
 } from './product';
 import { testProduct } from '../../../testing/products-service.mock';
 
@@ -67,5 +68,16 @@ describe('product helpers', () => {
     expect(matchesProductSearch(p, '012345')).toBe(true);
     expect(matchesProductSearch(p, '12 guayaba')).toBe(true);
     expect(matchesProductSearch(p, 'mango')).toBe(false);
+  });
+});
+
+describe('unitPriceFromBox', () => {
+  it('divides the case price by a plain number of units', () => {
+    expect(unitPriceFromBox(21, '24')).toBe(0.88);
+    expect(unitPriceFromBox(24, ' 12 ')).toBe(2);
+    expect(unitPriceFromBox(24, '4/750PC')).toBeNull();
+    expect(unitPriceFromBox(24, 'N12')).toBeNull();
+    expect(unitPriceFromBox(24, '0')).toBeNull();
+    expect(unitPriceFromBox(0, '24')).toBeNull();
   });
 });

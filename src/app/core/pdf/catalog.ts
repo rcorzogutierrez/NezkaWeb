@@ -31,6 +31,7 @@ export interface CatalogInput {
 const PHOTO_BOX = { w: 50, h: 44 };
 const HEADER_H = 29;
 const PRICE_W = 52;
+const UNIT_W = 48;
 const TEXT = 7.6;
 
 interface Column {
@@ -40,9 +41,13 @@ interface Column {
   readonly align: 'left' | 'center' | 'right';
 }
 
-/** Columns of the desktop catalog; without prices the description takes the space. */
-function columns(showPrices: boolean): Column[] {
-  const extra = showPrices ? 0 : PRICE_W;
+/**
+ * Columns of the desktop catalog; without prices the description takes the space. The price per
+ * unit gets a column only when some product has one.
+ */
+function columns(showPrices: boolean, withUnit: boolean): Column[] {
+  const unit = showPrices && withUnit;
+  const extra = (showPrices ? 0 : PRICE_W) - (unit ? UNIT_W : 0);
   const cols: Column[] = [
     { title: ['PHOTO'], x: MARGIN, w: 60, align: 'center' },
     { title: ['REF. / ITEM DESCRIPTION'], x: 100, w: 184 + extra, align: 'left' },
@@ -56,6 +61,10 @@ function columns(showPrices: boolean): Column[] {
   ] as const) {
     cols.push({ title: [...title], x, w, align });
     x += w;
+  }
+  if (unit) {
+    cols.push({ title: ['PRICE', 'PER UNIT'], x, w: UNIT_W, align: 'right' });
+    x += UNIT_W;
   }
   if (showPrices) cols.push({ title: ['PRICE', 'PER BOX'], x, w: PRICE_W, align: 'right' });
   return cols;
@@ -73,7 +82,8 @@ export function catalogFileName(date: string): string {
 /** Draws the catalog, starting on the current page. Returns the pages it used. */
 export function drawCatalog(doc: jsPDF, input: CatalogInput, brand: BrandImages): number {
   const p = new Painter(doc);
-  const cols = columns(input.showPrices);
+  const withUnit = input.products.some((product) => product.pricePerUnit);
+  const cols = columns(input.showPrices, withUnit);
 
   const rows = input.products.map((product) => {
     const photo = input.photos.get(product.id) ?? null;
@@ -145,7 +155,14 @@ export function drawCatalog(doc: jsPDF, input: CatalogInput, brand: BrandImages)
     at(4, row.product.pack, 7.2);
     at(5, row.product.qtyPerPallet, 7.2);
     if (input.showPrices) {
-      at(6, row.product.pricePerBox ? money(row.product.pricePerBox) : '—', TEXT, { bold: true });
+      const last = cols.length - 1;
+      if (withUnit) {
+        const unit = row.product.pricePerUnit;
+        at(last - 1, unit ? money(unit) : '—', TEXT, { color: MUTED });
+      }
+      at(last, row.product.pricePerBox ? money(row.product.pricePerBox) : '—', TEXT, {
+        bold: true,
+      });
     }
     y += h;
   });
@@ -164,7 +181,7 @@ function titleBlock(p: Painter, input: CatalogInput): number {
   });
   const count = input.products.length;
   let detail = `${count} product${count === 1 ? '' : 's'}`;
-  if (input.showPrices) detail += ' · Prices in USD per box, subject to change without notice';
+  if (input.showPrices) detail += ' · Prices in USD, subject to change without notice';
   p.text(detail, left, top + 26, CONTENT_W - 140, 18, 7.2, { color: MUTED });
   const right = MARGIN + CONTENT_W / 2;
   const w = CONTENT_W / 2 - 14;

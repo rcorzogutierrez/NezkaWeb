@@ -1,6 +1,6 @@
 import type { Timestamp } from 'firebase/firestore';
 import { fold } from '../clients/client';
-import type { Product } from '../products/product';
+import { type Product, productKey } from '../products/product';
 
 /** Life of a proforma, as in the desktop app (Borrador, Enviado, Aceptado, Rechazado). */
 export const ESTIMATE_STATUSES = ['draft', 'sent', 'accepted', 'rejected'] as const;
@@ -19,6 +19,8 @@ export interface EstimateLine {
   readonly pack: string;
   readonly boxes: number;
   readonly pricePerBox: number;
+  /** The product's price per unit when the line was added; 0 when it has none. */
+  readonly pricePerUnit: number;
 }
 
 /** What a person edits on an estimate. */
@@ -118,7 +120,32 @@ export function lineFromProduct(p: Product, boxes = 1): EstimateLine {
     pack: p.pack,
     boxes,
     pricePerBox: p.pricePerBox,
+    pricePerUnit: p.pricePerUnit,
   };
+}
+
+/**
+ * Lines saved without their product (estimates imported before their products were on the web)
+ * find it again by reference or UPC plus description, so they get its photo.
+ */
+export function linkLines(
+  lines: readonly EstimateLine[],
+  products: readonly Product[],
+): EstimateLine[] {
+  if (lines.every((l) => l.productId)) return [...lines];
+  const ids = new Map<string, string>();
+  for (const p of products) for (const key of productKey(p)) if (!ids.has(key)) ids.set(key, p.id);
+  return lines.map((l) =>
+    l.productId
+      ? l
+      : {
+          ...l,
+          productId:
+            productKey(l)
+              .map((k) => ids.get(k))
+              .find(Boolean) ?? '',
+        },
+  );
 }
 
 /** Adds a product, or more boxes to its line when it is already on the estimate. */
@@ -162,6 +189,7 @@ export function toLine(data: Record<string, unknown>): EstimateLine {
     pack: text(data, 'pack'),
     boxes: num(data, 'boxes'),
     pricePerBox: num(data, 'pricePerBox'),
+    pricePerUnit: num(data, 'pricePerUnit'),
   };
 }
 
@@ -207,6 +235,7 @@ export function normalizeEstimate(data: EstimateData): EstimateData {
       pack: l.pack,
       boxes: Math.round(l.boxes),
       pricePerBox: Math.round(l.pricePerBox * 100) / 100,
+      pricePerUnit: Math.round((l.pricePerUnit || 0) * 100) / 100,
     })),
   };
 }

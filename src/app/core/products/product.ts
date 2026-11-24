@@ -16,6 +16,8 @@ export type ProductTextField = (typeof PRODUCT_TEXT_FIELDS)[number];
 
 export type ProductData = Record<ProductTextField, string> & {
   pricePerBox: number;
+  /** Price of one unit inside the box; 0 when it is not given. */
+  pricePerUnit: number;
   active: boolean;
 };
 
@@ -54,7 +56,7 @@ export function emptyProduct(): ProductData {
     ProductTextField,
     string
   >;
-  return { ...text, pricePerBox: 0, active: true };
+  return { ...text, pricePerBox: 0, pricePerUnit: 0, active: true };
 }
 
 export function toProduct(id: string, data: Record<string, unknown>): Product {
@@ -62,10 +64,12 @@ export function toProduct(id: string, data: Record<string, unknown>): Product {
     PRODUCT_TEXT_FIELDS.map((f) => [f, typeof data[f] === 'string' ? data[f] : '']),
   ) as Record<ProductTextField, string>;
   const price = Number(data['pricePerBox']);
+  const unit = Number(data['pricePerUnit'] ?? 0);
   return {
     id,
     ...text,
     pricePerBox: Number.isFinite(price) ? price : 0,
+    pricePerUnit: Number.isFinite(unit) ? unit : 0,
     active: data['active'] !== false,
     photoPath: typeof data['photoPath'] === 'string' ? data['photoPath'] : '',
     photoUrl: typeof data['photoUrl'] === 'string' ? data['photoUrl'] : '',
@@ -81,7 +85,12 @@ export function normalizeProduct(data: ProductData): ProductData {
     ProductTextField,
     string
   >;
-  return { ...text, pricePerBox: Math.round(data.pricePerBox * 100) / 100, active: data.active };
+  return {
+    ...text,
+    pricePerBox: Math.round(data.pricePerBox * 100) / 100,
+    pricePerUnit: Math.round(data.pricePerUnit * 100) / 100,
+    active: data.active,
+  };
 }
 
 /** UPC as compared for duplicates: "0 12345-67890 5" equals "012345678905". */
@@ -154,6 +163,28 @@ export function parsePrice(text: string): number | null {
 }
 
 /** The price as it is shown in the form field: "24.00", or empty for 0. */
+/**
+ * Price per box divided by the units in it, when the pack is a plain number of units
+ * ("24", not "4/750PC"): the suggestion for the price per unit. Null when it cannot be worked out.
+ */
+export function unitPriceFromBox(pricePerBox: number, pack: string): number | null {
+  const units = /^\s*(\d+)\s*$/.exec(pack)?.[1];
+  if (!units || !pricePerBox || Number(units) <= 0) return null;
+  return Math.round((pricePerBox / Number(units)) * 100) / 100;
+}
+
 export function priceText(value: number): string {
   return value ? value.toFixed(2) : '';
+}
+
+/**
+ * Already in the web app: same description and the same UPC or reference. The description is
+ * always part of it, because the desktop catalog has different products sharing a UPC.
+ */
+export function productKey(p: Pick<ProductData, 'ref' | 'upc' | 'description'>): string[] {
+  const description = fold(p.description);
+  const keys = [`ref:${fold(p.ref)}|${description}`];
+  const upc = normalizeUpc(p.upc);
+  if (upc) keys.push(`upc:${upc}|${description}`);
+  return keys;
 }

@@ -20,6 +20,7 @@ export function testEstimate(overrides: Partial<Estimate> = {}): Estimate {
       pack: '24',
       boxes: 10,
       pricePerBox: 24,
+      pricePerUnit: 1,
     },
   ];
   const sums = totals(lines);

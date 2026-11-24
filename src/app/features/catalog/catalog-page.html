@@ -190,6 +190,11 @@
                     class="px-3 py-2 text-right font-semibold whitespace-nowrap text-ink tabular-nums"
                   >
                     {{ p.pricePerBox ? money(p.pricePerBox) : '—' }}
+                    @if (p.pricePerUnit) {
+                      <span class="block text-xs font-medium text-ink-muted">
+                        {{ t().products.perUnit(money(p.pricePerUnit)) }}
+                      </span>
+                    }
                   </td>
                 </tr>
               }
