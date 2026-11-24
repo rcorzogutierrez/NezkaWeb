@@ -44,20 +44,8 @@ interface Column {
   readonly align: 'left' | 'center' | 'right';
 }
 
-/** Columns of the reference proforma PF-2026-1028. */
+/** Columns of the reference proforma PF-2026-1028, plus the price per unit. */
 const COLUMNS: readonly Column[] = [
-  { key: 'photo', title: ['PHOTO'], x: MARGIN, w: 46, align: 'center' },
-  { key: 'desc', title: ['REF. / ITEM DESCRIPTION'], x: 86, w: 162, align: 'left' },
-  { key: 'upc', title: ['UPC'], x: 253, w: 70, align: 'left' },
-  { key: 'size', title: ['ITEM SIZE', 'UNIT'], x: 324, w: 52, align: 'left' },
-  { key: 'pack', title: ['PACK'], x: 384, w: 58, align: 'center' },
-  { key: 'box', title: ['BOX'], x: 444, w: 30, align: 'center' },
-  { key: 'price', title: ['PRICE', 'PER BOX'], x: 474, w: 45, align: 'right' },
-  { key: 'total', title: ['TOTAL'], x: 519, w: 54, align: 'right' },
-];
-
-/** The same, with room for the price per unit when any line has one. */
-const COLUMNS_WITH_UNIT: readonly Column[] = [
   { key: 'photo', title: ['PHOTO'], x: MARGIN, w: 46, align: 'center' },
   { key: 'desc', title: ['REF. / ITEM DESCRIPTION'], x: 86, w: 142, align: 'left' },
   { key: 'upc', title: ['UPC'], x: 232, w: 66, align: 'left' },
@@ -68,10 +56,6 @@ const COLUMNS_WITH_UNIT: readonly Column[] = [
   { key: 'price', title: ['PRICE', 'PER BOX'], x: 473, w: 46, align: 'right' },
   { key: 'total', title: ['TOTAL'], x: 519, w: 54, align: 'right' },
 ];
-
-function columnsFor(estimate: Estimate): readonly Column[] {
-  return estimate.lines.some((l) => l.pricePerUnit) ? COLUMNS_WITH_UNIT : COLUMNS;
-}
 
 /** The cell's box; right-aligned columns keep 4 pt from the next one. */
 function cell(cols: readonly Column[], key: ColumnKey) {
@@ -92,7 +76,7 @@ export function drawProforma(doc: jsPDF, input: ProformaInput, brand: BrandImage
   const p = new Painter(doc);
   const { estimate } = input;
   const label = estimate.clientName;
-  const cols = columnsFor(estimate);
+  const cols = COLUMNS;
   const rows = estimate.lines.map((line) => measure(p, cols, line, input.photos));
 
   let page = 1;
@@ -228,9 +212,7 @@ function tableRow(p: Painter, cols: readonly Column[], row: Row, y: number, shad
   at('size', line.size, 6.8, { color: MUTED });
   at('pack', line.pack, TEXT, {});
   at('box', line.boxes.toLocaleString('en-US'), TEXT, { bold: true });
-  if (cols.some((c) => c.key === 'unit')) {
-    at('unit', line.pricePerUnit ? money(line.pricePerUnit) : '—', TEXT, { color: MUTED });
-  }
+  at('unit', line.pricePerUnit ? money(line.pricePerUnit) : '—', TEXT, { color: MUTED });
   at('price', money(line.pricePerBox), TEXT, {});
   at('total', money(lineTotal(line)), TEXT, { bold: true });
 }
