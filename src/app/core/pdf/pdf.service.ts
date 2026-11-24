@@ -14,14 +14,26 @@ export class PdfService {
   private brand: Promise<BrandImages> | null = null;
 
   /** The proforma of an estimate, with the client's address and the product photos. */
-  async proforma(estimate: Estimate): Promise<Blob> {
-    const [lazy, brand, client, photos] = await Promise.all([
+  proforma(estimate: Estimate): Promise<Blob> {
+    return this.proformas([estimate]);
+  }
+
+  /** Several proformas in one PDF, each starting on its own page, in the given order. */
+  async proformas(estimates: readonly Estimate[]): Promise<Blob> {
+    const clientIds = [...new Set(estimates.map((e) => e.clientId).filter(Boolean))];
+    const [lazy, brand, clients, photos] = await Promise.all([
       import('./pdf.lazy'),
       this.brandImages(),
-      estimate.clientId ? this.clients.get(estimate.clientId).catch(() => null) : null,
-      this.photos(estimate.lines.map((l) => l.productId)),
+      Promise.all(clientIds.map((id) => this.clients.get(id).catch(() => null))),
+      this.photos(estimates.flatMap((e) => e.lines.map((l) => l.productId))),
     ]);
-    return lazy.proformasPdf([{ estimate, client, photos }], brand);
+    const byId = new Map(clientIds.map((id, i) => [id, clients[i] ?? null]));
+    const inputs = estimates.map((estimate) => ({
+      estimate,
+      client: byId.get(estimate.clientId) ?? null,
+      photos,
+    }));
+    return lazy.proformasPdf(inputs, brand);
   }
 
   /** The catalog of the given products, in that order, with or without prices. */

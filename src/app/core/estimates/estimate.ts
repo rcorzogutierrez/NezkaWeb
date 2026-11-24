@@ -237,3 +237,8 @@ export function proformaFileName(e: Pick<Estimate, 'number' | 'clientName'>): st
   const safe = (s: string) => s.replace(/[\\/:*?"<>|]+/g, '').trim();
   return `Proforma_${safe(e.number)}_${safe(e.clientName) || 'client'}.pdf`;
 }
+
+/** Several proformas in one file: `Proformas_2026-11-24.pdf`. */
+export function proformasFileName(date: string): string {
+  return `Proformas_${date}.pdf`;
+}

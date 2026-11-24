@@ -5,15 +5,31 @@
     </h1>
     <p class="mt-1.5 text-base text-ink-muted">{{ t().products.intro }}</p>
   </div>
-  <a routerLink="new" class="btn-primary">
-    <svg lucidePlus class="size-[1.125rem]" aria-hidden="true"></svg>
-    {{ t().products.new }}
-  </a>
+  <div class="flex flex-wrap items-center gap-2">
+    <button
+      type="button"
+      class="btn-secondary"
+      [title]="exportable().length ? t().products.exportMissingHint : t().products.exportNothing"
+      [attr.aria-busy]="exporting()"
+      [disabled]="exporting() || !exportable().length"
+      (click)="exportMissing()"
+    >
+      <svg lucideFileSpreadsheet class="size-[1.125rem]" aria-hidden="true"></svg>
+      {{ t().products.exportMissing }}
+    </button>
+    <a routerLink="new" class="btn-primary">
+      <svg lucidePlus class="size-[1.125rem]" aria-hidden="true"></svg>
+      {{ t().products.new }}
+    </a>
+  </div>
 </header>
 
-<div aria-live="polite" class="mt-6 empty:hidden">
+<div aria-live="polite" class="mt-6 space-y-3 empty:hidden">
   @if (notice(); as n) {
     <app-form-alert [tone]="n.tone">{{ n.text() }}</app-form-alert>
+  }
+  @if (exportFailed()) {
+    <app-form-alert>{{ t().products.exportFailed }}</app-form-alert>
   }
 </div>
 

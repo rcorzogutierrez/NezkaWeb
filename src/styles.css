@@ -92,7 +92,7 @@
   }
 
   .btn-secondary {
-    @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-line-strong bg-white px-5 text-[0.9375rem] font-semibold text-ink transition-colors duration-150 hover:bg-canvas;
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-line-strong bg-white px-5 text-[0.9375rem] font-semibold text-ink transition-colors duration-150 hover:bg-canvas disabled:cursor-not-allowed disabled:text-ink-subtle disabled:hover:bg-white;
   }
 
   .btn-danger {

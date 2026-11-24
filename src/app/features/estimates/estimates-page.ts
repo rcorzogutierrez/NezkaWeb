@@ -1,6 +1,7 @@
-import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
+import { Component, DOCUMENT, computed, inject, input, linkedSignal, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
+  LucideExternalLink,
   LucideFileDown,
   LucideFileText,
   LucideLoaderCircle,
@@ -18,6 +19,8 @@ import {
   isPending,
   matchesEstimateSearch,
   proformaFileName,
+  proformasFileName,
+  todayIso,
 } from '../../core/estimates/estimate';
 import { EstimatesService } from '../../core/estimates/estimates.service';
 import { I18nService } from '../../core/i18n/i18n.service';
@@ -36,6 +39,7 @@ const STATUS_FILTERS: readonly StatusFilter[] = ['open', 'all', ...ESTIMATE_STAT
   selector: 'app-estimates-page',
   imports: [
     RouterLink,
+    LucideExternalLink,
     LucideFileDown,
     LucideFileText,
     LucideLoaderCircle,
@@ -50,6 +54,7 @@ const STATUS_FILTERS: readonly StatusFilter[] = ['open', 'all', ...ESTIMATE_STAT
 })
 export class EstimatesPage {
   private readonly router = inject(Router);
+  private readonly window = inject(DOCUMENT).defaultView;
   private readonly pdf = inject(PdfService);
   private readonly i18n = inject(I18nService);
   protected readonly t = this.i18n.t;
@@ -110,6 +115,57 @@ export class EstimatesPage {
     try {
       this.pdf.download(await this.pdf.proforma(e), proformaFileName(e));
     } catch {
+      this.pdfFailed.set(true);
+    } finally {
+      this.pdfBusy.set(null);
+    }
+  }
+
+  // Marked estimates, printed or saved together in one PDF (like the desktop app).
+  private readonly marked = signal<ReadonlySet<string>>(new Set());
+  /** Marked and still listed, in the list's order: what goes into the PDF. */
+  protected readonly markedShown = computed(() => {
+    const marked = this.marked();
+    return this.shown().filter((e) => marked.has(e.id));
+  });
+  protected readonly allMarked = computed(
+    () => this.shown().length > 0 && this.markedShown().length === this.shown().length,
+  );
+
+  protected isMarked(id: string): boolean {
+    return this.marked().has(id);
+  }
+
+  protected toggleMark(id: string, on: boolean): void {
+    this.marked.update((set) => {
+      const next = new Set(set);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  protected markAll(on: boolean): void {
+    this.marked.set(on ? new Set(this.shown().map((e) => e.id)) : new Set());
+  }
+
+  protected async markedPdf(action: 'download' | 'open'): Promise<void> {
+    const list = this.markedShown();
+    if (!list.length || this.pdfBusy()) return;
+    // Opened before the wait, or the browser treats the new tab as a pop-up.
+    const tab = action === 'open' ? (this.window?.open('', '_blank') ?? null) : null;
+    this.pdfBusy.set('marked');
+    this.pdfFailed.set(false);
+    try {
+      const blob = await this.pdf.proformas(list);
+      if (action === 'open') this.pdf.open(blob, tab);
+      else
+        this.pdf.download(
+          blob,
+          list.length === 1 ? proformaFileName(list[0]) : proformasFileName(todayIso()),
+        );
+    } catch {
+      tab?.close();
       this.pdfFailed.set(true);
     } finally {
       this.pdfBusy.set(null);
