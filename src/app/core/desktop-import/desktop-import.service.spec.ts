@@ -30,7 +30,9 @@ describe('DesktopImportService', () => {
       ],
     });
     products.save.mockImplementation(async (_id, data) => {
-      if (data.description === 'Roto') throw new Error('x');
+      if (data.description === 'Roto') {
+        throw Object.assign(new Error('denied'), { code: 'storage/unauthorized' });
+      }
       return 'id';
     });
     const items = ['Mango', 'Roto', 'Guayaba'].map((description) => ({
@@ -46,7 +48,12 @@ describe('DesktopImportService', () => {
     expect(clients.createMany).toHaveBeenCalledWith([expect.objectContaining({ name: 'Bodega' })]);
     expect(products.save).toHaveBeenCalledTimes(3);
     expect(products.save.mock.calls[0][2]).toEqual({ kind: 'keep' });
-    expect(result).toEqual({ products: 2, clients: 1, estimates: 0, failed: ['Roto'] });
+    expect(result).toEqual({
+      products: 2,
+      clients: 1,
+      estimates: 0,
+      failed: [{ name: 'Roto', reason: 'storage/unauthorized' }],
+    });
     expect(progress.at(-1)).toBe(4);
   });
 
@@ -88,7 +95,12 @@ describe('DesktopImportService', () => {
       estimate('PF-1', 'tree logistics'),
       estimate('PF-2', 'Nadie'),
     ]);
-    expect(result).toEqual({ products: 0, clients: 0, estimates: 1, failed: ['PF-2'] });
+    expect(result).toEqual({
+      products: 0,
+      clients: 0,
+      estimates: 1,
+      failed: [{ name: 'PF-2', reason: 'client not found' }],
+    });
     expect(estimates.save).toHaveBeenCalledTimes(1);
     const [id, data, client] = estimates.save.mock.calls[0];
     expect(id).toBeUndefined();

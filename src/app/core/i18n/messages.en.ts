@@ -53,7 +53,22 @@ export const en: Messages = {
     cancel: 'Cancel',
     done: (products, clients, estimates) =>
       `Imported ${products} ${products === 1 ? 'product' : 'products'}, ${clients} ${clients === 1 ? 'client' : 'clients'} and ${estimates} ${estimates === 1 ? 'estimate' : 'estimates'}.`,
-    failed: (names) => `These could not be saved: ${names}. Import the file again to retry.`,
+    failed: (count, details) =>
+      `${count === 1 ? 'One could not be saved' : `${count} could not be saved`}. ${details} Import the file again to retry.`,
+    failedGroup: (reason, names) => {
+      const known: Record<string, string> = {
+        'storage/unauthorized': 'Firebase Storage did not allow the photo upload',
+        'storage/unauthenticated': 'The session expired while uploading the photos',
+        'storage/quota-exceeded': 'The Firebase Storage quota is full',
+        'permission-denied': 'Firestore rejected the data',
+        unavailable: 'No connection to Firebase',
+        'client not found': 'Its client is not in the web app',
+        'no lines': 'It has no lines with boxes',
+      };
+      const shown = names.slice(0, 3).join(', ');
+      const more = names.length > 3 ? ` and ${names.length - 3} more` : '';
+      return `${known[reason] ?? 'Error'} [${reason}]: ${shown}${more}.`;
+    },
     colStatus: 'Status',
     colPhoto: 'Photo',
     noPhoto: 'No photo',

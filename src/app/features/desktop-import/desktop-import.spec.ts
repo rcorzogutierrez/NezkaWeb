@@ -14,7 +14,23 @@ import {
   provideEstimatesServiceMock,
 } from '../../../testing/estimates-service.mock';
 import { useLanguage } from '../../../testing/setup';
-import { DesktopImport } from './desktop-import';
+import { es } from '../../core/i18n/messages.es';
+import { DesktopImport, failureText } from './desktop-import';
+
+describe('failureText', () => {
+  it('says each cause once, with its code and a few of the names', () => {
+    const failed = ['A', 'B', 'C', 'D', 'E'].map((name) => ({
+      name,
+      reason: 'storage/unauthorized',
+    }));
+    const text = failureText(es.desktopImport, [...failed, { name: 'PF-2', reason: 'x/y' }]);
+    expect(text).toBe(
+      '6 no se pudieron guardar. Firebase Storage no dio permiso para subir la foto ' +
+        '[storage/unauthorized]: A, B, C y 2 más. Error [x/y]: PF-2. ' +
+        'Vuelve a importar el archivo para reintentarlo.',
+    );
+  });
+});
 
 describe('DesktopImport', () => {
   let harness: RouterTestingHarness;
