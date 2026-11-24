@@ -20,6 +20,14 @@ const KEYS: Readonly<Record<string, ErrorKey>> = {
   'permission-denied': 'permissionDenied',
   unavailable: 'network',
   'app/user-exists': 'userExists',
+  // Cloud Functions (delete a user, set a password).
+  'functions/unauthenticated': 'permissionDenied',
+  'functions/permission-denied': 'permissionDenied',
+  'functions/invalid-argument': 'weakPassword',
+  'functions/failed-precondition': 'protectedAccount',
+  'functions/not-found': 'serverUnavailable',
+  'functions/internal': 'serverUnavailable',
+  'functions/unavailable': 'network',
 };
 
 export function errorKey(error: unknown): ErrorKey {
