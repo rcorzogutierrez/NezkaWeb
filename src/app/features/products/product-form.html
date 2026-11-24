@@ -114,6 +114,7 @@
             class="col-span-1 sm:col-span-2"
             [field]="productForm.ref"
             [label]="t().products.form.ref"
+            [hint]="refSuggested() ? t().products.form.refSuggested : ''"
             autocomplete="off"
           />
           <app-text-field

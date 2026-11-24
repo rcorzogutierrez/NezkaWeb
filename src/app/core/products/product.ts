@@ -98,6 +98,19 @@ export function normalizeUpc(upc: string): string {
   return upc.replace(/[\s-]/g, '');
 }
 
+/**
+ * The reference proposed for a new product: one more than the highest numeric reference, with
+ * at least two digits like the catalog (01, 02 … 104).
+ */
+export function nextRef(products: readonly Pick<Product, 'ref'>[]): string {
+  const numbers = products
+    .map((p) => p.ref.trim())
+    .filter((r) => /^\d+$/.test(r))
+    .map(Number);
+  const next = (numbers.length ? Math.max(...numbers) : 0) + 1;
+  return String(next).padStart(2, '0');
+}
+
 /** Numeric references first, in numeric order (2 before 10), like the desktop app. */
 export function compareRefs(a: Pick<Product, 'ref' | 'description'>, b: typeof a): number {
   const na = /^\d+$/.test(a.ref) ? Number(a.ref) : null;

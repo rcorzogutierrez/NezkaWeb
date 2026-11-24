@@ -3,11 +3,13 @@ import {
   DestroyRef,
   type ElementRef,
   computed,
+  effect,
   inject,
   input,
   linkedSignal,
   resource,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { FormField, FormRoot, form, maxLength, required, validate } from '@angular/forms/signals';
@@ -31,6 +33,7 @@ import {
   type ProductTextField,
   normalizeUpc,
   formatMoney,
+  nextRef,
   parsePrice,
   priceText,
   unitPriceFromBox,
@@ -118,6 +121,13 @@ export class ProductForm {
 
   private readonly model = linkedSignal<ProductModel>(() => toModel(this.existing.value()));
 
+  /** New products get the next free catalog reference, which the person can change. */
+  private readonly suggestedRef = resource({
+    params: () => (this.id() ? undefined : true),
+    loader: async () => nextRef(await this.products.list()),
+  });
+  protected readonly refSuggested = signal(false);
+
   // The photo: kept, replaced by a prepared file, or removed. Saved together with the form.
   protected readonly photo = signal<PhotoChange>({ kind: 'keep' });
   protected readonly photoBusy = signal(false);
@@ -133,6 +143,12 @@ export class ProductForm {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.setNewPhotoUrl(null));
+    effect(() => {
+      const ref = this.suggestedRef.hasValue() ? this.suggestedRef.value() : null;
+      if (!ref || this.editing() || untracked(this.model).ref) return;
+      this.model.update((m) => ({ ...m, ref }));
+      this.refSuggested.set(true);
+    });
   }
 
   protected async pickPhoto(file: File | undefined): Promise<void> {

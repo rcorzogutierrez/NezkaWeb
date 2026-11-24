@@ -440,6 +440,7 @@ export const es = {
       pack: 'Pack',
       price: 'Precio por caja',
       priceHint: 'En dólares, por ejemplo 24.00',
+      refSuggested: 'Siguiente número libre.',
       unitPrice: 'Precio por unidad',
       unitPriceHint: 'Opcional, por ejemplo 1.00',
       unitPriceUse: (price: string, units: string) => `Usar ${price} (caja ÷ ${units})`,

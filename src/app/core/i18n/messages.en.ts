@@ -434,6 +434,7 @@ export const en: Messages = {
       pack: 'Pack',
       price: 'Price per case',
       priceHint: 'In dollars, for example 24.00',
+      refSuggested: 'Next free number.',
       unitPrice: 'Price per unit',
       unitPriceHint: 'Optional, for example 1.00',
       unitPriceUse: (price, units) => `Use ${price} (case ÷ ${units})`,

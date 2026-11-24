@@ -108,6 +108,12 @@ describe('ProductForm', () => {
     expect(TestBed.inject(NoticeService).take()?.text()).toBe('Guava Paste was saved.');
   });
 
+  it('proposes the next free reference for a new product', async () => {
+    await open('/products/new');
+    await vi.waitFor(() => expect(inputByLabel(page, 'Ref.').value).toBe('13'));
+    expect(page.textContent).toContain('Next free number.');
+  });
+
   it('requires a description and a valid price', async () => {
     await open('/products/new');
     type(page, 'Price per case', '12,5,0');
