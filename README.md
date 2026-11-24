@@ -23,7 +23,7 @@ Requisitos: Node 22.12 o superior y Java 21 (solo para el emulador de Firestore)
 
 ```bash
 npm install
-npm run emulators   # Auth y Firestore locales, en otra terminal
+npm run emulators   # Auth, Firestore y Storage locales, en otra terminal
 npm start           # http://localhost:4200
 ```
 
@@ -48,14 +48,15 @@ Una sola vez, en el proyecto `nezka-web`:
 
 1. **Authentication › Método de acceso**: activa Correo electrónico/contraseña.
 2. **Firestore Database**: crea la base de datos.
-3. Crea una cuenta de servicio en Google Cloud (IAM › Cuentas de servicio) con los roles Firebase Hosting Admin, Firebase Rules Admin, API Keys Viewer, Service Account User y Service Usage Consumer. Descarga una clave JSON.
-4. En GitHub, en **Settings › Secrets and variables › Actions**, crea el secreto `FIREBASE_SERVICE_ACCOUNT` con el contenido de ese JSON. Luego borra el archivo.
+3. **Storage**: pulsa «Comenzar» para crear el bucket `nezka-web.firebasestorage.app` (plan Blaze). Ahí van las fotos de los productos.
+4. Crea una cuenta de servicio en Google Cloud (IAM › Cuentas de servicio) con los roles Firebase Hosting Admin, Firebase Rules Admin, Cloud Storage for Firebase Admin, API Keys Viewer, Service Account User y Service Usage Consumer. Descarga una clave JSON.
+5. En GitHub, en **Settings › Secrets and variables › Actions**, crea el secreto `FIREBASE_SERVICE_ACCOUNT` con el contenido de ese JSON. Luego borra el archivo.
 
-Desde entonces, cada fusión a `main` publica Hosting y las reglas de Firestore con el flujo `Deploy`. Sin el secreto el flujo se omite. También se puede publicar a mano con `npx firebase login` y `npm run deploy`.
+Desde entonces, cada fusión a `main` publica Hosting y las reglas de Firestore y de Storage con el flujo `Deploy`. Sin el secreto el flujo se omite. También se puede publicar a mano con `npx firebase login` y `npm run deploy`.
 
 Después del primer deploy, abre el sitio y usa el enlace **Crea la cuenta de administrador** de la pantalla de acceso para crear el primer administrador.
 
-La configuración web de Firebase está en `src/environments/environment.ts`. No es secreta: los datos los protegen Firebase Auth y las reglas de `firestore.rules`.
+La configuración web de Firebase está en `src/environments/environment.ts`. No es secreta: los datos los protegen Firebase Auth y las reglas de `firestore.rules` y `storage.rules`.
 
 ## Estructura
 

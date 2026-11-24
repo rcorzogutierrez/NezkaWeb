@@ -126,6 +126,41 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Products: every active user reads, creates and edits them; only administrators delete.
+    function validProduct(data) {
+      return data.keys().hasOnly(['ref', 'description', 'upc', 'size', 'pack', 'qtyPerPallet',
+          'pricePerBox', 'notes', 'active', 'photoPath', 'photoUrl',
+          'createdAt', 'createdBy', 'updatedAt', 'updatedBy'])
+        && data.description is string && data.description.size() > 0
+        && data.description.size() <= 200
+        && shortText(data, 'ref', 20)
+        && shortText(data, 'upc', 40)
+        && shortText(data, 'size', 60)
+        && shortText(data, 'pack', 40)
+        && shortText(data, 'qtyPerPallet', 40)
+        && shortText(data, 'notes', 2000)
+        && data.pricePerBox is number && data.pricePerBox >= 0 && data.pricePerBox < 1000000
+        && data.active is bool
+        && shortText(data, 'photoPath', 300)
+        && shortText(data, 'photoUrl', 1000)
+        && (data.photoPath == '' || data.photoPath.matches('^products/[^/]+/[^/]+$'))
+        && data.updatedAt == request.time
+        && data.updatedBy == request.auth.uid;
+    }
+
+    match /products/{productId} {
+      allow read: if isActive();
+      allow create: if isActive()
+        && validProduct(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isActive()
+        && validProduct(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy;
+      allow delete: if isAdmin();
+    }
+
     match /settings/setup {
       // The login page asks whether the first administrator still has to be created.
       allow get: if true;

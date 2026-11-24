@@ -45,7 +45,7 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
       - name: firebase deploy
         if: env.HAS_KEY == 'true'
-        run: npx firebase deploy --only hosting,firestore:rules --project nezka-web --non-interactive
+        run: npx firebase deploy --only hosting,firestore:rules,storage --project nezka-web --non-interactive
       - name: Borrar credenciales
         if: always() && env.HAS_KEY == 'true'
         run: rm -f "$RUNNER_TEMP/sa.json"

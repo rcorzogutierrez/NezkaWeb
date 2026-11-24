@@ -17,7 +17,7 @@ let nextId = 0;
         [formField]="field()"
         [type]="inputType()"
         [attr.autocomplete]="autocomplete()"
-        [attr.inputmode]="type() === 'email' || type() === 'tel' ? type() : null"
+        [attr.inputmode]="inputMode() ?? (type() === 'email' || type() === 'tel' ? type() : null)"
         [attr.aria-invalid]="showError()"
         [attr.aria-describedby]="describedBy()"
         spellcheck="false"
@@ -56,6 +56,8 @@ export class TextField {
   readonly field = input.required<FieldTree<string>>();
   readonly label = input.required<string>();
   readonly type = input<'text' | 'email' | 'password' | 'tel'>('text');
+  /** Keyboard to show on phones, such as `decimal` for prices. */
+  readonly inputMode = input<string>();
   readonly autocomplete = input<string>();
   readonly hint = input<string>();
 
@@ -84,6 +86,8 @@ export class TextField {
         return v.minLength((error as unknown as { minLength: number }).minLength);
       case 'mismatch':
         return v.mismatch;
+      case 'price':
+        return this.t().products.form.priceInvalid;
       case 'maxLength':
         return v.maxLength((error as unknown as { maxLength: number }).maxLength);
       default:

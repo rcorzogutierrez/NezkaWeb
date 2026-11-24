@@ -1,0 +1,247 @@
+<header class="flex flex-wrap items-end justify-between gap-4">
+  <div class="max-w-2xl">
+    <h1 class="text-[1.75rem] leading-tight font-bold tracking-tight text-ink">
+      {{ t().products.title }}
+    </h1>
+    <p class="mt-1.5 text-base text-ink-muted">{{ t().products.intro }}</p>
+  </div>
+  <a routerLink="new" class="btn-primary">
+    <svg lucidePlus class="size-[1.125rem]" aria-hidden="true"></svg>
+    {{ t().products.new }}
+  </a>
+</header>
+
+<div aria-live="polite" class="mt-6 empty:hidden">
+  @if (notice(); as n) {
+    <app-form-alert [tone]="n.tone">{{ n.text() }}</app-form-alert>
+  }
+</div>
+
+@if (loadFailed()) {
+  <app-form-alert class="mt-6">{{ t().products.loadFailed }}</app-form-alert>
+} @else {
+  <section class="mt-6 overflow-hidden rounded-2xl border border-line bg-white">
+    <div
+      class="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3.5 sm:px-5"
+      role="search"
+    >
+      <div class="relative min-w-0 flex-1 basis-64">
+        <label for="product-search" class="sr-only">{{ t().products.search }}</label>
+        <svg
+          lucideSearch
+          class="pointer-events-none absolute top-1/2 left-3.5 size-[1.125rem] -translate-y-1/2 text-ink-subtle"
+          aria-hidden="true"
+        ></svg>
+        <input
+          id="product-search"
+          type="search"
+          autocomplete="off"
+          spellcheck="false"
+          class="block h-11 w-full rounded-lg border border-line-strong bg-white pr-3.5 pl-10 text-[0.9375rem] text-ink transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-ink-muted focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20"
+          [placeholder]="t().products.searchPlaceholder"
+          [value]="search()"
+          (input)="setSearch($any($event.target).value)"
+        />
+      </div>
+
+      <div class="max-sm:w-full">
+        <label for="product-missing" class="sr-only">{{ t().products.missingLabel }}</label>
+        <select
+          id="product-missing"
+          class="h-11 w-full rounded-lg border border-line-strong bg-white pr-9 pl-3 text-sm font-medium text-ink focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20 focus:outline-none"
+          [value]="missingFilter()"
+          (change)="setMissing($any($event.target).value)"
+        >
+          <option value="" [selected]="missingFilter() === ''">
+            {{ t().products.missingAll }}
+          </option>
+          <option value="any" [selected]="missingFilter() === 'any'">
+            {{ t().products.missingAny }}
+          </option>
+          @for (m of missingOptions; track m) {
+            <option [value]="m" [selected]="missingFilter() === m">
+              {{ t().products.missingFilter[m] }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <fieldset class="flex rounded-lg bg-canvas p-1">
+        <legend class="sr-only">{{ t().products.filterLabel }}</legend>
+        @for (f of statusFilters; track f) {
+          <label
+            class="relative flex h-9 cursor-pointer items-center gap-2 rounded-md px-3 text-sm font-semibold text-ink-muted transition-colors select-none hover:text-ink has-checked:bg-white has-checked:text-ink has-checked:shadow-sm has-focus-visible:ring-2 has-focus-visible:ring-brand-600"
+          >
+            <input
+              type="radio"
+              name="product-status"
+              class="sr-only"
+              [value]="f"
+              [checked]="statusFilter() === f"
+              (change)="setStatus(f)"
+            />
+            {{ t().products.filters[f] }}
+            <span class="text-xs font-medium text-ink-muted tabular-nums">{{ counts()[f] }}</span>
+          </label>
+        }
+      </fieldset>
+    </div>
+
+    @if (products(); as all) {
+      @if (all.length === 0) {
+        <div class="px-6 py-14 text-center">
+          <span
+            class="mx-auto grid size-12 place-items-center rounded-full bg-brand-50 text-brand-600"
+          >
+            <svg lucidePackage class="size-6" aria-hidden="true"></svg>
+          </span>
+          <h2 class="mt-4 text-lg font-semibold text-ink">{{ t().products.emptyTitle }}</h2>
+          <p class="mx-auto mt-1.5 max-w-[46ch] text-[0.9375rem] leading-relaxed text-ink-muted">
+            {{ t().products.emptyBody }}
+          </p>
+          <a routerLink="new" class="btn-primary mt-6">
+            <svg lucidePlus class="size-[1.125rem]" aria-hidden="true"></svg>
+            {{ t().products.new }}
+          </a>
+        </div>
+      } @else if (shown().length === 0) {
+        <div class="px-6 py-12 text-center" role="status">
+          <h2 class="text-lg font-semibold text-ink">{{ t().products.noMatchesTitle }}</h2>
+          <p class="mx-auto mt-1.5 max-w-[46ch] text-[0.9375rem] text-ink-muted">
+            {{ t().products.noMatchesBody(search().trim()) }}
+          </p>
+          <button type="button" class="btn-ghost mt-4" (click)="clear()">
+            <svg lucideX class="size-4" aria-hidden="true"></svg>
+            {{ t().products.clearFilters }}
+          </button>
+        </div>
+      } @else {
+        <table class="w-full text-left text-[0.9375rem] max-lg:block">
+          <caption class="sr-only">
+            {{
+              t().products.caption
+            }}
+          </caption>
+          <thead
+            class="bg-brand-600 text-xs font-bold tracking-wide text-white uppercase max-lg:sr-only"
+          >
+            <tr>
+              <th scope="col" class="w-px py-3 pr-2 pl-4">{{ t().products.colPhoto }}</th>
+              <th scope="col" class="w-px px-3 py-3">{{ t().products.colRef }}</th>
+              <th scope="col" class="px-3 py-3">{{ t().products.colDescription }}</th>
+              <th scope="col" class="px-3 py-3">{{ t().products.colSize }}</th>
+              <th scope="col" class="px-3 py-3">{{ t().products.colPack }}</th>
+              <th scope="col" class="px-3 py-3">{{ t().products.colPallet }}</th>
+              <th scope="col" class="px-3 py-3 text-right">{{ t().products.colPrice }}</th>
+              <th scope="col" class="px-3 py-3">{{ t().products.colStatus }}</th>
+              <th scope="col" class="w-px px-3 py-3">
+                <span class="sr-only">{{ t().products.colActions }}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-line max-lg:block">
+            @for (row of shown(); track row.product.id) {
+              @let p = row.product;
+              <tr
+                class="align-middle transition-colors hover:bg-brand-50/40 max-lg:grid max-lg:grid-cols-[4rem_1fr_auto] max-lg:gap-x-3 max-lg:gap-y-1 max-lg:px-4 max-lg:py-3"
+              >
+                <td class="py-2 pr-2 pl-4 max-lg:row-span-3 max-lg:p-0">
+                  <div
+                    class="grid size-14 place-items-center overflow-hidden rounded-lg border border-line bg-white"
+                    [class.opacity-50]="!p.active"
+                  >
+                    @if (p.photoUrl) {
+                      <div class="relative size-12">
+                        <img
+                          [ngSrc]="p.photoUrl"
+                          [alt]="t().products.photoOf(p.description)"
+                          fill
+                          class="object-contain"
+                        />
+                      </div>
+                    } @else {
+                      <svg
+                        lucideImageOff
+                        class="size-5 text-ink-subtle"
+                        [attr.aria-label]="t().products.noPhoto"
+                        role="img"
+                      ></svg>
+                    }
+                  </div>
+                </td>
+                <td class="px-3 py-2 font-medium text-ink-muted tabular-nums max-lg:hidden">
+                  {{ p.ref }}
+                </td>
+                <td class="px-3 py-2 max-lg:col-start-2 max-lg:p-0">
+                  <a
+                    [routerLink]="p.id"
+                    class="font-semibold text-ink decoration-brand-200 decoration-[0.09em] underline-offset-[0.2em] hover:text-brand-700 hover:underline"
+                    ><span class="text-ink-muted lg:hidden">{{ p.ref }}. </span
+                    >{{ p.description }}</a
+                  >
+                  <p class="text-sm text-ink-muted tabular-nums">
+                    {{ p.upc ? t().products.upc(p.upc) : t().products.noUpc }}
+                  </p>
+                  @if (row.missing.length) {
+                    <p class="mt-0.5 text-xs font-medium text-danger-700">
+                      {{ t().products.colMissing }}: {{ missingText(row.missing) }}
+                    </p>
+                  }
+                </td>
+                <td
+                  class="px-3 py-2 text-ink max-lg:col-start-2 max-lg:p-0 max-lg:text-sm max-lg:text-ink-muted"
+                >
+                  <span class="lg:hidden">{{ p.size }}{{ p.pack ? ' · ' + p.pack : '' }}</span>
+                  <span class="max-lg:hidden">{{ p.size }}</span>
+                </td>
+                <td class="px-3 py-2 text-ink tabular-nums max-lg:hidden">{{ p.pack }}</td>
+                <td class="px-3 py-2 text-ink tabular-nums max-lg:hidden">{{ p.qtyPerPallet }}</td>
+                <td
+                  class="px-3 py-2 text-right font-semibold whitespace-nowrap text-ink tabular-nums max-lg:col-start-3 max-lg:row-start-2 max-lg:p-0"
+                >
+                  {{ p.pricePerBox ? money(p.pricePerBox) : '—' }}
+                </td>
+                <td class="px-3 py-2 max-lg:col-start-3 max-lg:row-start-1 max-lg:p-0">
+                  <app-status-badge [active]="p.active">{{
+                    p.active ? t().products.active : t().products.inactive
+                  }}</app-status-badge>
+                </td>
+                <td class="px-3 py-2 max-lg:hidden">
+                  <a
+                    [routerLink]="p.id"
+                    class="btn-icon"
+                    [attr.aria-label]="t().products.editNamed(p.description)"
+                    [attr.title]="t().products.edit"
+                  >
+                    <svg lucidePencil class="size-4" aria-hidden="true"></svg>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      @if (all.length) {
+        <p class="border-t border-line px-5 py-3 text-sm text-ink-muted" aria-live="polite">
+          {{ t().products.showing(shown().length, all.length) }}
+        </p>
+      }
+    } @else {
+      <div aria-busy="true">
+        <p class="sr-only" role="status">{{ t().products.loading }}</p>
+        <ul class="divide-y divide-line" aria-hidden="true">
+          @for (row of skeletonRows; track row) {
+            <li class="flex items-center gap-4 px-4 py-3">
+              <div class="size-14 shrink-0 animate-pulse rounded-lg bg-canvas"></div>
+              <div class="flex-1 space-y-2">
+                <div class="h-3.5 w-56 max-w-full animate-pulse rounded bg-line"></div>
+                <div class="h-3 w-32 max-w-full animate-pulse rounded bg-canvas"></div>
+              </div>
+              <div class="h-3.5 w-16 animate-pulse rounded bg-canvas"></div>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </section>
+}

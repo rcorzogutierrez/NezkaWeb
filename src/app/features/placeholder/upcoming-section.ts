@@ -2,7 +2,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import { LucideCheck, LucideHourglass } from '@lucide/angular';
 import { I18nService } from '../../core/i18n/i18n.service';
 
-export type UpcomingKey = 'products' | 'estimates' | 'catalog';
+export type UpcomingKey = 'estimates' | 'catalog';
 
 /** Section that is planned but not migrated from the desktop app yet. */
 @Component({

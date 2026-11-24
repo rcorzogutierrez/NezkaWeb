@@ -11,6 +11,7 @@ export const environment: AppEnvironment = {
     apiKey: 'demo-api-key',
     authDomain: 'demo-nezka.firebaseapp.com',
     projectId: 'demo-nezka',
+    storageBucket: 'demo-nezka.appspot.com',
     appId: 'demo-app',
   },
 };
