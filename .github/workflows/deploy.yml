@@ -5,6 +5,11 @@ name: Deploy
 # does not depend on Firebase's "default bucket" lookup, which fails for this project. It needs the repository secret FIREBASE_SERVICE_ACCOUNT (the JSON key of a service
 # account with Firebase Hosting Admin, Firebase Rules Admin, API Keys Viewer, Service Usage
 # Consumer and Service Account User). Without the secret the job is skipped.
+#
+# The Cloud Functions in functions/ (delete a user, set a password) need the Blaze plan, so
+# they deploy only when the repository variable DEPLOY_FUNCTIONS is "true". The service account
+# then also needs Cloud Functions Admin, Cloud Run Admin, Artifact Registry Administrator and
+# Cloud Build Editor.
 
 on:
   push:
@@ -47,6 +52,11 @@ jobs:
       - name: firebase deploy
         if: env.HAS_KEY == 'true'
         run: npx firebase deploy --only hosting,firestore:rules,storage --project nezka-web --non-interactive
+      - name: Cloud Functions
+        if: env.HAS_KEY == 'true' && vars.DEPLOY_FUNCTIONS == 'true'
+        run: |
+          npm ci --prefix functions
+          npx firebase deploy --only functions --project nezka-web --non-interactive --force
       - name: Borrar credenciales
         if: always() && env.HAS_KEY == 'true'
         run: rm -f "$RUNNER_TEMP/sa.json"

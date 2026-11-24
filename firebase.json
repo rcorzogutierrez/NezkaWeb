@@ -54,6 +54,10 @@
       "port": 9099,
       "host": "127.0.0.1"
     },
+    "functions": {
+      "port": 5001,
+      "host": "127.0.0.1"
+    },
     "firestore": {
       "port": 8080,
       "host": "127.0.0.1"
@@ -72,6 +76,14 @@
     {
       "target": "photos",
       "rules": "storage.rules"
+    }
+  ],
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "runtime": "nodejs22",
+      "ignore": ["node_modules", ".git", "*.test.js", "*.log"]
     }
   ]
 }

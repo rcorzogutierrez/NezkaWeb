@@ -12,6 +12,13 @@ describe('errorKey', () => {
     expect(errorKey(new FirebaseError('permission-denied', 'x'))).toBe('permissionDenied');
   });
 
+  it('maps the account functions', () => {
+    expect(errorKey(new FirebaseError('functions/failed-precondition', 'x'))).toBe(
+      'protectedAccount',
+    );
+    expect(errorKey(new FirebaseError('functions/internal', 'x'))).toBe('serverUnavailable');
+  });
+
   it('falls back to a generic message', () => {
     expect(errorKey(new FirebaseError('auth/something-new', 'x'))).toBe('unknown');
     expect(errorKey(new Error('boom'))).toBe('unknown');

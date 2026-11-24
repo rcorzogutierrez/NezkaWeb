@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth';
 import { APP_ENVIRONMENT, FIREBASE_AUTH, createAuth } from '../firebase/firebase.providers';
 import { FirestoreLoader } from '../firebase/firestore.loader';
+import { FunctionsLoader } from '../firebase/functions.loader';
 import {
   SETUP_DOC,
   USERS_COLLECTION,
@@ -63,6 +64,7 @@ const normalizeEmail = (email: string) => email.trim().toLowerCase();
 export class UsersService {
   private readonly auth = inject(FIREBASE_AUTH);
   private readonly firestore = inject(FirestoreLoader);
+  private readonly functions = inject(FunctionsLoader);
   private readonly env = inject(APP_ENVIRONMENT);
   private provisioningAuth: Auth | null = null;
 
@@ -120,6 +122,23 @@ export class UsersService {
   async update(uid: string, changes: UserChanges): Promise<void> {
     const { db, doc, updateDoc } = await this.firestore.load();
     await updateDoc(doc(db, USERS_COLLECTION, uid), changes);
+  }
+
+  /**
+   * Deletes the sign-in account and the profile, so the same email can be used again. The
+   * server refuses your own account and the last active administrator. Estimates keep their
+   * author's id.
+   */
+  async remove(uid: string): Promise<void> {
+    await this.functions.call('deleteUser', { uid });
+  }
+
+  /**
+   * Sets someone else's password (any password Firebase accepts: 6 characters or more). With
+   * `mustChange` they choose a new one at their next sign-in.
+   */
+  async setPassword(uid: string, password: string, mustChange: boolean): Promise<void> {
+    await this.functions.call('setUserPassword', { uid, password, mustChange });
   }
 
   /** Emails the "choose your password" link (Firebase's password reset email). */

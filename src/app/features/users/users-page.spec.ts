@@ -1,3 +1,4 @@
+import { FirebaseError } from 'firebase/app';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -6,7 +7,7 @@ import {
   provideAuthServiceMock,
   testUser,
 } from '../../../testing/auth-service.mock';
-import { buttonByText } from '../../../testing/dom';
+import { buttonByText, submit, type } from '../../../testing/dom';
 import { useLanguage } from '../../../testing/setup';
 import {
   type UsersServiceMock,
@@ -85,5 +86,82 @@ describe('UsersPage', () => {
     await harness.fixture.whenStable();
     expect(users.sendPasswordSetup).toHaveBeenCalledWith('beto@example.com');
     expect(page.querySelector('[role=status]')?.textContent).toContain('beto@example.com');
+  });
+
+  /** jsdom has no modal dialogs: open and close them by hand. */
+  const dialogs = () => {
+    for (const d of page.querySelectorAll('dialog')) {
+      d.showModal = function () {
+        this.setAttribute('open', '');
+      };
+      d.close = function () {
+        this.removeAttribute('open');
+      };
+    }
+    const [remove, password] = [...page.querySelectorAll('dialog')] as HTMLDialogElement[];
+    return { remove, password };
+  };
+
+  it('never offers to delete or set the password of your own account', () => {
+    const mine = row('Ana Pérez');
+    expect(mine.textContent).not.toContain('Delete');
+    expect(mine.textContent).not.toContain('Set password');
+  });
+
+  it('deletes someone after confirming', async () => {
+    const { remove } = dialogs();
+    buttonByText(row('Beto Ruiz'), 'Delete').click();
+    harness.detectChanges();
+    expect(remove.open).toBe(true);
+    expect(remove.textContent).toContain('Delete Beto Ruiz?');
+    expect(remove.textContent).toContain('beto@example.com');
+    buttonByText(remove, 'Delete user').click();
+    await harness.fixture.whenStable();
+    expect(users.remove).toHaveBeenCalledWith('beto');
+    expect(remove.open).toBe(false);
+    expect(page.textContent).toContain('Beto Ruiz was deleted.');
+  });
+
+  it('keeps the dialog open with the reason when the server refuses', async () => {
+    users.remove.mockRejectedValueOnce(new FirebaseError('functions/internal', 'x'));
+    const { remove } = dialogs();
+    buttonByText(row('Beto Ruiz'), 'Delete').click();
+    harness.detectChanges();
+    buttonByText(remove, 'Delete user').click();
+    await harness.fixture.whenStable();
+    expect(remove.open).toBe(true);
+    expect(remove.textContent).toContain('The server did not answer.');
+  });
+
+  it('sets a simple password of 6 characters', async () => {
+    const { password } = dialogs();
+    buttonByText(row('Beto Ruiz'), 'Set password').click();
+    harness.detectChanges();
+    expect(password.open).toBe(true);
+
+    type(password, 'New password', '12345');
+    submit(password);
+    await harness.fixture.whenStable();
+    expect(users.setPassword).not.toHaveBeenCalled();
+    expect(password.textContent).toContain('Use at least 6 characters.');
+
+    type(password, 'New password', '123456');
+    submit(password);
+    await harness.fixture.whenStable();
+    expect(users.setPassword).toHaveBeenCalledWith('beto', '123456', false);
+    expect(password.open).toBe(false);
+    expect(page.textContent).toContain('Beto Ruiz can sign in with the new password.');
+  });
+
+  it('can ask them to change it when they sign in', async () => {
+    const { password } = dialogs();
+    buttonByText(row('Carla Díaz'), 'Set password').click();
+    harness.detectChanges();
+    type(password, 'New password', 'nezka1');
+    const check = password.querySelector('input[type=checkbox]') as HTMLInputElement;
+    check.click();
+    submit(password);
+    await harness.fixture.whenStable();
+    expect(users.setPassword).toHaveBeenCalledWith('carla', 'nezka1', true);
   });
 });

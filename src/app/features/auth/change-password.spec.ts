@@ -58,7 +58,7 @@ describe('ChangePassword', () => {
     type(page, 'Repeat the password', 'otra');
     await send();
     expect(auth.changePassword).not.toHaveBeenCalled();
-    expect(page.textContent).toContain('Use at least 8 characters.');
+    expect(page.textContent).toContain('Use at least 6 characters.');
   });
 
   it('explains when Firebase wants a fresh sign-in', async () => {
