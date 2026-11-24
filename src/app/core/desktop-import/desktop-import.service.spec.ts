@@ -76,6 +76,7 @@ describe('DesktopImportService', () => {
       size: '',
       pack: '',
       pricePerBox: 24,
+      pricePerUnit: 0,
       productKeys: productKey(mango),
     };
     const estimate = (number: string, client: string) => ({

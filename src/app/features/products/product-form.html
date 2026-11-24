@@ -142,15 +142,29 @@
             autocomplete="off"
           />
           <app-text-field
-            class="col-span-1 sm:col-span-3"
+            class="col-span-1 sm:col-span-2"
             [field]="productForm.price"
             [label]="t().products.form.price"
             [hint]="t().products.form.priceHint"
             inputMode="decimal"
             autocomplete="off"
           />
+          <div class="col-span-1 sm:col-span-2">
+            <app-text-field
+              [field]="productForm.unitPrice"
+              [label]="t().products.form.unitPrice"
+              [hint]="t().products.form.unitPriceHint"
+              inputMode="decimal"
+              autocomplete="off"
+            />
+            @if (unitSuggestion(); as s) {
+              <button type="button" class="btn-ghost mt-1 -ml-3" (click)="useUnitSuggestion()">
+                {{ t().products.form.unitPriceUse(s.text, s.units) }}
+              </button>
+            }
+          </div>
           <app-text-field
-            class="col-span-1 sm:col-span-3"
+            class="col-span-2 sm:col-span-2"
             [field]="productForm.qtyPerPallet"
             [label]="t().products.form.pallet"
             autocomplete="off"

@@ -5,7 +5,7 @@ import {
   PRODUCT_TEXT_FIELDS,
   type ProductData,
   type ProductTextField,
-  normalizeUpc,
+  productKey,
 } from '../products/product';
 
 /** Where sql.js finds its WebAssembly file (copied there by angular.json). */
@@ -71,6 +71,8 @@ export function toDesktopEstimate(row: Row, lineRows: readonly Row[]): DesktopEs
       pack: text(l['pack']),
       boxes,
       pricePerBox: Number.isFinite(price) && price > 0 ? Math.round(price * 100) / 100 : 0,
+      // The desktop app has no price per unit.
+      pricePerUnit: 0,
     };
     // The catalog product the line came from, when it still exists; else the line's own copy.
     const product =
@@ -145,6 +147,7 @@ export function toDesktopProduct(row: Row): DesktopProduct {
     data: {
       ...values,
       pricePerBox: Number.isFinite(price) && price > 0 ? Math.round(price * 100) / 100 : 0,
+      pricePerUnit: 0,
       active: Number(row['active'] ?? 1) !== 0,
     },
     image: image instanceof Uint8Array && image.length ? new Uint8Array(image) : null,
@@ -211,17 +214,7 @@ export async function readDesktopDb(file: Blob, wasmUrl = SQL_WASM_URL): Promise
   }
 }
 
-/**
- * Already in the web app: same description and the same UPC or reference. The description is
- * always part of it, because the desktop catalog has different products sharing a UPC.
- */
-export function productKey(p: Pick<ProductData, 'ref' | 'upc' | 'description'>): string[] {
-  const description = fold(p.description);
-  const keys = [`ref:${fold(p.ref)}|${description}`];
-  const upc = normalizeUpc(p.upc);
-  if (upc) keys.push(`upc:${upc}|${description}`);
-  return keys;
-}
+export { productKey };
 
 /** Already in the web app: same name and branch, ignoring case and accents. */
 export function clientKey(c: Pick<ClientData, 'name' | 'branch'>): string {

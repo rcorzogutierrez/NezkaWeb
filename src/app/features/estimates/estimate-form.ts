@@ -38,6 +38,7 @@ import {
   isIsoDate,
   lineFromProduct,
   lineTotal,
+  linkLines,
   normalizeEstimate,
   proformaFileName,
   todayIso,
@@ -191,8 +192,14 @@ export class EstimateForm {
     () => new Map((this.liveProducts.products() ?? []).map((p) => [p.id, p])),
   );
 
+  /** The line's product; lines saved without one find it by ref or UPC plus description. */
+  private productIdOf(line: EstimateLine): string {
+    if (line.productId) return line.productId;
+    return linkLines([line], this.liveProducts.products() ?? [])[0].productId;
+  }
+
   protected photoOf(line: EstimateLine): string {
-    return this.productsById().get(line.productId)?.photoUrl ?? '';
+    return this.productsById().get(this.productIdOf(line))?.photoUrl ?? '';
   }
 
   // Totals follow what is typed; invalid values count as zero until fixed.
@@ -356,7 +363,12 @@ export class EstimateForm {
     for (const d of this.lines()) {
       const v = parsed(d);
       if (v.boxes === null || v.price === null) return null;
-      lines.push({ ...d.line, boxes: v.boxes, pricePerBox: v.price });
+      lines.push({
+        ...d.line,
+        productId: this.productIdOf(d.line),
+        boxes: v.boxes,
+        pricePerBox: v.price,
+      });
     }
     return normalizeEstimate({ ...this.header(), lines });
   }
@@ -374,7 +386,8 @@ export class EstimateForm {
       reference: saved.reference,
       status: saved.status,
       notes: saved.notes,
-      lines: saved.lines,
+      // Linking a line to its product is not a change the person made.
+      lines: saved.lines.map((l) => ({ ...l, productId: this.productIdOf(l) })),
     });
     return JSON.stringify(before) !== JSON.stringify(current);
   });

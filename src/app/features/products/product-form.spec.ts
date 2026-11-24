@@ -131,6 +131,25 @@ describe('ProductForm', () => {
     expect(products.save).toHaveBeenCalledTimes(1);
   });
 
+  it('offers the price per unit from the case price and a numeric pack', async () => {
+    await open('/products/new');
+    type(page, 'Description', 'Guava Paste');
+    type(page, 'Price per case', '21');
+    type(page, 'Pack', '24');
+    await harness.fixture.whenStable();
+    buttonByText(page, 'Use $0.88 (case ÷ 24)').click();
+    await harness.fixture.whenStable();
+    expect(inputByLabel(page, 'Price per unit').value).toBe('0.88');
+    expect(page.textContent).not.toContain('Use $0.88');
+    await send();
+    expect(products.save).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ pricePerBox: 21, pricePerUnit: 0.88 }),
+      { kind: 'keep' },
+      undefined,
+    );
+  });
+
   it('loads a product with its photo and saves changes', async () => {
     await open('/products/mango');
     expect(page.querySelector('h1')?.textContent?.trim()).toBe('Mango Pulp');

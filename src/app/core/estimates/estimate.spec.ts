@@ -4,6 +4,7 @@ import {
   addProduct,
   displayDate,
   isIsoDate,
+  linkLines,
   longDate,
   matchesEstimateSearch,
   nextNumber,
@@ -65,5 +66,17 @@ describe('estimate helpers', () => {
     expect(proformaFileName({ number: 'PF-2026-1028', clientName: 'Tree / Logistics' })).toBe(
       'Proforma_PF-2026-1028_Tree  Logistics.pdf',
     );
+  });
+});
+
+describe('linkLines', () => {
+  it('finds the product of a line saved without one, by ref or UPC and description', () => {
+    const mango = testProduct({ id: 'mango', ref: '12', upc: '612789567096' });
+    const lines = testEstimate().lines.map((l) => ({ ...l, productId: '' }));
+    expect(linkLines(lines, [mango])[0].productId).toBe('mango');
+    const other = { ...lines[0], ref: '', description: 'Otro', upc: '' };
+    expect(linkLines([other], [mango])[0].productId).toBe('');
+    const kept = { ...lines[0], productId: 'p9' };
+    expect(linkLines([kept], [mango])[0].productId).toBe('p9');
   });
 });

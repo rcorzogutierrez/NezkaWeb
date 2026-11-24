@@ -289,6 +289,7 @@ describe('products', () => {
     await assertSucceeds(
       updateDoc(doc(as('beto'), 'products/p1'), {
         pricePerBox: 25.5,
+        pricePerUnit: 1.06,
         photoPath: 'products/p1/a.webp',
         photoUrl: 'https://example.com/a.webp',
         photoThumb: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
@@ -307,6 +308,10 @@ describe('products', () => {
     await assertFails(setDoc(doc(as('beto'), 'products/x'), product('beto', { pricePerBox: -1 })));
     await assertFails(
       setDoc(doc(as('beto'), 'products/x'), product('beto', { pricePerBox: '24' })),
+    );
+    await assertFails(setDoc(doc(as('beto'), 'products/x'), product('beto', { pricePerUnit: -1 })));
+    await assertFails(
+      setDoc(doc(as('beto'), 'products/x'), product('beto', { pricePerUnit: '1.00' })),
     );
     await assertFails(setDoc(doc(as('beto'), 'products/x'), product('beto', { description: '' })));
     await assertFails(

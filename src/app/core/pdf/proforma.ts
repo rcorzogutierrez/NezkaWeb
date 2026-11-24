@@ -34,7 +34,10 @@ const TOTALS_ROW_H = 18;
 const TOTAL_BAND_H = 27;
 const TEXT = 7.2;
 
+type ColumnKey = 'photo' | 'desc' | 'upc' | 'size' | 'pack' | 'box' | 'unit' | 'price' | 'total';
+
 interface Column {
+  readonly key: ColumnKey;
   readonly title: string[];
   readonly x: number;
   readonly w: number;
@@ -43,19 +46,36 @@ interface Column {
 
 /** Columns of the reference proforma PF-2026-1028. */
 const COLUMNS: readonly Column[] = [
-  { title: ['PHOTO'], x: MARGIN, w: 46, align: 'center' },
-  { title: ['REF. / ITEM DESCRIPTION'], x: 86, w: 162, align: 'left' },
-  { title: ['UPC'], x: 253, w: 70, align: 'left' },
-  { title: ['ITEM SIZE', 'UNIT'], x: 324, w: 52, align: 'left' },
-  { title: ['PACK'], x: 384, w: 58, align: 'center' },
-  { title: ['BOX'], x: 444, w: 30, align: 'center' },
-  { title: ['PRICE', 'PER BOX'], x: 474, w: 45, align: 'right' },
-  { title: ['TOTAL'], x: 519, w: 54, align: 'right' },
+  { key: 'photo', title: ['PHOTO'], x: MARGIN, w: 46, align: 'center' },
+  { key: 'desc', title: ['REF. / ITEM DESCRIPTION'], x: 86, w: 162, align: 'left' },
+  { key: 'upc', title: ['UPC'], x: 253, w: 70, align: 'left' },
+  { key: 'size', title: ['ITEM SIZE', 'UNIT'], x: 324, w: 52, align: 'left' },
+  { key: 'pack', title: ['PACK'], x: 384, w: 58, align: 'center' },
+  { key: 'box', title: ['BOX'], x: 444, w: 30, align: 'center' },
+  { key: 'price', title: ['PRICE', 'PER BOX'], x: 474, w: 45, align: 'right' },
+  { key: 'total', title: ['TOTAL'], x: 519, w: 54, align: 'right' },
 ];
 
+/** The same, with room for the price per unit when any line has one. */
+const COLUMNS_WITH_UNIT: readonly Column[] = [
+  { key: 'photo', title: ['PHOTO'], x: MARGIN, w: 46, align: 'center' },
+  { key: 'desc', title: ['REF. / ITEM DESCRIPTION'], x: 86, w: 142, align: 'left' },
+  { key: 'upc', title: ['UPC'], x: 232, w: 66, align: 'left' },
+  { key: 'size', title: ['ITEM SIZE', 'UNIT'], x: 300, w: 52, align: 'left' },
+  { key: 'pack', title: ['PACK'], x: 354, w: 44, align: 'center' },
+  { key: 'box', title: ['BOX'], x: 400, w: 30, align: 'center' },
+  { key: 'unit', title: ['PRICE', 'PER UNIT'], x: 430, w: 43, align: 'right' },
+  { key: 'price', title: ['PRICE', 'PER BOX'], x: 473, w: 46, align: 'right' },
+  { key: 'total', title: ['TOTAL'], x: 519, w: 54, align: 'right' },
+];
+
+function columnsFor(estimate: Estimate): readonly Column[] {
+  return estimate.lines.some((l) => l.pricePerUnit) ? COLUMNS_WITH_UNIT : COLUMNS;
+}
+
 /** The cell's box; right-aligned columns keep 4 pt from the next one. */
-function cell(index: number): { x: number; w: number; align: Column['align'] } {
-  const c = COLUMNS[index];
+function cell(cols: readonly Column[], key: ColumnKey) {
+  const c = cols.find((col) => col.key === key)!;
   return { x: c.x, w: c.w - (c.align === 'right' ? 4 : 0), align: c.align };
 }
 
@@ -72,20 +92,21 @@ export function drawProforma(doc: jsPDF, input: ProformaInput, brand: BrandImage
   const p = new Painter(doc);
   const { estimate } = input;
   const label = estimate.clientName;
-  const rows = estimate.lines.map((line) => measure(p, line, input.photos));
+  const cols = columnsFor(estimate);
+  const rows = estimate.lines.map((line) => measure(p, cols, line, input.photos));
 
   let page = 1;
   pageFrame(p, page, label);
   companyHeading(p, brand);
   let y = letterhead(p, input) + 14;
-  y = tableHeader(p, y);
+  y = tableHeader(p, cols, y);
   rows.forEach((row, index) => {
     if (y + row.height > CONTENT_BOTTOM) {
       doc.addPage();
       pageFrame(p, ++page, label);
-      y = tableHeader(p, 30);
+      y = tableHeader(p, cols, 30);
     }
-    tableRow(p, row, y, index % 2 === 1);
+    tableRow(p, cols, row, y, index % 2 === 1);
     y += row.height;
   });
   if (y + closingHeight(p, estimate) > CONTENT_BOTTOM) {
@@ -97,12 +118,17 @@ export function drawProforma(doc: jsPDF, input: ProformaInput, brand: BrandImage
   return page;
 }
 
-function measure(p: Painter, line: EstimateLine, photos: ProformaInput['photos']): Row {
+function measure(
+  p: Painter,
+  cols: readonly Column[],
+  line: EstimateLine,
+  photos: ProformaInput['photos'],
+): Row {
   const photo = (line.productId && photos.get(line.productId)) || null;
   let photoH = 0;
   if (photo)
     photoH = photo.height * Math.min(PHOTO_BOX.w / photo.width, PHOTO_BOX.h / photo.height);
-  const { w } = cell(1);
+  const { w } = cell(cols, 'desc');
   let prefixW = 0;
   if (line.ref) {
     p.font(TEXT, true);
@@ -154,10 +180,10 @@ function letterhead(p: Painter, { estimate, client }: ProformaInput): number {
   return top + height;
 }
 
-function tableHeader(p: Painter, y: number): number {
+function tableHeader(p: Painter, cols: readonly Column[], y: number): number {
   p.fill(MARGIN, y, CONTENT_W, HEADER_H, BLUE);
-  COLUMNS.forEach((c, i) => {
-    const { x, w, align } = cell(i);
+  cols.forEach((c) => {
+    const { x, w, align } = cell(cols, c.key);
     const lineH = 7.6;
     const start = y + (HEADER_H - c.title.length * lineH) / 2;
     c.title.forEach((t, j) =>
@@ -167,13 +193,13 @@ function tableHeader(p: Painter, y: number): number {
   return y + HEADER_H;
 }
 
-function tableRow(p: Painter, row: Row, y: number, shaded: boolean): void {
+function tableRow(p: Painter, cols: readonly Column[], row: Row, y: number, shaded: boolean): void {
   const { line } = row;
   const h = row.height;
   if (shaded) p.fill(MARGIN, y, CONTENT_W, h, ROW_ALT);
   p.hline(MARGIN, PAGE_W - MARGIN, y + h);
 
-  const photo = cell(0);
+  const photo = cell(cols, 'photo');
   p.image(
     row.photo,
     photo.x + (photo.w - PHOTO_BOX.w) / 2,
@@ -183,22 +209,30 @@ function tableRow(p: Painter, row: Row, y: number, shaded: boolean): void {
   );
 
   // Bold "01." followed by the description, wrapping inside the column.
-  const desc = cell(1);
+  const desc = cell(cols, 'desc');
   const textH = Painter.height(row.desc.length, TEXT);
   const top = y + (h - textH) / 2;
   if (line.ref) p.text(`${line.ref}.`, desc.x, top, 40, TEXT * 1.2, TEXT, { bold: true });
   p.paragraph(row.desc, desc.x + row.prefixW, top + 0.6, TEXT);
 
-  const at = (i: number, value: string, size: number, opts: { bold?: boolean; color?: string }) => {
-    const c = cell(i);
+  const at = (
+    key: ColumnKey,
+    value: string,
+    size: number,
+    opts: { bold?: boolean; color?: string },
+  ) => {
+    const c = cell(cols, key);
     p.text(value, c.x, y, c.w, h, size, { ...opts, align: c.align });
   };
-  at(2, line.upc, 6.8, {});
-  at(3, line.size, 6.8, { color: MUTED });
-  at(4, line.pack, TEXT, {});
-  at(5, line.boxes.toLocaleString('en-US'), TEXT, { bold: true });
-  at(6, money(line.pricePerBox), TEXT, {});
-  at(7, money(lineTotal(line)), TEXT, { bold: true });
+  at('upc', line.upc, 6.8, {});
+  at('size', line.size, 6.8, { color: MUTED });
+  at('pack', line.pack, TEXT, {});
+  at('box', line.boxes.toLocaleString('en-US'), TEXT, { bold: true });
+  if (cols.some((c) => c.key === 'unit')) {
+    at('unit', line.pricePerUnit ? money(line.pricePerUnit) : '—', TEXT, { color: MUTED });
+  }
+  at('price', money(line.pricePerBox), TEXT, {});
+  at('total', money(lineTotal(line)), TEXT, { bold: true });
 }
 
 function notesLines(p: Painter, estimate: Estimate): string[] {

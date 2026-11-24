@@ -1,6 +1,6 @@
 import { DOCUMENT, Service, inject } from '@angular/core';
 import { ClientsService } from '../clients/clients.service';
-import type { Estimate } from '../estimates/estimate';
+import { type Estimate, linkLines } from '../estimates/estimate';
 import type { Product } from '../products/product';
 import { ProductsService } from '../products/products.service';
 import type { BrandImages, PdfImage } from './pdf-kit';
@@ -19,7 +19,8 @@ export class PdfService {
   }
 
   /** Several proformas in one PDF, each starting on its own page, in the given order. */
-  async proformas(estimates: readonly Estimate[]): Promise<Blob> {
+  async proformas(list: readonly Estimate[]): Promise<Blob> {
+    const estimates = await this.linked(list);
     const clientIds = [...new Set(estimates.map((e) => e.clientId).filter(Boolean))];
     const [lazy, brand, clients, photos] = await Promise.all([
       import('./pdf.lazy'),
@@ -64,6 +65,13 @@ export class PdfService {
     if (target) target.location.href = url;
     else this.document.defaultView?.open(url, '_blank');
     setTimeout(() => URL.revokeObjectURL(url), 10 * 60_000);
+  }
+
+  /** Estimates whose lines lost their product get it back, so the PDF shows the photos. */
+  private async linked(estimates: readonly Estimate[]): Promise<readonly Estimate[]> {
+    if (estimates.every((e) => e.lines.every((l) => l.productId))) return estimates;
+    const products = await this.products.list().catch(() => []);
+    return estimates.map((e) => ({ ...e, lines: linkLines(e.lines, products) }));
   }
 
   private async photos(ids: readonly string[]): Promise<Map<string, PdfImage>> {

@@ -171,7 +171,7 @@ export const es = {
     intro:
       'La lista de productos con foto, UPC, presentación y precio para entregar a los clientes, en PDF.',
     options: 'En el documento',
-    showPrices: 'Mostrar precios por caja',
+    showPrices: 'Mostrar precios',
     includeInactive: 'Incluir productos inactivos',
     summary: (n: number) =>
       n === 1 ? '1 producto en el catálogo' : `${n} productos en el catálogo`,
@@ -377,6 +377,7 @@ export const es = {
         notes: 'NOTAS',
       },
     },
+    perUnit: (price: string) => `${price} / unidad`,
     caption: 'Productos',
     colPhoto: 'Foto',
     colRef: 'Ref.',
@@ -439,6 +440,9 @@ export const es = {
       pack: 'Pack',
       price: 'Precio por caja',
       priceHint: 'En dólares, por ejemplo 24.00',
+      unitPrice: 'Precio por unidad',
+      unitPriceHint: 'Opcional, por ejemplo 1.00',
+      unitPriceUse: (price: string, units: string) => `Usar ${price} (caja ÷ ${units})`,
       priceInvalid: 'Escribe un precio válido, por ejemplo 24.00.',
       pallet: 'Cajas por pallet',
       notes: 'Notas',
