@@ -29,6 +29,8 @@ export function createProductsServiceMock(list: readonly Product[] = []) {
         args[0] ?? 'new-id',
     ),
     remove: vi.fn(async () => undefined),
+    list: vi.fn(async () => [...(products() ?? [])]),
+    thumbs: vi.fn(async () => new Map<string, string>()),
   };
 }
 

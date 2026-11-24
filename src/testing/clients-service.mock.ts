@@ -14,6 +14,7 @@ export function createClientsServiceMock(list: readonly Client[] = []) {
     clients,
     watchAll: vi.fn(() => ({ clients: clients.asReadonly(), error: signal(false).asReadonly() })),
     get: vi.fn(async (id: string) => clients()?.find((c) => c.id === id) ?? null),
+    list: vi.fn(async () => [...(clients() ?? [])]),
     nameTaken: vi.fn(async () => false),
     create: vi.fn(async () => 'new-id'),
     createMany: vi.fn(async () => undefined),

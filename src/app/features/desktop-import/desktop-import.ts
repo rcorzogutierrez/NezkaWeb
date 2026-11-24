@@ -23,6 +23,8 @@ import {
   DesktopImportService,
   type ImportProgress,
 } from '../../core/desktop-import/desktop-import.service';
+import { displayDate } from '../../core/estimates/estimate';
+import { EstimatesService } from '../../core/estimates/estimates.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { formatMoney } from '../../core/products/product';
 import { ProductsService } from '../../core/products/products.service';
@@ -48,8 +50,10 @@ export class DesktopImport {
   private readonly importer = inject(DesktopImportService);
   private readonly notices = inject(NoticeService);
   private readonly router = inject(Router);
-  protected readonly t = inject(I18nService).t;
+  private readonly i18n = inject(I18nService);
+  protected readonly t = this.i18n.t;
 
+  private readonly existingEstimates = inject(EstimatesService).watchAll().estimates;
   private readonly existingProducts = inject(ProductsService).watchAll().products;
   private readonly existingClients = inject(ClientsService).watchAll().clients;
 
@@ -65,6 +69,7 @@ export class DesktopImport {
   protected readonly fileError = signal<DesktopDbErrorCode | null>(null);
   protected readonly withProducts = signal(true);
   protected readonly withClients = signal(true);
+  protected readonly withEstimates = signal(true);
   protected readonly progress = signal<ImportProgress | null>(null);
   protected readonly saveError = signal<ErrorKey | null>(null);
 
@@ -83,19 +88,30 @@ export class DesktopImport {
         ?.clients.filter((r) => !r.exists)
         .map((r) => r.item) ?? [],
   );
+  protected readonly newEstimates = computed(
+    () =>
+      this.plan()
+        ?.estimates.filter((r) => !r.exists)
+        .map((r) => r.item) ?? [],
+  );
   protected readonly productPhotos = computed(
     () => this.newProducts().filter((p) => p.image).length,
   );
   protected readonly toImport = computed(
     () =>
       (this.withProducts() ? this.newProducts().length : 0) +
-      (this.withClients() ? this.newClients().length : 0),
+      (this.withClients() ? this.newClients().length : 0) +
+      (this.withEstimates() ? this.newEstimates().length : 0),
   );
   protected readonly busy = computed(() => this.progress() !== null);
   protected readonly percent = computed(() => {
     const p = this.progress();
     return p && p.total ? Math.round((p.done / p.total) * 100) : 0;
   });
+
+  protected date(iso: string): string {
+    return displayDate(iso, this.i18n.language());
+  }
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.clearThumbs());
@@ -139,7 +155,12 @@ export class DesktopImport {
     this.reading.set(true);
     try {
       const data = await readDesktopDb(file);
-      const plan = planImport(data, this.existingProducts() ?? [], this.existingClients() ?? []);
+      const plan = planImport(
+        data,
+        this.existingProducts() ?? [],
+        this.existingClients() ?? [],
+        (this.existingEstimates() ?? []).map((e) => e.number),
+      );
       this.thumbs.set(
         plan.products.map((r) =>
           r.item.image
@@ -159,10 +180,11 @@ export class DesktopImport {
     if (!this.toImport() || this.busy()) return;
     const products = this.withProducts() ? this.newProducts() : [];
     const clients = this.withClients() ? this.newClients() : [];
+    const estimates = this.withEstimates() ? this.newEstimates() : [];
     this.saveError.set(null);
     let result;
     try {
-      result = await this.importer.run(products, clients, (p) => this.progress.set(p));
+      result = await this.importer.run(products, clients, (p) => this.progress.set(p), estimates);
     } catch (e) {
       this.saveError.set(errorKey(e));
       return;
@@ -174,10 +196,17 @@ export class DesktopImport {
     this.notices.show({
       tone: failed.length ? 'error' : 'success',
       text: () =>
-        t().desktopImport.done(result.products, result.clients) +
+        t().desktopImport.done(result.products, result.clients, result.estimates) +
         (failed.length ? ' ' + t().desktopImport.failed(failed.join(', ')) : ''),
     });
-    await this.router.navigateByUrl(products.length || !clients.length ? '/products' : '/clients');
+    const target = products.length
+      ? '/products'
+      : clients.length
+        ? '/clients'
+        : estimates.length
+          ? '/estimates'
+          : '/products';
+    await this.router.navigateByUrl(target);
   }
 
   private clearThumbs(): void {

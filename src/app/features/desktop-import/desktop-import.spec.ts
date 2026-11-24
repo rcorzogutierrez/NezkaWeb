@@ -9,6 +9,10 @@ import {
   createProductsServiceMock,
   provideProductsServiceMock,
 } from '../../../testing/products-service.mock';
+import {
+  createEstimatesServiceMock,
+  provideEstimatesServiceMock,
+} from '../../../testing/estimates-service.mock';
 import { useLanguage } from '../../../testing/setup';
 import { DesktopImport } from './desktop-import';
 
@@ -22,6 +26,7 @@ describe('DesktopImport', () => {
         provideRouter([{ path: 'import', component: DesktopImport }]),
         provideProductsServiceMock(createProductsServiceMock()),
         provideClientsServiceMock(createClientsServiceMock()),
+        provideEstimatesServiceMock(createEstimatesServiceMock()),
       ],
     });
     useLanguage('en');

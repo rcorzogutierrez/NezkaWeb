@@ -51,6 +51,13 @@ export class ClientsService {
     return snap.exists() ? toClient(snap.id, snap.data()) : null;
   }
 
+  /** Every client, once (not live). */
+  async list(): Promise<Client[]> {
+    const { db, collection, getDocs } = await this.firestore.load();
+    const snap = await getDocs(collection(db, CLIENTS_COLLECTION));
+    return snap.docs.map((d) => toClient(d.id, d.data()));
+  }
+
   /** True when another client already has this name (ignoring case and accents). */
   async nameTaken(name: string, exceptId?: string): Promise<boolean> {
     const { db, collection, getDocs } = await this.firestore.load();

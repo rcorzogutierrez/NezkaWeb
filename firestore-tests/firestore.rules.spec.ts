@@ -361,6 +361,82 @@ describe('product photos (Storage)', () => {
   });
 });
 
+describe('estimates', () => {
+  const line = {
+    productId: 'p1',
+    ref: '01',
+    description: 'NEZKA CHICOTICOS JAMON',
+    upc: '612789567096',
+    size: '6 OZ',
+    pack: '6',
+    boxes: 334,
+    pricePerBox: 24,
+  };
+  const estimate = (uid: string, extra: Record<string, unknown> = {}) => ({
+    number: 'PF-2026-1028',
+    clientId: 'c1',
+    clientName: 'Tree Logistics',
+    clientBranch: '',
+    date: '2026-10-28',
+    reference: 'Quote request',
+    status: 'sent',
+    notes: '',
+    lines: [line],
+    totalBoxes: 334,
+    total: 8016,
+    createdAt: serverTimestamp(),
+    createdBy: uid,
+    updatedAt: serverTimestamp(),
+    updatedBy: uid,
+    ...extra,
+  });
+
+  beforeEach(async () => {
+    await seed({
+      'users/ana': profile('Ana', 'admin'),
+      'users/beto': profile('Beto', 'user'),
+      'users/carla': profile('Carla', 'user', { active: false }),
+      'clients/c1': { name: 'Tree Logistics' },
+    });
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'estimates/e1'), estimate('ana'));
+    });
+  });
+
+  it('active users read, create and edit estimates', async () => {
+    await assertSucceeds(getDoc(doc(as('beto'), 'estimates/e1')));
+    await assertSucceeds(setDoc(doc(as('beto'), 'estimates/e2'), estimate('beto')));
+    await assertSucceeds(
+      updateDoc(doc(as('beto'), 'estimates/e1'), {
+        status: 'accepted',
+        updatedAt: serverTimestamp(),
+        updatedBy: 'beto',
+      }),
+    );
+  });
+
+  it('people without access see nothing', async () => {
+    await assertFails(getDoc(doc(as('carla'), 'estimates/e1')));
+    await assertFails(getDoc(doc(anonymous(), 'estimates/e1')));
+  });
+
+  it('rejects unknown clients, statuses, dates and empty estimates', async () => {
+    const bad = (extra: Record<string, unknown>) =>
+      assertFails(setDoc(doc(as('beto'), 'estimates/x'), estimate('beto', extra)));
+    await bad({ clientId: 'nobody' });
+    await bad({ status: 'Enviado' });
+    await bad({ date: '28/10/2026' });
+    await bad({ lines: [] });
+    await bad({ number: '' });
+    await bad({ createdBy: 'ana' });
+  });
+
+  it('only administrators delete estimates', async () => {
+    await assertFails(deleteDoc(doc(as('beto'), 'estimates/e1')));
+    await assertSucceeds(deleteDoc(doc(as('ana'), 'estimates/e1')));
+  });
+});
+
 describe('everything else', () => {
   it('is closed until a feature opens it', async () => {
     await seed({ 'users/ana': profile('Ana', 'admin') });

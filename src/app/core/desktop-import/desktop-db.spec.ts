@@ -5,6 +5,7 @@ import {
   planImport,
   readDesktopDb,
   toClientData,
+  toDesktopEstimate,
   toDesktopProduct,
 } from './desktop-db';
 
@@ -71,6 +72,7 @@ describe('desktop database', () => {
           toClientData({ name: 'Café Habana' }),
           toClientData({ name: '' }),
         ],
+        estimates: [],
       },
       [testProduct({ ref: '09', description: 'Nezka evaporated filled', upc: '' })],
       [{ name: 'TREE LOGISTICS', branch: 'a tree corporation branch' }],
@@ -82,6 +84,68 @@ describe('desktop database', () => {
     expect(plan.clients.map((r) => [r.item.name, r.exists])).toEqual([
       ['Tree Logistics', true],
       ['Café Habana', false],
+    ]);
+  });
+
+  it('maps a desktop estimate, its status and the keys of its products', () => {
+    const e = toDesktopEstimate(
+      {
+        number: 'PF-2026-1028',
+        date: '2026-10-28',
+        reference: 'Quote',
+        status: 'Enviado',
+        notes: null,
+        client_name: 'Tree Logistics',
+        client_branch: '',
+      },
+      [
+        {
+          ref: '01',
+          description: 'CHICOTICOS',
+          upc: '612789567096',
+          boxes: 334,
+          price_per_box: 24,
+          p_ref: '01',
+          p_upc: '612789567096',
+          p_description: 'NEZKA CHICOTICOS JAMON',
+        },
+        { ref: '', description: 'Suelto', upc: '', boxes: 2, price_per_box: 1.5 },
+      ],
+    );
+    expect(e).toEqual(
+      expect.objectContaining({
+        status: 'sent',
+        notes: '',
+        client: { name: 'Tree Logistics', branch: '' },
+        total: 8019,
+      }),
+    );
+    expect(e.lines[0].productKeys).toContain('upc:612789567096|nezka chicoticos jamon');
+    expect(e.lines[1].productKeys).toEqual(['ref:|suelto']);
+  });
+
+  it('skips estimates whose number is already on the web', () => {
+    const estimate = (number: string) =>
+      toDesktopEstimate({ number, date: '2026-10-28', client_name: 'Tree' }, [
+        { description: 'Mango', boxes: 1, price_per_box: 2 },
+      ]);
+    const plan = planImport(
+      {
+        products: [],
+        clients: [],
+        estimates: [
+          estimate('PF-2026-1028'),
+          estimate('PF-2026-1029'),
+          toDesktopEstimate({ number: 'PF-2026-1030', date: '2026-10-28' }, []),
+        ],
+      },
+      [],
+      [],
+      ['pf-2026-1028'],
+    );
+    expect(plan.estimates.map((r) => [r.item.number, r.exists])).toEqual([
+      ['PF-2026-1028', true],
+      ['PF-2026-1029', false],
     ]);
   });
 });

@@ -12,6 +12,8 @@ const clientForm = () => import('./features/clients/client-form').then((m) => m.
 
 const productForm = () => import('./features/products/product-form').then((m) => m.ProductForm);
 
+const estimateForm = () => import('./features/estimates/estimate-form').then((m) => m.EstimateForm);
+
 const upcoming = () =>
   import('./features/placeholder/upcoming-section').then((m) => m.UpcomingSection);
 
@@ -92,9 +94,16 @@ export const routes: Routes = [
       },
       {
         path: 'estimates',
-        title: 'nav.estimates',
-        loadComponent: upcoming,
-        data: { section: 'estimates' },
+        children: [
+          {
+            path: '',
+            title: 'nav.estimates',
+            loadComponent: () =>
+              import('./features/estimates/estimates-page').then((m) => m.EstimatesPage),
+          },
+          { path: 'new', title: 'estimates.form.newTitle', loadComponent: estimateForm },
+          { path: ':id', title: 'estimates.form.editTitle', loadComponent: estimateForm },
+        ],
       },
       {
         path: 'catalog',
