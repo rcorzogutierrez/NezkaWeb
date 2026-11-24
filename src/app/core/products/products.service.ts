@@ -54,6 +54,28 @@ export class ProductsService {
     return snap.exists() ? toProduct(snap.id, snap.data()) : null;
   }
 
+  /** Every product, once (not live). */
+  async list(): Promise<Product[]> {
+    const { db, collection, getDocs } = await this.firestore.load();
+    const snap = await getDocs(collection(db, PRODUCTS_COLLECTION));
+    return snap.docs.map((d) => toProduct(d.id, d.data()));
+  }
+
+  /** The photo thumbnails of some products, by id (products without one are left out). */
+  async thumbs(ids: readonly string[]): Promise<Map<string, string>> {
+    const { db, doc, getDoc } = await this.firestore.load();
+    const unique = [...new Set(ids.filter(Boolean))];
+    const snaps = await Promise.all(
+      unique.map((id) => getDoc(doc(db, PRODUCTS_COLLECTION, id)).catch(() => null)),
+    );
+    const found = new Map<string, string>();
+    for (const snap of snaps) {
+      const thumb = snap?.exists() ? snap.data()['photoThumb'] : null;
+      if (snap && typeof thumb === 'string' && thumb) found.set(snap.id, thumb);
+    }
+    return found;
+  }
+
   /** Other products with the same reference and the same UPC, to warn before saving. */
   async duplicates(
     data: Pick<ProductData, 'ref' | 'upc'>,

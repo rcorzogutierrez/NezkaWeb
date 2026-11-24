@@ -104,6 +104,16 @@
   }
 
   /* A form section: its title beside the fields on wide screens, above them on narrow ones. */
+  /* Native select and date inputs, matching the text fields. */
+  .field-select {
+    @apply block h-11 w-full rounded-lg border border-line-strong bg-white px-3 text-[0.9375rem] text-ink shadow-xs transition-[border-color,box-shadow] duration-150 outline-none focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20 aria-invalid:border-danger-600;
+  }
+
+  /* Small number fields inside table rows (boxes, price). */
+  .cell-input {
+    @apply block h-10 w-full min-w-20 rounded-lg border border-line-strong bg-white px-3 text-right text-[0.9375rem] text-ink tabular-nums transition-[border-color,box-shadow] duration-150 outline-none focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20;
+  }
+
   .form-section {
     @apply grid gap-x-10 gap-y-4 px-6 py-6 sm:px-8 lg:grid-cols-[12rem_1fr];
   }

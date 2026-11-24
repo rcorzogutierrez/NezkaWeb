@@ -31,7 +31,7 @@
               }
             ],
             "styles": ["src/styles.css"],
-            "allowedCommonJsDependencies": ["sql.js"]
+            "allowedCommonJsDependencies": ["sql.js", "html2canvas", "raf", "rgbcolor", "core-js"]
           },
           "configurations": {
             "production": {

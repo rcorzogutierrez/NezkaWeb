@@ -12,8 +12,7 @@ const clientForm = () => import('./features/clients/client-form').then((m) => m.
 
 const productForm = () => import('./features/products/product-form').then((m) => m.ProductForm);
 
-const upcoming = () =>
-  import('./features/placeholder/upcoming-section').then((m) => m.UpcomingSection);
+const estimateForm = () => import('./features/estimates/estimate-form').then((m) => m.EstimateForm);
 
 /**
  * Every URL is in English. `title` holds a key under `nav`/`auth` that PageTitleStrategy
@@ -92,15 +91,21 @@ export const routes: Routes = [
       },
       {
         path: 'estimates',
-        title: 'nav.estimates',
-        loadComponent: upcoming,
-        data: { section: 'estimates' },
+        children: [
+          {
+            path: '',
+            title: 'nav.estimates',
+            loadComponent: () =>
+              import('./features/estimates/estimates-page').then((m) => m.EstimatesPage),
+          },
+          { path: 'new', title: 'estimates.form.newTitle', loadComponent: estimateForm },
+          { path: ':id', title: 'estimates.form.editTitle', loadComponent: estimateForm },
+        ],
       },
       {
         path: 'catalog',
         title: 'nav.catalog',
-        loadComponent: upcoming,
-        data: { section: 'catalog' },
+        loadComponent: () => import('./features/catalog/catalog-page').then((m) => m.CatalogPage),
       },
       {
         path: 'import',

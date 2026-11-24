@@ -71,6 +71,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
   create users in `/users` with a temporary password (`mustChangePassword`, replaced at `/change-password`)
   or an email link; access comes from `users/{uid}` (`role`, `active`). Every new collection needs
   rules in `firestore.rules` and tests in `firestore-tests/`.
+- PDFs (proforma, catalog) are drawn in the browser with jsPDF in `src/app/core/pdf/`, loaded lazily
+  through `pdf.lazy.ts`; product photos come from each product's `photoThumb` data URL.
 - Icons come from `@lucide/angular` (`<svg lucideUsers aria-hidden="true">`). Do not use emoji or other icon sets.
 - Styling is Tailwind v4; brand tokens and shared component classes live in `src/styles.css`. Visual
   decisions are recorded in `DESIGN.md`; product facts in `PRODUCT.md`.

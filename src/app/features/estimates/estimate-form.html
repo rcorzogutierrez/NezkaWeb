@@ -1,0 +1,552 @@
+<a routerLink="/estimates" class="link inline-flex items-center gap-1.5 text-sm font-semibold">
+  <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
+  {{ t().estimates.form.back }}
+</a>
+
+<header class="mt-4 max-w-2xl">
+  <h1 class="text-[1.75rem] leading-tight font-bold tracking-tight text-ink">
+    @if (editing() && savedNumber()) {
+      {{ t().estimates.form.titleNumber(savedNumber()) }}
+    } @else {
+      {{ editing() ? t().estimates.form.editTitle : t().estimates.form.newTitle }}
+    }
+  </h1>
+  <p class="mt-1.5 text-base leading-relaxed text-ink-muted">{{ t().estimates.form.intro }}</p>
+</header>
+
+@if (loading()) {
+  <p class="mt-8 flex items-center gap-2.5 text-ink-muted" role="status">
+    <svg lucideLoaderCircle class="size-4 animate-spin" aria-hidden="true"></svg>
+    {{ t().estimates.loading }}
+  </p>
+} @else if (loadError(); as key) {
+  <app-form-alert class="mt-8 max-w-2xl">{{ t().errors[key] }}</app-form-alert>
+} @else if (notFound()) {
+  <app-form-alert class="mt-8 max-w-2xl">{{ t().estimates.form.notFound }}</app-form-alert>
+} @else {
+  <form [formRoot]="estimateForm" class="mt-8 space-y-4" novalidate (submit)="onSubmitAttempt()">
+    <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <!-- Header data -->
+      <section
+        class="rounded-2xl border border-line bg-white px-5 py-5 sm:px-6"
+        aria-labelledby="sec-details"
+      >
+        <h2 id="sec-details" class="text-base font-semibold text-ink">
+          {{ t().estimates.form.details }}
+        </h2>
+        <div class="mt-4 grid grid-cols-2 gap-x-4 gap-y-5">
+          <div class="col-span-2">
+            <label for="estimate-client" class="mb-1.5 block text-sm font-semibold text-ink">{{
+              t().estimates.form.client
+            }}</label>
+            <select
+              id="estimate-client"
+              class="field-select"
+              [formField]="estimateForm.clientId"
+              [class.border-danger-600]="
+                estimateForm.clientId().touched() && estimateForm.clientId().invalid()
+              "
+              [attr.aria-invalid]="
+                estimateForm.clientId().touched() && estimateForm.clientId().invalid()
+              "
+              [attr.aria-describedby]="
+                estimateForm.clientId().touched() && estimateForm.clientId().invalid()
+                  ? 'estimate-client-error'
+                  : null
+              "
+            >
+              <option value="">{{ t().estimates.form.chooseClient }}</option>
+              @for (c of clientOptions(); track c.id) {
+                <option [value]="c.id">
+                  {{ c.name }}{{ c.branch ? ' · ' + c.branch : ''
+                  }}{{ c.active ? '' : ' (' + t().estimates.form.inactiveClient + ')' }}
+                </option>
+              }
+            </select>
+            @if (estimateForm.clientId().touched() && estimateForm.clientId().invalid()) {
+              <p id="estimate-client-error" class="mt-1.5 text-sm font-medium text-danger-700">
+                {{ t().estimates.form.needClient }}
+              </p>
+            } @else if (clientsLoaded() && !clientOptions().length) {
+              <p class="mt-1.5 text-sm text-ink-muted">
+                {{ t().estimates.form.noClients }}
+                <a routerLink="/clients/new" class="link font-semibold">{{ t().clients.new }}</a>
+              </p>
+            }
+          </div>
+          <app-text-field
+            class="col-span-2 sm:col-span-1"
+            [field]="estimateForm.number"
+            [label]="t().estimates.form.number"
+            [hint]="t().estimates.form.numberHint"
+            autocomplete="off"
+          />
+          <div class="col-span-2 sm:col-span-1">
+            <label for="estimate-date" class="mb-1.5 block text-sm font-semibold text-ink">{{
+              t().estimates.form.date
+            }}</label>
+            <input
+              id="estimate-date"
+              type="date"
+              class="field-select"
+              [formField]="estimateForm.date"
+              [attr.aria-invalid]="estimateForm.date().touched() && estimateForm.date().invalid()"
+              [attr.aria-describedby]="
+                estimateForm.date().touched() && estimateForm.date().invalid()
+                  ? 'estimate-date-error'
+                  : null
+              "
+            />
+            @if (estimateForm.date().touched() && estimateForm.date().invalid()) {
+              <p id="estimate-date-error" class="mt-1.5 text-sm font-medium text-danger-700">
+                {{ t().estimates.form.dateInvalid }}
+              </p>
+            }
+          </div>
+          <app-text-field
+            class="col-span-2 sm:col-span-1"
+            [field]="estimateForm.reference"
+            [label]="t().estimates.form.reference"
+            [hint]="t().estimates.form.referenceHint"
+            autocomplete="off"
+          />
+          <div class="col-span-2 sm:col-span-1">
+            <label for="estimate-status" class="mb-1.5 block text-sm font-semibold text-ink">{{
+              t().estimates.form.status
+            }}</label>
+            <select id="estimate-status" class="field-select" [formField]="estimateForm.status">
+              @for (s of statuses; track s) {
+                <option [value]="s">{{ t().estimates.status[s] }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid content-start gap-4">
+        <!-- Totals -->
+        <section
+          class="rounded-2xl border border-line bg-white px-5 py-4 sm:px-6"
+          aria-labelledby="sec-summary"
+        >
+          <h2 id="sec-summary" class="sr-only">{{ t().estimates.form.summary }}</h2>
+          <dl class="divide-y divide-line">
+            <div class="flex items-baseline justify-between gap-4 py-2">
+              <dt class="text-xs font-bold tracking-wide text-ink-muted uppercase">
+                {{ t().estimates.form.summaryItems }}
+              </dt>
+              <dd class="text-xl font-bold text-brand-700 tabular-nums">{{ summary().items }}</dd>
+            </div>
+            <div class="flex items-baseline justify-between gap-4 py-2">
+              <dt class="text-xs font-bold tracking-wide text-ink-muted uppercase">
+                {{ t().estimates.form.summaryBoxes }}
+              </dt>
+              <dd class="text-xl font-bold text-brand-700 tabular-nums">
+                {{ count(summary().boxes) }}
+              </dd>
+            </div>
+            <div class="flex items-baseline justify-between gap-4 py-2">
+              <dt class="text-xs font-bold tracking-wide text-ink-muted uppercase">
+                {{ t().estimates.form.summaryTotal }}
+              </dt>
+              <dd class="text-2xl font-bold text-brand-700 tabular-nums">
+                {{ money(summary().total) }}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <!-- Notes -->
+        <section class="rounded-2xl border border-line bg-white px-5 py-4 sm:px-6">
+          <label for="estimate-notes" class="mb-1.5 block text-base font-semibold text-ink">{{
+            t().estimates.form.notes
+          }}</label>
+          <textarea
+            id="estimate-notes"
+            rows="3"
+            [formField]="estimateForm.notes"
+            [placeholder]="t().estimates.form.notesHint"
+            class="block w-full resize-y rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-[0.9375rem] leading-relaxed text-ink transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-ink-muted focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20"
+          ></textarea>
+        </section>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <section class="rounded-2xl border border-line bg-white" aria-labelledby="sec-products">
+      <div class="border-b border-line px-5 py-4 sm:px-6">
+        <h2 id="sec-products" class="text-base font-semibold text-ink">
+          {{ t().estimates.form.products }}
+        </h2>
+        <p id="pick-hint" class="mt-0.5 text-sm text-ink-muted">
+          {{ t().estimates.form.productsHint }}
+        </p>
+
+        <div class="mt-3 flex flex-wrap items-end gap-3">
+          <div class="relative min-w-0 flex-1 basis-72" (focusout)="onPickFocusOut($event)">
+            <label for="pick-input" class="mb-1.5 block text-sm font-semibold text-ink">{{
+              t().estimates.form.pick
+            }}</label>
+            <div class="relative">
+              <svg
+                lucideSearch
+                class="pointer-events-none absolute top-1/2 left-3.5 size-[1.125rem] -translate-y-1/2 text-ink-subtle"
+                aria-hidden="true"
+              ></svg>
+              <input
+                #pickInput
+                id="pick-input"
+                type="text"
+                role="combobox"
+                autocomplete="off"
+                spellcheck="false"
+                aria-autocomplete="list"
+                aria-controls="pick-list"
+                aria-describedby="pick-hint"
+                [attr.aria-expanded]="pickOpen()"
+                [attr.aria-activedescendant]="
+                  pickOpen() && options().length ? 'pick-option-' + activeOption() : null
+                "
+                [attr.aria-invalid]="pickError()"
+                class="block h-11 w-full rounded-lg border bg-white pr-3.5 pl-10 text-[0.9375rem] text-ink transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-ink-muted focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20"
+                [class.border-line-strong]="!pickError()"
+                [class.border-danger-600]="pickError()"
+                [placeholder]="t().estimates.form.pickPlaceholder"
+                [value]="pickQuery()"
+                (input)="onPickInput($any($event.target).value)"
+                (keydown)="onPickKeydown($event)"
+                (click)="pickOpen.set(true)"
+              />
+            </div>
+            <ul
+              id="pick-list"
+              role="listbox"
+              tabindex="-1"
+              [attr.aria-label]="t().estimates.form.pick"
+              class="absolute inset-x-0 top-full z-20 mt-1 max-h-80 overflow-y-auto rounded-xl border border-line bg-white p-1 shadow-panel"
+              [class.hidden]="!pickOpen()"
+            >
+              @for (p of options(); track p.id; let i = $index) {
+                <!-- Keyboard users move through options from the input (aria-activedescendant). -->
+                <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+                <li
+                  [id]="'pick-option-' + i"
+                  role="option"
+                  [attr.aria-selected]="i === activeOption()"
+                  class="flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-1.5"
+                  [class.bg-brand-50]="i === activeOption()"
+                  (mousedown)="$event.preventDefault()"
+                  (mouseenter)="activeOption.set(i)"
+                  (click)="choose(p)"
+                >
+                  <span
+                    class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-md border border-line bg-white"
+                  >
+                    @if (p.photoUrl) {
+                      <span class="relative size-8">
+                        <img [ngSrc]="p.photoUrl" alt="" fill class="object-contain" />
+                      </span>
+                    } @else {
+                      <svg lucideImageOff class="size-4 text-ink-subtle" aria-hidden="true"></svg>
+                    }
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-sm font-semibold text-ink">{{
+                      optionLabel(p)
+                    }}</span>
+                    <span class="block truncate text-xs text-ink-muted tabular-nums"
+                      >{{ p.size }}{{ p.pack ? ' · ' + p.pack : ''
+                      }}{{ p.upc ? ' · ' + p.upc : '' }}</span
+                    >
+                  </span>
+                  <span class="text-sm font-semibold text-ink tabular-nums">{{
+                    p.pricePerBox ? money(p.pricePerBox) : '—'
+                  }}</span>
+                </li>
+              } @empty {
+                <li role="presentation" class="px-3 py-3 text-sm text-ink-muted">
+                  {{ t().estimates.form.pickNone }}
+                </li>
+              }
+            </ul>
+          </div>
+          <div class="w-28">
+            <label for="add-boxes" class="mb-1.5 block text-sm font-semibold text-ink">{{
+              t().estimates.form.addBoxes
+            }}</label>
+            <input
+              #boxesInput
+              id="add-boxes"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              class="block h-11 w-full rounded-lg border bg-white px-3.5 text-right text-[0.9375rem] text-ink tabular-nums outline-none focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20"
+              [class.border-line-strong]="!addBoxesInvalid()"
+              [class.border-danger-600]="addBoxesInvalid()"
+              [attr.aria-invalid]="addBoxesInvalid()"
+              [value]="addBoxes()"
+              (input)="addBoxes.set($any($event.target).value)"
+              (keydown.enter)="$event.preventDefault(); addPicked()"
+            />
+          </div>
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="addBoxesInvalid()"
+            (click)="addPicked()"
+          >
+            <svg lucidePlus class="size-[1.125rem]" aria-hidden="true"></svg>
+            {{ t().estimates.form.add }}
+          </button>
+        </div>
+        <div aria-live="polite" class="text-sm">
+          @if (pickError()) {
+            <p class="mt-2 font-medium text-danger-700">{{ t().estimates.form.choose }}</p>
+          } @else if (addBoxesInvalid()) {
+            <p class="mt-2 font-medium text-danger-700">{{ t().estimates.form.boxesInvalid }}</p>
+          }
+          <p class="sr-only">{{ lineNotice() }}</p>
+        </div>
+      </div>
+
+      @if (lines().length) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-[0.9375rem] max-lg:block">
+            <caption class="sr-only">
+              {{
+                t().estimates.form.linesCaption
+              }}
+            </caption>
+            <thead
+              class="bg-brand-600 text-xs font-bold tracking-wide text-white uppercase max-lg:sr-only"
+            >
+              <tr>
+                <th scope="col" class="w-px py-3 pr-2 pl-4">{{ t().estimates.form.colPhoto }}</th>
+                <th scope="col" class="w-px px-3 py-3">{{ t().estimates.form.colRef }}</th>
+                <th scope="col" class="px-3 py-3">{{ t().estimates.form.colDescription }}</th>
+                <th scope="col" class="px-3 py-3">{{ t().estimates.form.colSize }}</th>
+                <th scope="col" class="px-3 py-3">{{ t().estimates.form.colPack }}</th>
+                <th scope="col" class="w-28 px-3 py-3 text-right">
+                  {{ t().estimates.form.colBoxes }}
+                </th>
+                <th scope="col" class="w-36 px-3 py-3 text-right">
+                  {{ t().estimates.form.colPrice }}
+                </th>
+                <th scope="col" class="px-3 py-3 text-right">{{ t().estimates.form.colTotal }}</th>
+                <th scope="col" class="w-px px-3 py-3">
+                  <span class="sr-only">{{ t().estimates.colActions }}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-line max-lg:block">
+              @for (d of lines(); track d.line.productId; let i = $index) {
+                @let v = lineValues()[i];
+                <tr
+                  class="align-middle even:bg-canvas/50 max-lg:grid max-lg:grid-cols-[3rem_minmax(0,1fr)_minmax(0,1fr)] max-lg:gap-x-3 max-lg:gap-y-2 max-lg:px-4 max-lg:py-3"
+                >
+                  <td class="py-2 pr-2 pl-4 max-lg:col-start-1 max-lg:row-start-1 max-lg:p-0">
+                    <div
+                      class="grid size-12 place-items-center overflow-hidden rounded-lg border border-line bg-white"
+                    >
+                      @if (photoOf(d.line); as src) {
+                        <div class="relative size-10">
+                          <img [ngSrc]="src" alt="" fill class="object-contain" />
+                        </div>
+                      } @else {
+                        <svg lucideImageOff class="size-4 text-ink-subtle" aria-hidden="true"></svg>
+                      }
+                    </div>
+                  </td>
+                  <td class="px-3 py-2 font-medium text-ink-muted tabular-nums max-lg:hidden">
+                    {{ d.line.ref }}
+                  </td>
+                  <td
+                    class="px-3 py-2 max-lg:col-span-2 max-lg:col-start-2 max-lg:row-start-1 max-lg:p-0"
+                  >
+                    <p class="font-semibold text-ink">
+                      <span class="text-ink-muted lg:hidden">{{
+                        d.line.ref ? d.line.ref + '. ' : ''
+                      }}</span>{{ d.line.description }}
+                    </p>
+                    @if (d.line.upc) {
+                      <p class="text-sm text-ink-muted tabular-nums">
+                        {{ t().products.upc(d.line.upc) }}
+                      </p>
+                    }
+                  </td>
+                  <td class="px-3 py-2 text-ink max-lg:hidden">{{ d.line.size }}</td>
+                  <td class="px-3 py-2 text-ink tabular-nums max-lg:hidden">{{ d.line.pack }}</td>
+                  <td class="px-3 py-2 max-lg:col-start-2 max-lg:row-start-2 max-lg:p-0">
+                    <input
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="off"
+                      class="cell-input"
+                      [class.border-danger-600]="v.boxesInvalid"
+                      [attr.aria-label]="t().estimates.form.boxesOf(d.line.description)"
+                      [attr.aria-invalid]="v.boxesInvalid"
+                      [attr.aria-describedby]="v.boxesInvalid ? 'line-error-' + i : null"
+                      [value]="d.boxes"
+                      (input)="setBoxes(i, $any($event.target).value)"
+                    />
+                  </td>
+                  <td class="px-3 py-2 max-lg:col-start-3 max-lg:row-start-2 max-lg:p-0">
+                    <div class="relative">
+                      <span
+                        class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-ink-muted"
+                        aria-hidden="true"
+                        >$</span
+                      >
+                      <input
+                        type="text"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        class="cell-input pl-6"
+                        [class.border-danger-600]="v.priceInvalid"
+                        [attr.aria-label]="t().estimates.form.priceOf(d.line.description)"
+                        [attr.aria-invalid]="v.priceInvalid"
+                        [attr.aria-describedby]="v.priceInvalid ? 'line-error-' + i : null"
+                        [value]="d.price"
+                        (input)="setPrice(i, $any($event.target).value)"
+                        (blur)="tidyPrice(i)"
+                      />
+                    </div>
+                  </td>
+                  <td
+                    class="px-3 py-2 text-right font-bold whitespace-nowrap text-ink tabular-nums max-lg:col-span-3 max-lg:col-start-1 max-lg:row-start-3 max-lg:p-0"
+                  >
+                    {{ money(v.total) }}
+                    @if (v.boxesInvalid || v.priceInvalid) {
+                      <p
+                        [id]="'line-error-' + i"
+                        class="mt-1 max-w-48 text-left text-xs font-medium whitespace-normal text-danger-700"
+                      >
+                        {{
+                          v.boxesInvalid
+                            ? t().estimates.form.boxesInvalid
+                            : t().estimates.form.priceInvalid
+                        }}
+                      </p>
+                    }
+                  </td>
+                  <td
+                    class="px-3 py-2 max-lg:col-start-1 max-lg:row-start-2 max-lg:self-center max-lg:p-0"
+                  >
+                    <button
+                      type="button"
+                      class="btn-icon hover:bg-danger-50 hover:text-danger-700"
+                      [attr.aria-label]="t().estimates.form.removeNamed(d.line.description)"
+                      [attr.title]="t().estimates.form.remove"
+                      (click)="removeLine(i)"
+                    >
+                      <svg lucideTrash2 class="size-4" aria-hidden="true"></svg>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="px-6 py-10 text-center text-[0.9375rem] text-ink-muted">
+          {{ t().estimates.form.noLines }}
+        </p>
+      }
+    </section>
+
+    <!-- Actions -->
+    <div class="rounded-2xl border border-line bg-white px-5 py-4 sm:px-6">
+      <div aria-live="polite" class="mb-4 empty:hidden">
+        @if (error(); as key) {
+          <app-form-alert>{{ t().errors[key] }}</app-form-alert>
+        } @else if (problems().length) {
+          <app-form-alert>
+            {{ t().estimates.form.errorsTitle }} {{ problems().join(' ') }}
+          </app-form-alert>
+        } @else if (pdfFailed()) {
+          <app-form-alert>{{ t().estimates.pdfFailed }}</app-form-alert>
+        }
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <button type="submit" class="btn-primary" [disabled]="estimateForm().submitting()">
+          @if (estimateForm().submitting()) {
+            <svg lucideLoaderCircle class="size-4 animate-spin" aria-hidden="true"></svg>
+            {{ t().estimates.form.submitting }}
+          } @else {
+            {{ t().estimates.form.submit }}
+          }
+        </button>
+        <a routerLink="/estimates" class="btn-secondary">{{ t().estimates.form.cancel }}</a>
+        @if (editing()) {
+          <span class="mx-1 hidden h-6 w-px bg-line sm:block" aria-hidden="true"></span>
+          <button
+            type="button"
+            class="btn-secondary"
+            [disabled]="dirty() || pdfBusy()"
+            [attr.aria-describedby]="dirty() ? 'pdf-hint' : null"
+            (click)="makePdf(false)"
+          >
+            @if (pdfBusy()) {
+              <svg lucideLoaderCircle class="size-4 animate-spin" aria-hidden="true"></svg>
+              {{ t().estimates.form.pdfBusy }}
+            } @else {
+              <svg lucideFileDown class="size-4" aria-hidden="true"></svg>
+              {{ t().estimates.form.pdf }}
+            }
+          </button>
+          <button
+            type="button"
+            class="btn-ghost h-11"
+            [disabled]="dirty() || pdfBusy()"
+            [attr.aria-describedby]="dirty() ? 'pdf-hint' : null"
+            (click)="makePdf(true)"
+          >
+            <svg lucideExternalLink class="size-4" aria-hidden="true"></svg>
+            {{ t().estimates.form.pdfOpen }}
+          </button>
+          @if (dirty()) {
+            <p id="pdf-hint" class="text-sm text-ink-muted">{{ t().estimates.form.pdfHint }}</p>
+          }
+          @if (isAdmin()) {
+            <button type="button" class="btn-danger-ghost ml-auto" (click)="askDelete()">
+              <svg lucideTrash2 class="size-4" aria-hidden="true"></svg>
+              {{ t().estimates.form.delete }}
+            </button>
+          }
+        }
+      </div>
+    </div>
+  </form>
+}
+
+<dialog
+  #deleteDialog
+  aria-labelledby="delete-title"
+  aria-describedby="delete-body"
+  class="m-auto w-[min(28rem,calc(100vw-2rem))] rounded-2xl bg-white p-0 text-ink shadow-panel backdrop:bg-brand-900/40"
+>
+  <div class="p-6">
+    <h2 id="delete-title" class="text-lg font-bold text-ink">
+      {{ t().estimates.form.deleteTitle(savedNumber()) }}
+    </h2>
+    <p id="delete-body" class="mt-2 text-[0.9375rem] leading-relaxed text-ink-muted">
+      {{ t().estimates.form.deleteBody }}
+    </p>
+    @if (deleteError(); as key) {
+      <app-form-alert class="mt-4">{{ t().errors[key] }}</app-form-alert>
+    }
+  </div>
+  <div class="flex flex-wrap justify-end gap-3 border-t border-line bg-canvas/60 px-6 py-4">
+    <button type="button" class="btn-secondary" (click)="closeDelete()" autofocus>
+      {{ t().estimates.form.cancel }}
+    </button>
+    <button type="button" class="btn-danger" [disabled]="deleting()" (click)="confirmDelete()">
+      @if (deleting()) {
+        <svg lucideLoaderCircle class="size-4 animate-spin" aria-hidden="true"></svg>
+        {{ t().estimates.form.deleting }}
+      } @else {
+        {{ t().estimates.form.deleteConfirm }}
+      }
+    </button>
+  </div>
+</dialog>

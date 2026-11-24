@@ -164,6 +164,41 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Estimates (proformas): every active user reads, creates and edits them; only
+    // administrators delete. Lines are a list of product snapshots; the app checks each line.
+    function validEstimate(data) {
+      return data.keys().hasOnly(['number', 'clientId', 'clientName', 'clientBranch', 'date',
+          'reference', 'status', 'notes', 'lines', 'totalBoxes', 'total',
+          'createdAt', 'createdBy', 'updatedAt', 'updatedBy'])
+        && data.number is string && data.number.size() > 0 && data.number.size() <= 30
+        && data.clientId is string && data.clientId.size() > 0
+        && exists(/databases/$(database)/documents/clients/$(data.clientId))
+        && shortText(data, 'clientName', 200)
+        && shortText(data, 'clientBranch', 200)
+        && data.date is string && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && shortText(data, 'reference', 200)
+        && data.status in ['draft', 'sent', 'accepted', 'rejected']
+        && shortText(data, 'notes', 2000)
+        && data.lines is list && data.lines.size() > 0 && data.lines.size() <= 300
+        && data.totalBoxes is int && data.totalBoxes > 0
+        && data.total is number && data.total >= 0
+        && data.updatedAt == request.time
+        && data.updatedBy == request.auth.uid;
+    }
+
+    match /estimates/{estimateId} {
+      allow read: if isActive();
+      allow create: if isActive()
+        && validEstimate(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isActive()
+        && validEstimate(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy;
+      allow delete: if isAdmin();
+    }
+
     match /settings/setup {
       // The login page asks whether the first administrator still has to be created.
       allow get: if true;

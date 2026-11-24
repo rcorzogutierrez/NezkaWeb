@@ -1,4 +1,5 @@
 import { CLIENT_FIELDS, type ClientData, type ClientField, fold } from '../clients/client';
+import { type EstimateLine, type EstimateStatus, isIsoDate, totals } from '../estimates/estimate';
 import {
   PRODUCT_TEXT_FIELDS,
   type ProductData,
@@ -26,9 +27,69 @@ export interface DesktopProduct {
   readonly image: Uint8Array<ArrayBuffer> | null;
 }
 
+/** A line of a desktop estimate; the web product is found again by its keys. */
+export type DesktopEstimateLine = Omit<EstimateLine, 'productId'> & {
+  readonly productKeys: readonly string[];
+};
+
+export interface DesktopEstimate {
+  readonly number: string;
+  readonly date: string;
+  readonly reference: string;
+  readonly status: EstimateStatus;
+  readonly notes: string;
+  /** Name and branch of the client, to find it in the web app; null when it has none. */
+  readonly client: Pick<ClientData, 'name' | 'branch'> | null;
+  readonly lines: readonly DesktopEstimateLine[];
+  readonly total: number;
+}
+
 export interface DesktopData {
   readonly products: readonly DesktopProduct[];
   readonly clients: readonly ClientData[];
+  readonly estimates: readonly DesktopEstimate[];
+}
+
+/** The desktop app stores the status in Spanish. */
+const DESKTOP_STATUS: Record<string, EstimateStatus> = {
+  borrador: 'draft',
+  enviado: 'sent',
+  aceptado: 'accepted',
+  rechazado: 'rejected',
+};
+
+export function toDesktopEstimate(row: Row, lineRows: readonly Row[]): DesktopEstimate {
+  const lines = lineRows.map((l): DesktopEstimateLine => {
+    const boxes = Math.round(Number(l['boxes']) || 0);
+    const price = Number(l['price_per_box']);
+    const line = {
+      ref: text(l['ref']),
+      description: text(l['description']),
+      upc: text(l['upc']),
+      size: text(l['size']),
+      pack: text(l['pack']),
+      boxes,
+      pricePerBox: Number.isFinite(price) && price > 0 ? Math.round(price * 100) / 100 : 0,
+    };
+    // The catalog product the line came from, when it still exists; else the line's own copy.
+    const product =
+      l['p_description'] != null
+        ? { ref: text(l['p_ref']), upc: text(l['p_upc']), description: text(l['p_description']) }
+        : line;
+    return { ...line, productKeys: productKey(product) };
+  });
+  const name = text(row['client_name']);
+  const date = text(row['date']).slice(0, 10);
+  return {
+    number: text(row['number']),
+    date: isIsoDate(date) ? date : '',
+    reference: text(row['reference']),
+    status: DESKTOP_STATUS[fold(text(row['status']))] ?? 'draft',
+    notes: text(row['notes']),
+    client: name ? { name, branch: text(row['client_branch']) } : null,
+    lines,
+    total: totals(lines).total,
+  };
 }
 
 /** Desktop column for each web field (the desktop uses snake_case). */
@@ -118,9 +179,26 @@ export async function readDesktopDb(file: Blob, wasmUrl = SQL_WASM_URL): Promise
       statement.free();
       return out;
     };
+    const estimates =
+      tables.has('estimates') && tables.has('estimate_lines')
+        ? rows(
+            'SELECT e.*, c.name AS client_name, c.branch AS client_branch FROM estimates e ' +
+              'LEFT JOIN clients c ON c.id = e.client_id ORDER BY e.id',
+          ).map((e) =>
+            toDesktopEstimate(
+              e,
+              rows(
+                'SELECT l.*, p.ref AS p_ref, p.upc AS p_upc, p.description AS p_description ' +
+                  'FROM estimate_lines l LEFT JOIN products p ON p.id = l.product_id ' +
+                  `WHERE l.estimate_id = ${Number(e['id'])} ORDER BY l.position`,
+              ),
+            ),
+          )
+        : [];
     return {
       products: rows('SELECT * FROM products ORDER BY id').map(toDesktopProduct),
       clients: rows('SELECT * FROM clients ORDER BY id').map(toClientData),
+      estimates,
     };
   } catch (e) {
     throw e instanceof DesktopDbError ? e : new DesktopDbError('unreadable');
@@ -154,6 +232,7 @@ export interface ImportRow<T> {
 export interface ImportPlan {
   readonly products: readonly ImportRow<DesktopProduct>[];
   readonly clients: readonly ImportRow<ClientData>[];
+  readonly estimates: readonly ImportRow<DesktopEstimate>[];
 }
 
 /** Marks what is already in the web app (and repeats inside the file) so it is not added twice. */
@@ -161,6 +240,7 @@ export function planImport(
   data: DesktopData,
   existingProducts: readonly Pick<ProductData, 'ref' | 'upc' | 'description'>[],
   existingClients: readonly Pick<ClientData, 'name' | 'branch'>[],
+  existingNumbers: readonly string[] = [],
 ): ImportPlan {
   const productKeys = new Set(existingProducts.flatMap(productKey));
   const products = data.products
@@ -180,5 +260,15 @@ export function planImport(
       clientKeys.add(key);
       return { item: c, exists };
     });
-  return { products, clients };
+  // Same number means the same proforma; ones without products or a valid date are left out.
+  const numbers = new Set(existingNumbers.map((n) => n.trim().toLowerCase()));
+  const estimates = data.estimates
+    .filter((e) => e.number && e.date && e.lines.some((l) => l.boxes > 0))
+    .map((e) => {
+      const key = e.number.toLowerCase();
+      const exists = numbers.has(key);
+      numbers.add(key);
+      return { item: e, exists };
+    });
+  return { products, clients, estimates };
 }

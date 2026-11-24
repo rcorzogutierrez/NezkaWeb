@@ -1,5 +1,28 @@
 {
   "projects": {
     "default": "nezka-web"
+  },
+  "targets": {
+    "nezka-web": {
+      "storage": {
+        "photos": [
+          "nezka-web.firebasestorage.app"
+        ]
+      }
+    },
+    "demo-nezka": {
+      "storage": {
+        "photos": [
+          "demo-nezka.appspot.com"
+        ]
+      }
+    },
+    "demo-nezka-rules": {
+      "storage": {
+        "photos": [
+          "demo-nezka-rules.appspot.com"
+        ]
+      }
+    }
   }
 }
