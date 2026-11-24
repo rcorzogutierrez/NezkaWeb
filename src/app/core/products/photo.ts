@@ -14,6 +14,27 @@ export class PhotoError extends Error {
  * shots on white) and encodes it as WebP, so the list loads fast on a phone.
  */
 export async function preparePhoto(file: Blob): Promise<Blob> {
+  const canvas = await drawScaled(file, PHOTO_MAX_SIDE);
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, 'image/webp', 0.85),
+  );
+  if (!blob) throw new PhotoError('notImage');
+  return blob;
+}
+
+/** Longest side of the thumbnail kept in the product document. */
+export const THUMB_MAX_SIDE = 128;
+
+/**
+ * A small JPEG as a data URL, stored with the product. The PDFs draw it without downloading
+ * from Storage (which a page cannot read into a canvas without a CORS setup on the bucket).
+ */
+export async function photoThumb(file: Blob): Promise<string> {
+  const canvas = await drawScaled(file, THUMB_MAX_SIDE);
+  return canvas.toDataURL('image/jpeg', 0.82);
+}
+
+async function drawScaled(file: Blob, maxSide: number): Promise<HTMLCanvasElement> {
   if (file.size > PHOTO_MAX_INPUT_BYTES) throw new PhotoError('tooBig');
   if (file.type && !file.type.startsWith('image/')) throw new PhotoError('notImage');
   let bitmap: ImageBitmap;
@@ -22,7 +43,7 @@ export async function preparePhoto(file: Blob): Promise<Blob> {
   } catch {
     throw new PhotoError('notImage');
   }
-  const scale = Math.min(1, PHOTO_MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
   const width = Math.max(1, Math.round(bitmap.width * scale));
   const height = Math.max(1, Math.round(bitmap.height * scale));
   const canvas = document.createElement('canvas');
@@ -35,9 +56,5 @@ export async function preparePhoto(file: Blob): Promise<Blob> {
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(bitmap, 0, 0, width, height);
   bitmap.close();
-  const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, 'image/webp', 0.85),
-  );
-  if (!blob) throw new PhotoError('notImage');
-  return blob;
+  return canvas;
 }

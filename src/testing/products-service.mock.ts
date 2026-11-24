@@ -11,6 +11,7 @@ export function testProduct(overrides: Partial<Product> = {}): Product {
     description: 'Mango Pulp',
     photoPath: '',
     photoUrl: '',
+    photoThumb: '',
     ...overrides,
   };
 }

@@ -129,7 +129,7 @@ service cloud.firestore {
     // Products: every active user reads, creates and edits them; only administrators delete.
     function validProduct(data) {
       return data.keys().hasOnly(['ref', 'description', 'upc', 'size', 'pack', 'qtyPerPallet',
-          'pricePerBox', 'notes', 'active', 'photoPath', 'photoUrl',
+          'pricePerBox', 'notes', 'active', 'photoPath', 'photoUrl', 'photoThumb',
           'createdAt', 'createdBy', 'updatedAt', 'updatedBy'])
         && data.description is string && data.description.size() > 0
         && data.description.size() <= 200
@@ -144,6 +144,9 @@ service cloud.firestore {
         && shortText(data, 'photoPath', 300)
         && shortText(data, 'photoUrl', 1000)
         && (data.photoPath == '' || data.photoPath.matches('^products/[^/]+/[^/]+$'))
+        && (!('photoThumb' in data) || (shortText(data, 'photoThumb', 40000)
+          && (data.photoThumb == ''
+            || data.photoThumb.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$'))))
         && data.updatedAt == request.time
         && data.updatedBy == request.auth.uid;
     }

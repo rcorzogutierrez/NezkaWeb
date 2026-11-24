@@ -291,6 +291,7 @@ describe('products', () => {
         pricePerBox: 25.5,
         photoPath: 'products/p1/a.webp',
         photoUrl: 'https://example.com/a.webp',
+        photoThumb: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
         updatedAt: serverTimestamp(),
         updatedBy: 'beto',
       }),
@@ -310,6 +311,12 @@ describe('products', () => {
     await assertFails(setDoc(doc(as('beto'), 'products/x'), product('beto', { description: '' })));
     await assertFails(
       setDoc(doc(as('beto'), 'products/x'), product('beto', { photoPath: 'users/ana/a.webp' })),
+    );
+    await assertFails(
+      setDoc(
+        doc(as('beto'), 'products/x'),
+        product('beto', { photoThumb: 'data:text/html;base64,PHNjcmlwdD4=' }),
+      ),
     );
   });
 

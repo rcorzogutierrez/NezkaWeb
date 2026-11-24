@@ -23,6 +23,8 @@ export type ProductData = Record<ProductTextField, string> & {
 export interface ProductPhoto {
   readonly photoPath: string;
   readonly photoUrl: string;
+  /** Small JPEG data URL of the same photo, for PDFs. */
+  readonly photoThumb: string;
 }
 
 /** Document `products/{id}`: an item of the catalog that can be quoted. */
@@ -67,6 +69,7 @@ export function toProduct(id: string, data: Record<string, unknown>): Product {
     active: data['active'] !== false,
     photoPath: typeof data['photoPath'] === 'string' ? data['photoPath'] : '',
     photoUrl: typeof data['photoUrl'] === 'string' ? data['photoUrl'] : '',
+    photoThumb: typeof data['photoThumb'] === 'string' ? data['photoThumb'] : '',
     createdAt: data['createdAt'] as Timestamp | undefined,
     updatedAt: data['updatedAt'] as Timestamp | undefined,
   };

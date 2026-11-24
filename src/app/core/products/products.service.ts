@@ -2,6 +2,7 @@ import { DestroyRef, Service, inject, signal } from '@angular/core';
 import { FIREBASE_AUTH } from '../firebase/firebase.providers';
 import { FirestoreLoader } from '../firebase/firestore.loader';
 import { StorageLoader } from '../firebase/storage.loader';
+import { photoThumb } from './photo';
 import {
   PRODUCTS_COLLECTION,
   type Product,
@@ -83,9 +84,10 @@ export class ProductsService {
     let next: ProductPhoto = {
       photoPath: current?.photoPath ?? '',
       photoUrl: current?.photoUrl ?? '',
+      photoThumb: current?.photoThumb ?? '',
     };
     if (photo.kind === 'replace') next = await this.upload(ref.id, photo.file);
-    if (photo.kind === 'remove') next = { photoPath: '', photoUrl: '' };
+    if (photo.kind === 'remove') next = { photoPath: '', photoUrl: '', photoThumb: '' };
 
     const values = {
       ...normalizeProduct(data),
@@ -119,7 +121,8 @@ export class ProductsService {
       contentType: file.type || 'image/jpeg',
       cacheControl: 'public, max-age=31536000, immutable',
     });
-    return { photoPath: path, photoUrl: await getDownloadURL(target) };
+    const thumb = await photoThumb(file).catch(() => '');
+    return { photoPath: path, photoUrl: await getDownloadURL(target), photoThumb: thumb };
   }
 
   /** A file that is already gone is not an error. */
