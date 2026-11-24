@@ -1,8 +1,6 @@
 import { Component, type ElementRef, computed, inject, signal, viewChild } from '@angular/core';
-import { FormField, FormRoot, form, minLength, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import {
-  LucideKeyRound,
   LucideLoaderCircle,
   LucideMail,
   LucideTrash2,
@@ -15,20 +13,15 @@ import { AuthService } from '../../core/auth/auth.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { USER_ROLES, type UserProfile, type UserRole } from '../../core/users/user-profile';
 import { UsersService } from '../../core/users/users.service';
-import { MIN_PASSWORD_LENGTH } from '../auth/password-match';
 import { FormAlert } from '../../shared/ui/form-alert';
 import { type Notice, NoticeService } from '../../shared/ui/notice.service';
 import { StatusBadge } from '../../shared/ui/status-badge';
-import { TextField } from '../../shared/ui/text-field';
 
 /** Admin-only list of the people who can sign in. */
 @Component({
   selector: 'app-users-page',
   imports: [
-    FormField,
-    FormRoot,
     RouterLink,
-    LucideKeyRound,
     LucideLoaderCircle,
     LucideMail,
     LucideTrash2,
@@ -37,7 +30,6 @@ import { TextField } from '../../shared/ui/text-field';
     LucideUserX,
     FormAlert,
     StatusBadge,
-    TextField,
   ],
   templateUrl: './users-page.html',
 })
@@ -123,55 +115,6 @@ export class UsersPage {
     }
     this.closeDelete();
     this.notice.set({ tone: 'success', text: () => this.t().users.deleted(user.name) });
-  }
-
-  // Setting someone else's password: any password Firebase accepts.
-  protected readonly minPassword = MIN_PASSWORD_LENGTH;
-  private readonly passwordDialog = viewChild<ElementRef<HTMLDialogElement>>('passwordDialog');
-  protected readonly passwordFor = signal<UserProfile | null>(null);
-  protected readonly passwordError = signal<ErrorKey | null>(null);
-  protected readonly passwordModel = signal({ password: '', mustChange: false });
-  protected readonly passwordForm = form(
-    this.passwordModel,
-    (p) => {
-      required(p.password);
-      minLength(p.password, MIN_PASSWORD_LENGTH);
-    },
-    {
-      submission: {
-        action: async (f) => {
-          const user = this.passwordFor();
-          if (!user) return;
-          this.passwordError.set(null);
-          const { password, mustChange } = f().value();
-          try {
-            await this.usersService.setPassword(user.uid, password, mustChange);
-          } catch (e) {
-            this.passwordError.set(errorKey(e));
-            return;
-          }
-          this.closePassword();
-          this.notice.set({
-            tone: 'success',
-            text: () =>
-              mustChange
-                ? this.t().users.passwordSetMustChange(user.name)
-                : this.t().users.passwordSet(user.name),
-          });
-        },
-      },
-    },
-  );
-
-  protected askPassword(user: UserProfile): void {
-    this.passwordFor.set(user);
-    this.passwordError.set(null);
-    this.passwordForm().reset({ password: '', mustChange: false });
-    this.passwordDialog()?.nativeElement.showModal();
-  }
-
-  protected closePassword(): void {
-    this.passwordDialog()?.nativeElement.close();
   }
 
   private async run(user: UserProfile, task: () => Promise<void>, done: () => string) {

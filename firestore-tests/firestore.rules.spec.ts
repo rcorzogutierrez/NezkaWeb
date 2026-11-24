@@ -167,8 +167,10 @@ describe('users', () => {
     await assertFails(updateDoc(doc(as('dora'), 'users/dora'), { mustChangePassword: true }));
   });
 
-  it('nobody deletes profiles', async () => {
-    await assertFails(deleteDoc(doc(as('ana'), 'users/beto')));
+  it('only administrators delete profiles, never their own', async () => {
+    await assertFails(deleteDoc(doc(as('beto'), 'users/ana')));
+    await assertFails(deleteDoc(doc(as('ana'), 'users/ana')));
+    await assertSucceeds(deleteDoc(doc(as('ana'), 'users/beto')));
   });
 });
 

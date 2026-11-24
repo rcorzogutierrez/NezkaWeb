@@ -81,9 +81,10 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mustChangePassword'])
         && request.resource.data.mustChangePassword == false;
 
-      // The app never deletes a profile directly: an administrator deletes an account through
-      // the deleteUser Cloud Function (Admin SDK), which removes the sign-in and this document.
-      allow delete: if false;
+      // Admins remove someone else from the app (their sign-in stays in Firebase Auth, which
+      // only the console or the Admin SDK can delete). Nobody deletes themselves, so the admin
+      // doing it is always left. Estimates keep the author's id.
+      allow delete: if isAdmin() && uid != request.auth.uid;
     }
 
     // Clients: every active user reads, creates and edits them; only administrators delete.

@@ -98,14 +98,31 @@ describe('NewUser', () => {
     expect(users.create).toHaveBeenCalledWith(expect.objectContaining({ role: 'admin' }));
   });
 
-  it('explains when the email is already taken', async () => {
+  it('offers to reuse the sign-in of someone deleted before', async () => {
     users.create.mockRejectedValueOnce(new FirebaseError('auth/email-already-in-use', 'x'));
+    type(page, 'Name', 'Ana');
+    type(page, 'Email', 'ana@example.com');
+    type(page, 'Temporary password', 'nezka1');
+    await send();
+    expect(page.textContent).toContain('That email already has a sign-in from before');
+    expect(page.querySelector('a[href*="authentication/users"]')).not.toBeNull();
+    expect(TestBed.inject(Router).url).toBe('/users/new');
+
+    type(page, 'Current password of that account', 'vieja1');
+    await send();
+    expect(users.create).toHaveBeenLastCalledWith(
+      expect.objectContaining({ temporaryPassword: 'nezka1', currentPassword: 'vieja1' }),
+    );
+    expect(TestBed.inject(Router).url).toBe('/users');
+  });
+
+  it('says when the person is already in the list', async () => {
+    users.create.mockRejectedValueOnce(new FirebaseError('app/user-exists', 'x'));
     type(page, 'Name', 'Ana');
     type(page, 'Email', 'ana@example.com');
     await send();
     expect(page.querySelector('[role=alert]')?.textContent).toContain(
-      'There is already an account with that email.',
+      'That person is already in the user list.',
     );
-    expect(TestBed.inject(Router).url).toBe('/users/new');
   });
 });

@@ -150,10 +150,7 @@ export const es = {
     notEnabled: 'El acceso con correo y contraseña no está activado en Firebase.',
     recentLogin: 'Por seguridad, cierra sesión y vuelve a entrar antes de cambiar la contraseña.',
     permissionDenied: 'No tienes permiso para hacer esto.',
-    protectedAccount:
-      'No puedes borrar ni cambiar tu propia cuenta desde aquí, ni dejar la app sin administradores.',
-    serverUnavailable:
-      'El servidor no respondió. Si es la primera vez, esta opción puede no estar activada todavía en Firebase.',
+    userExists: 'Esa persona ya está en la lista de usuarios.',
     unknown: 'No se pudo completar la operación. Inténtalo de nuevo.',
   },
   nav: {
@@ -644,29 +641,16 @@ export const es = {
     createdWithPassword: (name: string, password: string) =>
       `Creamos la cuenta de ${name}. Su contraseña temporal es ${password}: dásela y la cambiará al entrar.`,
     tempPassword: 'Contraseña temporal',
-    setPassword: 'Poner contraseña',
-    setPasswordOf: (name: string) => `Poner contraseña a ${name}`,
     delete: 'Borrar',
     deleteOf: (name: string) => `Borrar a ${name}`,
     cancel: 'Cancelar',
     deleteTitle: (name: string) => `¿Borrar a ${name}?`,
-    deleteBody: (email: string) =>
-      `Se borra su cuenta y ya no podrá entrar. Después puedes volver a crearla con ${email}. Sus estimados se conservan.`,
+    deleteBody: 'Sale de la lista y ya no puede entrar a la app. Sus estimados se conservan.',
+    deleteLater: (email: string) =>
+      `Para volver a crearla con ${email}, usa Nuevo usuario. Si no sabes su contraseña actual, primero borra su acceso en Firebase › Authentication.`,
     deleteConfirm: 'Borrar usuario',
     deleting: 'Borrando…',
     deleted: (name: string) => `Borramos a ${name}.`,
-    passwordTitle: (name: string) => `Contraseña de ${name}`,
-    passwordIntro:
-      'Escribe la contraseña que quieras darle. Puede ser sencilla; Firebase pide al menos 6 caracteres.',
-    passwordLabel: 'Nueva contraseña',
-    passwordHint: (min: number) => `Mínimo ${min} caracteres.`,
-    mustChange: 'Pedir que la cambie al entrar',
-    mustChangeHelp: 'Al iniciar sesión tendrá que elegir una propia.',
-    passwordSave: 'Guardar contraseña',
-    passwordSaving: 'Guardando…',
-    passwordSet: (name: string) => `Listo: ${name} ya puede entrar con la nueva contraseña.`,
-    passwordSetMustChange: (name: string) =>
-      `Listo: ${name} entra con la nueva contraseña y elegirá una propia al iniciar sesión.`,
     created: (name: string, email: string) =>
       `Creamos la cuenta de ${name}. Le enviamos a ${email} un enlace para elegir su contraseña.`,
     form: {
@@ -685,6 +669,13 @@ export const es = {
       password: 'Contraseña temporal',
       passwordHint: 'Puedes cambiarla. La persona elegirá la suya la primera vez que entre.',
       newPassword: 'Generar otra',
+      reuseTitle: 'Ese correo ya tiene acceso de antes',
+      reuseBody:
+        'Pasa con alguien que borraste de la lista. Si sabes su contraseña actual, escríbela y volvemos a usar esa cuenta con la contraseña nueva.',
+      reuseConsole:
+        'Si no la sabes, borra ese correo en Firebase › Authentication › Users y vuelve a intentarlo.',
+      reuseConsoleLink: 'Abrir Firebase Authentication',
+      currentPassword: 'Contraseña actual de esa cuenta',
       submit: 'Crear usuario',
       submitting: 'Creando usuario…',
       cancel: 'Cancelar',
