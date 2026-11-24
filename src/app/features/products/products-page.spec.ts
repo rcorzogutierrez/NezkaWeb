@@ -8,6 +8,7 @@ import {
 } from '../../../testing/products-service.mock';
 import { buttonByText } from '../../../testing/dom';
 import { useLanguage } from '../../../testing/setup';
+import { PdfService } from '../../core/pdf/pdf.service';
 import { ProductsPage } from './products-page';
 
 const mango = testProduct({
@@ -33,12 +34,14 @@ const old = testProduct({
 describe('ProductsPage', () => {
   let harness: RouterTestingHarness;
   let page: HTMLElement;
+  const files = { download: vi.fn() };
 
   async function open(url: string, list = [mango, guava, old]) {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: 'products', component: ProductsPage }], withComponentInputBinding()),
         provideProductsServiceMock(createProductsServiceMock(list)),
+        { provide: PdfService, useValue: files },
       ],
     });
     useLanguage('en');
@@ -105,5 +108,23 @@ describe('ProductsPage', () => {
   it('teaches what to do when the catalog is empty', async () => {
     await open('/products', []);
     expect(page.textContent).toContain('The catalog is empty');
+  });
+
+  it('exports the listed products that lack data to Excel', async () => {
+    files.download.mockClear();
+    await open('/products?status=active');
+    buttonByText(page, 'Export missing data').click();
+    await vi.waitFor(() => expect(files.download).toHaveBeenCalled());
+    const [blob, name] = files.download.mock.calls[0] as [Blob, string];
+    expect(name).toMatch(/^Productos_datos_faltantes_\d{4}-\d{2}-\d{2}\.xlsx$/);
+    const xml = new TextDecoder().decode(await blob.arrayBuffer());
+    expect(xml).toContain('Guayaba en almíbar');
+    expect(xml).not.toContain('Mango Pulp');
+    expect(xml).not.toContain('Tamarindo');
+  });
+
+  it('cannot export when nothing listed lacks data', async () => {
+    await open('/products?q=mango');
+    expect(buttonByText(page, 'Export missing data').disabled).toBe(true);
   });
 });

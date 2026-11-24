@@ -2,6 +2,7 @@ import { Component, computed, inject, input, linkedSignal, signal } from '@angul
 import { NgOptimizedImage } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import {
+  LucideFileSpreadsheet,
   LucideImageOff,
   LucidePackage,
   LucidePencil,
@@ -9,7 +10,9 @@ import {
   LucideSearch,
   LucideX,
 } from '@lucide/angular';
+import { displayDate, todayIso } from '../../core/estimates/estimate';
 import { I18nService } from '../../core/i18n/i18n.service';
+import { PdfService } from '../../core/pdf/pdf.service';
 import {
   MISSING_INFO,
   type MissingInfo,
@@ -33,6 +36,7 @@ type MissingFilter = '' | 'any' | MissingInfo;
   imports: [
     NgOptimizedImage,
     RouterLink,
+    LucideFileSpreadsheet,
     LucideImageOff,
     LucidePackage,
     LucidePencil,
@@ -46,7 +50,9 @@ type MissingFilter = '' | 'any' | MissingInfo;
 })
 export class ProductsPage {
   private readonly router = inject(Router);
-  protected readonly t = inject(I18nService).t;
+  private readonly files = inject(PdfService);
+  private readonly i18n = inject(I18nService);
+  protected readonly t = this.i18n.t;
 
   readonly q = input<string>();
   readonly status = input<string>();
@@ -95,6 +101,40 @@ export class ProductsPage {
   protected missingText(lacks: readonly MissingInfo[]): string {
     const short = this.t().products.missingShort;
     return lacks.map((m) => short[m]).join(', ');
+  }
+
+  // "Exportar faltantes": the listed products that lack something, as an Excel file.
+  protected readonly exporting = signal(false);
+  protected readonly exportFailed = signal(false);
+  protected readonly exportable = computed(() =>
+    this.shown()
+      .filter(({ missing }) => missing.length > 0)
+      .map(({ product }) => product),
+  );
+
+  protected async exportMissing(): Promise<void> {
+    const products = this.exportable();
+    if (this.exporting() || !products.length) return;
+    this.exporting.set(true);
+    this.exportFailed.set(false);
+    try {
+      const { missingDataXlsx, missingDataFileName } =
+        await import('../../core/products/missing-xlsx');
+      const t = this.t().products;
+      const filter = this.missingFilter();
+      const title =
+        filter && filter !== 'any'
+          ? `${t.exportSheet.title} (${t.missingFilter[filter].toLowerCase()})`
+          : t.exportSheet.title;
+      const date = todayIso();
+      const text = { ...t.exportSheet, missingShort: t.missingShort };
+      const blob = missingDataXlsx(products, text, displayDate(date, this.i18n.language()), title);
+      this.files.download(blob, missingDataFileName(date));
+    } catch {
+      this.exportFailed.set(true);
+    } finally {
+      this.exporting.set(false);
+    }
   }
 
   protected setSearch(value: string): void {

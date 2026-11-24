@@ -123,6 +123,44 @@
           </button>
         </div>
       } @else {
+        @if (markedShown().length; as n) {
+          <div
+            class="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line bg-brand-50/60 px-4 py-2.5 sm:px-5"
+            role="region"
+            [attr.aria-label]="t().estimates.markedRegion"
+          >
+            <p class="mr-auto text-sm font-semibold text-ink" aria-live="polite">
+              {{ t().estimates.marked(n) }}
+            </p>
+            <button
+              type="button"
+              class="btn-ghost"
+              [attr.aria-busy]="pdfBusy() === 'marked'"
+              [disabled]="pdfBusy() !== null"
+              (click)="markedPdf('download')"
+            >
+              @if (pdfBusy() === 'marked') {
+                <svg lucideLoaderCircle class="size-4 animate-spin" aria-hidden="true"></svg>
+              } @else {
+                <svg lucideFileDown class="size-4" aria-hidden="true"></svg>
+              }
+              {{ t().estimates.markedDownload }}
+            </button>
+            <button
+              type="button"
+              class="btn-ghost"
+              [disabled]="pdfBusy() !== null"
+              (click)="markedPdf('open')"
+            >
+              <svg lucideExternalLink class="size-4" aria-hidden="true"></svg>
+              {{ t().estimates.markedOpen }}
+            </button>
+            <button type="button" class="btn-ghost" (click)="markAll(false)">
+              <svg lucideX class="size-4" aria-hidden="true"></svg>
+              {{ t().estimates.markedClear }}
+            </button>
+          </div>
+        }
         <table class="w-full text-left text-[0.9375rem] max-lg:block">
           <caption class="sr-only">
             {{
@@ -133,7 +171,19 @@
             class="bg-brand-600 text-xs font-bold tracking-wide text-white uppercase max-lg:sr-only"
           >
             <tr>
-              <th scope="col" class="py-3 pr-3 pl-5">{{ t().estimates.colNumber }}</th>
+              <th scope="col" class="py-3 pr-3 pl-5">
+                <span class="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    class="size-4 accent-white"
+                    [checked]="allMarked()"
+                    [indeterminate]="markedShown().length > 0 && !allMarked()"
+                    [attr.aria-label]="t().estimates.markAll"
+                    (change)="markAll($any($event.target).checked)"
+                  />
+                  {{ t().estimates.colNumber }}
+                </span>
+              </th>
               <th scope="col" class="px-3 py-3">{{ t().estimates.colClient }}</th>
               <th scope="col" class="px-3 py-3">{{ t().estimates.colDate }}</th>
               <th scope="col" class="px-3 py-3 text-right">{{ t().estimates.colItems }}</th>
@@ -152,6 +202,13 @@
                 [class.text-ink-muted]="e.status === 'rejected'"
               >
                 <td class="py-3 pr-3 pl-5 whitespace-nowrap max-lg:p-0 max-lg:whitespace-normal">
+                  <input
+                    type="checkbox"
+                    class="mr-3 size-4 align-[-0.15em] accent-brand-600"
+                    [checked]="isMarked(e.id)"
+                    [attr.aria-label]="t().estimates.markNamed(e.number)"
+                    (change)="toggleMark(e.id, $any($event.target).checked)"
+                  />
                   <a
                     [routerLink]="e.id"
                     class="font-bold text-ink tabular-nums decoration-brand-200 decoration-[0.09em] underline-offset-[0.2em] hover:text-brand-700 hover:underline"
