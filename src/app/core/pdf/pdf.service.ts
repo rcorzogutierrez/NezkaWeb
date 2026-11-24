@@ -1,6 +1,7 @@
 import { DOCUMENT, Service, inject } from '@angular/core';
 import { ClientsService } from '../clients/clients.service';
 import type { Estimate } from '../estimates/estimate';
+import type { Product } from '../products/product';
 import { ProductsService } from '../products/products.service';
 import type { BrandImages, PdfImage } from './pdf-kit';
 
@@ -21,6 +22,16 @@ export class PdfService {
       this.photos(estimate.lines.map((l) => l.productId)),
     ]);
     return lazy.proformasPdf([{ estimate, client, photos }], brand);
+  }
+
+  /** The catalog of the given products, in that order, with or without prices. */
+  async catalog(products: readonly Product[], showPrices: boolean, date: string): Promise<Blob> {
+    const [lazy, brand, photos] = await Promise.all([
+      import('./pdf.lazy'),
+      this.brandImages(),
+      this.imagesOf(new Map(products.filter((p) => p.photoThumb).map((p) => [p.id, p.photoThumb]))),
+    ]);
+    return lazy.catalogPdf({ products, showPrices, date, photos }, brand);
   }
 
   /** Saves the file with its name, as the browser's download. */
@@ -45,6 +56,10 @@ export class PdfService {
 
   private async photos(ids: readonly string[]): Promise<Map<string, PdfImage>> {
     const thumbs = await this.products.thumbs(ids).catch(() => new Map<string, string>());
+    return this.imagesOf(thumbs);
+  }
+
+  private async imagesOf(thumbs: ReadonlyMap<string, string>): Promise<Map<string, PdfImage>> {
     const images = new Map<string, PdfImage>();
     await Promise.all(
       [...thumbs].map(async ([id, data]) => {

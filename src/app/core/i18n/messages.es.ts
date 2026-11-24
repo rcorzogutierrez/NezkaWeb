@@ -152,25 +152,33 @@ export const es = {
     changePassword: 'Cambiar contraseña',
     logout: 'Cerrar sesión',
   },
-  upcoming: {
-    heading: 'Llega en una próxima entrega',
-    intro: 'Esta sección todavía vive en la app de escritorio. Cuando pase a la web podrás:',
-    estimates: {
-      summary: 'Proformas por cliente, con la serie PF-año-número y sus totales.',
-      features: [
-        'Crear estimados buscando productos del catálogo.',
-        'Editar cajas y precio por caja con los totales al día.',
-        'Ver, imprimir y guardar el PDF con el formato de la proforma.',
-      ],
-    },
-    catalog: {
-      summary: 'La lista de productos para entregar a los clientes, con o sin precios.',
-      features: [
-        'Elegir qué productos entran en el catálogo.',
-        'Mostrar u ocultar los precios por caja.',
-        'Imprimir o guardar el catálogo en PDF.',
-      ],
-    },
+  catalog: {
+    title: 'Catálogo',
+    intro:
+      'La lista de productos con foto, UPC, presentación y precio para entregar a los clientes, en PDF.',
+    options: 'En el documento',
+    showPrices: 'Mostrar precios por caja',
+    includeInactive: 'Incluir productos inactivos',
+    summary: (n: number) =>
+      n === 1 ? '1 producto en el catálogo' : `${n} productos en el catálogo`,
+    download: 'Descargar PDF',
+    open: 'Ver PDF',
+    busy: 'Creando PDF…',
+    failed: 'No se pudo crear el PDF. Inténtalo de nuevo.',
+    empty: 'Marca al menos un producto para crear el catálogo.',
+    search: 'Buscar',
+    searchPlaceholder: 'Descripción, ref., UPC o notas…',
+    markAll: 'Marcar todos',
+    markNone: 'Desmarcar todos',
+    markVisibleHint: 'Afecta a los productos que se ven con la búsqueda actual.',
+    caption: 'Productos del catálogo',
+    colInclude: 'Incluir',
+    include: (name: string) => `Incluir ${name} en el catálogo`,
+    inactive: 'Inactivo',
+    noMatches: (search: string) => `Ningún producto coincide con «${search}».`,
+    loading: 'Cargando productos…',
+    loadFailed: 'No se pudo cargar el catálogo. Revisa tu conexión y recarga la página.',
+    noProducts: 'Todavía no hay productos. Agrégalos en la sección Productos.',
   },
   clients: {
     title: 'Clientes',

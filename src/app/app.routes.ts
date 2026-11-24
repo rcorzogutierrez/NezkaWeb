@@ -14,9 +14,6 @@ const productForm = () => import('./features/products/product-form').then((m) =>
 
 const estimateForm = () => import('./features/estimates/estimate-form').then((m) => m.EstimateForm);
 
-const upcoming = () =>
-  import('./features/placeholder/upcoming-section').then((m) => m.UpcomingSection);
-
 /**
  * Every URL is in English. `title` holds a key under `nav`/`auth` that PageTitleStrategy
  * translates.
@@ -108,8 +105,7 @@ export const routes: Routes = [
       {
         path: 'catalog',
         title: 'nav.catalog',
-        loadComponent: upcoming,
-        data: { section: 'catalog' },
+        loadComponent: () => import('./features/catalog/catalog-page').then((m) => m.CatalogPage),
       },
       {
         path: 'import',

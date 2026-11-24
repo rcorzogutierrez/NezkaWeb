@@ -1,6 +1,7 @@
 /** jsPDF and the document layouts, loaded the first time someone asks for a PDF. */
 import { jsPDF } from 'jspdf';
 import { COMPANY_NAME, type BrandImages } from './pdf-kit';
+import { CATALOG_TITLE, type CatalogInput, drawCatalog } from './catalog';
 import { type ProformaInput, drawProforma } from './proforma';
 
 function newDocument(title: string): jsPDF {
@@ -19,5 +20,12 @@ export function proformasPdf(inputs: readonly ProformaInput[], brand: BrandImage
     if (i) doc.addPage();
     drawProforma(doc, input, brand);
   });
+  return doc.output('blob');
+}
+
+/** The product catalog, without any client. */
+export function catalogPdf(input: CatalogInput, brand: BrandImages): Blob {
+  const doc = newDocument(CATALOG_TITLE);
+  drawCatalog(doc, input, brand);
   return doc.output('blob');
 }
