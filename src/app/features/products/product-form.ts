@@ -20,6 +20,7 @@ import {
   LucideLoaderCircle,
   LucideTrash2,
   LucideX,
+  LucideZoomIn,
 } from '@lucide/angular';
 import { type ErrorKey, errorKey } from '../../core/auth/auth-errors';
 import { AuthService } from '../../core/auth/auth.service';
@@ -94,6 +95,7 @@ const duplicateKey = (m: Pick<ProductModel, 'ref' | 'upc'>) =>
     LucideLoaderCircle,
     LucideTrash2,
     LucideX,
+    LucideZoomIn,
     FormAlert,
     TextField,
   ],
@@ -278,6 +280,22 @@ export class ProductForm {
       },
     },
   );
+
+  // The photo, shown large in a dialog. Esc, the X or a click outside the photo closes it.
+  private readonly zoomDialog = viewChild<ElementRef<HTMLDialogElement>>('zoomDialog');
+
+  protected openZoom(): void {
+    this.zoomDialog()?.nativeElement.showModal();
+  }
+
+  protected closeZoom(): void {
+    this.zoomDialog()?.nativeElement.close();
+  }
+
+  /** A click on the dialog itself (not its content) is a click on the dark backdrop. */
+  protected onZoomClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.closeZoom();
+  }
 
   // Deleting, behind a confirmation dialog (administrators only).
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('deleteDialog');

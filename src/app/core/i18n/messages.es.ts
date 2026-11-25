@@ -495,6 +495,8 @@ export const es = {
       dropPhoto: 'o arrástrala aquí',
       removePhoto: 'Quitar foto',
       preparingPhoto: 'Preparando la foto…',
+      zoomPhoto: 'Ver la foto en grande',
+      closePhoto: 'Cerrar la foto',
       photoErrors: {
         notImage: 'Ese archivo no es una imagen que se pueda abrir.',
         tooBig: 'La imagen pesa más de 15 MB.',
