@@ -170,7 +170,17 @@ export const en: Messages = {
     productsOf: (total: number) => `of ${total} in the catalog`,
     pending: 'Estimates to close',
     pendingDetail: (drafts: number, sent: number) =>
-      `${drafts} ${drafts === 1 ? 'draft' : 'drafts'} · ${sent} sent`,
+      [drafts ? `${drafts} ${drafts === 1 ? 'draft' : 'drafts'}` : '', sent ? `${sent} sent` : '']
+        .filter(Boolean)
+        .join(' · '),
+    none: 'None',
+    firstClient: 'Add the first client',
+    firstProduct: 'Add the first product',
+    noneActive: (total: number) => `${total} inactive`,
+    pendingNone: 'All caught up, nothing to close',
+    quotedNone: 'Nothing yet',
+    quotedNoneDetail: (year: number) => `No estimates from ${year} yet`,
+    noPrice: 'No price',
     quoted: (year: number) => `Quoted in ${year}`,
     quotedDetail: (count: number) =>
       `${count} ${count === 1 ? 'estimate' : 'estimates'}, rejected left out`,

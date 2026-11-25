@@ -33,19 +33,28 @@ describe('HomePage', () => {
   let page: HTMLElement;
   const year = new Date().getFullYear();
 
-  async function open(user: UserProfile, language: 'en' | 'es' = 'en') {
+  async function open(user: UserProfile, language: 'en' | 'es' = 'en', empty = false) {
     const users = createUsersServiceMock([user, testUser({ uid: 'b', active: false })]);
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: '', component: HomePage }]),
         provideAuthServiceMock(createAuthServiceMock(user)),
-        provideClientsServiceMock(createClientsServiceMock([testClient()])),
-        provideProductsServiceMock(createProductsServiceMock([testProduct()])),
+        provideClientsServiceMock(createClientsServiceMock(empty ? [] : [testClient()])),
+        provideProductsServiceMock(createProductsServiceMock(empty ? [] : [testProduct()])),
         provideEstimatesServiceMock(
-          createEstimatesServiceMock([
-            testEstimate({ date: `${year}-01-15`, status: 'draft' }),
-            testEstimate({ id: 'e2', number: 'PF-0002', date: `${year}-01-10`, status: 'sent' }),
-          ]),
+          createEstimatesServiceMock(
+            empty
+              ? []
+              : [
+                  testEstimate({ date: `${year}-01-15`, status: 'draft' }),
+                  testEstimate({
+                    id: 'e2',
+                    number: 'PF-0002',
+                    date: `${year}-01-10`,
+                    status: 'sent',
+                  }),
+                ],
+          ),
         ),
         provideUsersServiceMock(users),
       ],
@@ -88,5 +97,18 @@ describe('HomePage', () => {
     expect(page.textContent).toContain('Administración');
     expect(page.textContent).toContain('1 usuario activo de 2');
     expect(page.textContent).toContain('Clientes activos');
+  });
+
+  it('says something useful instead of zeros', async () => {
+    await open(testUser(), 'es', true);
+    const band = page.querySelector('#home-summary + ul')!.textContent!;
+    expect(band).toContain('Ninguno');
+    expect(band).toContain('Agrega el primer cliente');
+    expect(band).toContain('Agrega el primer producto');
+    expect(band).toContain('Todo al día, nada por cerrar');
+    expect(band).toContain('Sin cotizar');
+    expect(band).not.toMatch(/\b0\b|\$0\.00/);
+    expect(page.textContent).toContain('Todavía no hay estimados');
+    expect(page.textContent).toContain('Todo al día. No hay borradores');
   });
 });

@@ -171,7 +171,20 @@ export const es = {
     productsOf: (total: number) => `de ${total} en el catálogo`,
     pending: 'Estimados por cerrar',
     pendingDetail: (drafts: number, sent: number) =>
-      `${drafts} ${drafts === 1 ? 'borrador' : 'borradores'} · ${sent} ${sent === 1 ? 'enviado' : 'enviados'}`,
+      [
+        drafts ? `${drafts} ${drafts === 1 ? 'borrador' : 'borradores'}` : '',
+        sent ? `${sent} ${sent === 1 ? 'enviado' : 'enviados'}` : '',
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    none: 'Ninguno',
+    firstClient: 'Agrega el primer cliente',
+    firstProduct: 'Agrega el primer producto',
+    noneActive: (total: number) => `${total} ${total === 1 ? 'inactivo' : 'inactivos'}`,
+    pendingNone: 'Todo al día, nada por cerrar',
+    quotedNone: 'Sin cotizar',
+    quotedNoneDetail: (year: number) => `Aún no hay estimados de ${year}`,
+    noPrice: 'Sin precio',
     quoted: (year: number) => `Cotizado en ${year}`,
     quotedDetail: (count: number) =>
       `${count} ${count === 1 ? 'estimado' : 'estimados'}, sin rechazados`,

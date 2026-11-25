@@ -34,26 +34,45 @@
       class="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4"
     >
       <li class="bg-white">
-        <a routerLink="/clients" class="tile group">
+        <a [routerLink]="s.clients.total ? '/clients' : '/clients/new'" class="tile group">
           <span class="tile-label">{{ t().home.clients }}</span>
-          <span class="tile-figure">{{ s.clients.active }}</span>
-          <span class="tile-detail">{{ t().home.clientsOf(s.clients.total) }}</span>
+          @if (s.clients.active) {
+            <span class="tile-figure">{{ s.clients.active }}</span>
+            <span class="tile-detail">{{ t().home.clientsOf(s.clients.total) }}</span>
+          } @else {
+            <span class="tile-figure text-ink-subtle">{{ t().home.none }}</span>
+            <span class="tile-detail">{{
+              s.clients.total ? t().home.noneActive(s.clients.total) : t().home.firstClient
+            }}</span>
+          }
         </a>
       </li>
       <li class="bg-white">
-        <a routerLink="/products" class="tile group">
+        <a [routerLink]="s.products.total ? '/products' : '/products/new'" class="tile group">
           <span class="tile-label">{{ t().home.products }}</span>
-          <span class="tile-figure">{{ s.products.active }}</span>
-          <span class="tile-detail">{{ t().home.productsOf(s.products.total) }}</span>
+          @if (s.products.active) {
+            <span class="tile-figure">{{ s.products.active }}</span>
+            <span class="tile-detail">{{ t().home.productsOf(s.products.total) }}</span>
+          } @else {
+            <span class="tile-figure text-ink-subtle">{{ t().home.none }}</span>
+            <span class="tile-detail">{{
+              s.products.total ? t().home.noneActive(s.products.total) : t().home.firstProduct
+            }}</span>
+          }
         </a>
       </li>
       <li class="bg-white">
         <a routerLink="/estimates" class="tile group">
           <span class="tile-label">{{ t().home.pending }}</span>
-          <span class="tile-figure">{{ s.estimates.drafts + s.estimates.sent }}</span>
-          <span class="tile-detail">{{
-            t().home.pendingDetail(s.estimates.drafts, s.estimates.sent)
-          }}</span>
+          @if (s.estimates.drafts + s.estimates.sent; as open) {
+            <span class="tile-figure">{{ open }}</span>
+            <span class="tile-detail">{{
+              t().home.pendingDetail(s.estimates.drafts, s.estimates.sent)
+            }}</span>
+          } @else {
+            <span class="tile-figure text-ink-subtle">{{ t().home.none }}</span>
+            <span class="tile-detail">{{ t().home.pendingNone }}</span>
+          }
         </a>
       </li>
       <li class="bg-brand-600">
@@ -62,10 +81,15 @@
           class="tile group hover:bg-brand-700 focus-visible:-outline-offset-4 focus-visible:outline-white"
         >
           <span class="tile-label text-brand-100">{{ t().home.quoted(year) }}</span>
-          <span class="tile-figure text-white">{{ money(s.estimates.quotedYear) }}</span>
-          <span class="tile-detail text-brand-100">{{
-            t().home.quotedDetail(s.estimates.year)
-          }}</span>
+          @if (s.estimates.quotedYear) {
+            <span class="tile-figure text-white">{{ money(s.estimates.quotedYear) }}</span>
+            <span class="tile-detail text-brand-100">{{
+              t().home.quotedDetail(s.estimates.year)
+            }}</span>
+          } @else {
+            <span class="tile-figure text-white">{{ t().home.quotedNone }}</span>
+            <span class="tile-detail text-brand-100">{{ t().home.quotedNoneDetail(year) }}</span>
+          }
         </a>
       </li>
     </ul>
@@ -117,7 +141,8 @@
                       class="block font-bold text-ink tabular-nums"
                       [class.line-through]="e.status === 'rejected'"
                       [class.text-ink-muted]="e.status === 'rejected'"
-                      >{{ money(e.total) }}</span
+                      [class.text-ink-subtle]="!e.total"
+                      >{{ e.total ? money(e.total) : t().home.noPrice }}</span
                     >
                     <span class="block text-sm text-ink-muted tabular-nums">{{
                       t().home.boxes(e.totalBoxes)
@@ -297,7 +322,7 @@
                     @if (p.ref) {
                       {{ p.ref }} ·
                     }
-                    {{ money(p.pricePerBox) }}
+                    {{ p.pricePerBox ? money(p.pricePerBox) : t().home.noPrice }}
                   </span>
                 </a>
               </li>
