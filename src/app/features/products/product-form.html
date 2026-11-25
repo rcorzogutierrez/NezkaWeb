@@ -47,11 +47,23 @@
             @if (preview(); as src) {
               <!-- A blob: preview of the picked file, which NgOptimizedImage does not accept. -->
               <!-- eslint-disable @angular-eslint/template/prefer-ngsrc -->
-              <img
-                [src]="src"
-                [alt]="t().products.photoOf(model().description || t().products.form.newTitle)"
-                class="absolute inset-0 size-full object-contain"
-              />
+              <button
+                type="button"
+                class="group absolute inset-0 cursor-zoom-in px-2 py-4 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600"
+                [attr.aria-label]="t().products.form.zoomPhoto"
+                (click)="openZoom()"
+              >
+                <img
+                  [src]="src"
+                  [alt]="t().products.photoOf(model().description || t().products.form.newTitle)"
+                  class="size-full object-contain"
+                />
+                <span
+                  class="absolute right-1.5 bottom-1.5 grid size-7 place-items-center rounded-full border border-line bg-white/90 text-ink-muted shadow-sm group-hover:text-brand-700"
+                >
+                  <svg lucideZoomIn class="size-4" aria-hidden="true"></svg>
+                </span>
+              </button>
               <!-- eslint-enable @angular-eslint/template/prefer-ngsrc -->
             } @else {
               <svg lucideImagePlus class="size-10 text-ink-subtle" aria-hidden="true"></svg>
@@ -286,4 +298,34 @@
       }
     </button>
   </div>
+</dialog>
+
+<!-- A click on the backdrop closes it; keyboard users have Esc and the X button. -->
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+<dialog
+  #zoomDialog
+  [attr.aria-label]="t().products.photoOf(model().description || t().products.form.newTitle)"
+  class="m-auto max-h-none max-w-none overflow-visible bg-transparent p-0 backdrop:bg-black/80"
+  (click)="onZoomClick($event)"
+>
+  @if (preview(); as src) {
+    <div class="relative rounded-2xl bg-white p-4 shadow-panel">
+      <!-- eslint-disable @angular-eslint/template/prefer-ngsrc -->
+      <img
+        [src]="src"
+        [alt]="t().products.photoOf(model().description || t().products.form.newTitle)"
+        class="h-[min(600px,calc(100dvh-6rem))] w-[min(600px,calc(100vw-4rem))] object-contain"
+      />
+      <!-- eslint-enable @angular-eslint/template/prefer-ngsrc -->
+      <button
+        type="button"
+        class="absolute -top-3 -right-3 grid size-10 place-items-center rounded-full border border-line bg-white text-ink shadow-panel hover:text-brand-700"
+        [attr.aria-label]="t().products.form.closePhoto"
+        (click)="closeZoom()"
+        autofocus
+      >
+        <svg lucideX class="size-5" aria-hidden="true"></svg>
+      </button>
+    </div>
+  }
 </dialog>

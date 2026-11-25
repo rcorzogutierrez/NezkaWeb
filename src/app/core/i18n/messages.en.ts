@@ -485,6 +485,8 @@ export const en: Messages = {
       dropPhoto: 'or drop it here',
       removePhoto: 'Remove photo',
       preparingPhoto: 'Preparing the photo…',
+      zoomPhoto: 'View the photo larger',
+      closePhoto: 'Close the photo',
       photoErrors: {
         notImage: 'That file is not an image that can be opened.',
         tooBig: 'The image is larger than 15 MB.',

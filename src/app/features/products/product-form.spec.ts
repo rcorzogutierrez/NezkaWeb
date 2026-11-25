@@ -192,6 +192,27 @@ describe('ProductForm', () => {
     );
   });
 
+  it('shows the photo large on click and closes it from the X or the backdrop', async () => {
+    await open('/products/mango');
+    const dialog = page.querySelector(
+      'dialog[aria-label="Photo of Mango Pulp"]',
+    ) as HTMLDialogElement;
+    dialog.showModal = function () {
+      this.open = true;
+    };
+    dialog.close = function () {
+      this.open = false;
+    };
+    (page.querySelector('button[aria-label="View the photo larger"]') as HTMLButtonElement).click();
+    expect(dialog.open).toBe(true);
+    expect(dialog.querySelector('img')?.getAttribute('src')).toBe(mango.photoUrl);
+    (dialog.querySelector('button[aria-label="Close the photo"]') as HTMLButtonElement).click();
+    expect(dialog.open).toBe(false);
+    dialog.showModal();
+    dialog.dispatchEvent(new MouseEvent('click'));
+    expect(dialog.open).toBe(false);
+  });
+
   it('replaces the photo with a resized WebP', async () => {
     fakeImageSupport();
     await open('/products/mango');
