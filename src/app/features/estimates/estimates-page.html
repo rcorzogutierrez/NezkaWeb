@@ -123,6 +123,23 @@
           </button>
         </div>
       } @else {
+        <div
+          class="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line px-4 py-2 sm:px-5"
+        >
+          <p
+            class="mr-auto text-sm"
+            [class]="shown().length < all.length ? 'font-semibold text-ink' : 'text-ink-muted'"
+            role="status"
+          >
+            {{ t().estimates.showing(shown().length, all.length) }}
+          </p>
+          @if (shown().length < all.length) {
+            <button type="button" class="btn-ghost" (click)="clear()">
+              <svg lucideX class="size-4" aria-hidden="true"></svg>
+              {{ t().estimates.clearFilters }}
+            </button>
+          }
+        </div>
         @if (markedShown().length; as n) {
           <div
             class="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line bg-brand-50/60 px-4 py-2.5 sm:px-5"
@@ -282,11 +299,6 @@
             }
           </tbody>
         </table>
-      }
-      @if (all.length) {
-        <p class="border-t border-line px-5 py-3 text-sm text-ink-muted" aria-live="polite">
-          {{ t().estimates.showing(shown().length, all.length) }}
-        </p>
       }
     } @else {
       <div aria-busy="true">

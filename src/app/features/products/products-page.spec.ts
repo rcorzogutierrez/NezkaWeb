@@ -97,6 +97,19 @@ describe('ProductsPage', () => {
     expect(TestBed.inject(Router).url).toBe('/products?missing=any');
   });
 
+  it('shows how many products the filters left, above the list', async () => {
+    await open('/products?missing=photo');
+    const counter = page.querySelector('[role=status]');
+    expect(counter?.textContent?.trim()).toBe('Showing 1 of 3 products');
+    expect(counter?.compareDocumentPosition(page.querySelector('table')!)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    buttonByText(page, 'Clear filters').click();
+    await harness.fixture.whenStable();
+    expect(names()).toHaveLength(3);
+    expect(page.querySelector('[role=status]')?.textContent?.trim()).toBe('3 products');
+  });
+
   it('offers to clear filters when nothing matches', async () => {
     await open('/products?q=zzz');
     expect(page.textContent).toContain('No product matches');
