@@ -1,0 +1,360 @@
+<header class="flex flex-wrap items-end justify-between gap-x-6 gap-y-5">
+  <div class="min-w-0">
+    <h1 class="text-[1.75rem] leading-tight font-bold tracking-tight text-balance text-ink">
+      {{ greeting() }}
+    </h1>
+    <p class="mt-1.5 text-base text-ink-muted first-letter:uppercase">{{ today() }}</p>
+  </div>
+  <nav
+    class="grid w-full grid-cols-2 gap-2.5 sm:flex sm:w-auto sm:flex-wrap"
+    [attr.aria-label]="t().home.quickActions"
+  >
+    <a routerLink="/estimates/new" class="btn-primary col-span-2">
+      <svg lucideFilePlus class="size-[1.125rem]" aria-hidden="true"></svg>
+      {{ t().home.newEstimate }}
+    </a>
+    <a routerLink="/clients/new" class="btn-secondary px-4">
+      <svg lucideUserPlus class="size-[1.125rem] text-brand-600" aria-hidden="true"></svg>
+      {{ t().home.newClient }}
+    </a>
+    <a routerLink="/products/new" class="btn-secondary px-4">
+      <svg lucidePackagePlus class="size-[1.125rem] text-brand-600" aria-hidden="true"></svg>
+      {{ t().home.newProduct }}
+    </a>
+  </nav>
+</header>
+
+@if (loadFailed()) {
+  <app-form-alert class="mt-6">{{ t().home.loadFailed }}</app-form-alert>
+} @else if (summary(); as s) {
+  <!-- The figures: one ledger band; the year's total sits in the proforma's blue, like its TOTAL. -->
+  <section class="mt-7" aria-labelledby="home-summary">
+    <h2 id="home-summary" class="sr-only">{{ t().home.summary }}</h2>
+    <ul
+      class="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4"
+    >
+      <li class="bg-white">
+        <a routerLink="/clients" class="tile group">
+          <span class="tile-label">{{ t().home.clients }}</span>
+          <span class="tile-figure">{{ s.clients.active }}</span>
+          <span class="tile-detail">{{ t().home.clientsOf(s.clients.total) }}</span>
+        </a>
+      </li>
+      <li class="bg-white">
+        <a routerLink="/products" class="tile group">
+          <span class="tile-label">{{ t().home.products }}</span>
+          <span class="tile-figure">{{ s.products.active }}</span>
+          <span class="tile-detail">{{ t().home.productsOf(s.products.total) }}</span>
+        </a>
+      </li>
+      <li class="bg-white">
+        <a routerLink="/estimates" class="tile group">
+          <span class="tile-label">{{ t().home.pending }}</span>
+          <span class="tile-figure">{{ s.estimates.drafts + s.estimates.sent }}</span>
+          <span class="tile-detail">{{
+            t().home.pendingDetail(s.estimates.drafts, s.estimates.sent)
+          }}</span>
+        </a>
+      </li>
+      <li class="bg-brand-600">
+        <a
+          routerLink="/estimates"
+          class="tile group hover:bg-brand-700 focus-visible:-outline-offset-4 focus-visible:outline-white"
+        >
+          <span class="tile-label text-brand-100">{{ t().home.quoted(year) }}</span>
+          <span class="tile-figure text-white">{{ money(s.estimates.quotedYear) }}</span>
+          <span class="tile-detail text-brand-100">{{
+            t().home.quotedDetail(s.estimates.year)
+          }}</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <div class="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+    <div class="grid gap-6">
+      <!-- Recent estimates, under the proforma's blue header -->
+      <section
+        class="overflow-hidden rounded-2xl border border-line bg-white"
+        aria-labelledby="home-recent"
+      >
+        <div class="flex items-center justify-between gap-3 bg-brand-600 py-2.5 pr-2.5 pl-5">
+          <h2 id="home-recent" class="text-sm font-bold tracking-wide text-white uppercase">
+            {{ t().home.recentTitle }}
+          </h2>
+          <a
+            routerLink="/estimates"
+            class="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-white/15 focus-visible:outline-white"
+            [attr.aria-label]="t().home.seeAllEstimates"
+          >
+            {{ t().home.seeAll }}
+            <svg lucideArrowRight class="size-4" aria-hidden="true"></svg>
+          </a>
+        </div>
+        @if (s.recent.length) {
+          <ul class="divide-y divide-line">
+            @for (e of s.recent; track e.id) {
+              <li>
+                <a
+                  [routerLink]="['/estimates', e.id]"
+                  class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-5 py-3.5 transition-colors duration-150 hover:bg-brand-50/50 sm:grid-cols-[minmax(0,1fr)_auto_auto]"
+                >
+                  <span class="min-w-0">
+                    <span class="block truncate font-semibold text-ink">{{
+                      e.clientName || t().home.noClient
+                    }}</span>
+                    <span class="block text-sm text-ink-muted tabular-nums">
+                      {{ e.number }} · {{ date(e.date) }}
+                    </span>
+                  </span>
+                  <app-estimate-status-badge
+                    [status]="e.status"
+                    class="max-sm:col-start-1 max-sm:row-start-2 max-sm:justify-self-start"
+                    >{{ t().estimates.status[e.status] }}</app-estimate-status-badge
+                  >
+                  <span class="text-right max-sm:col-start-2 max-sm:row-span-2 max-sm:row-start-1">
+                    <span
+                      class="block font-bold text-ink tabular-nums"
+                      [class.line-through]="e.status === 'rejected'"
+                      [class.text-ink-muted]="e.status === 'rejected'"
+                      >{{ money(e.total) }}</span
+                    >
+                    <span class="block text-sm text-ink-muted tabular-nums">{{
+                      t().home.boxes(e.totalBoxes)
+                    }}</span>
+                  </span>
+                </a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="px-6 py-10 text-center">
+            <p class="mx-auto max-w-[42ch] text-[0.9375rem] text-ink-muted">
+              {{ t().home.recentEmpty }}
+            </p>
+            <a routerLink="/estimates/new" class="btn-primary mt-5">
+              <svg lucideFilePlus class="size-[1.125rem]" aria-hidden="true"></svg>
+              {{ t().home.newEstimate }}
+            </a>
+          </div>
+        }
+      </section>
+
+      <!-- Who was quoted the most this year -->
+      <section class="rounded-2xl border border-line bg-white" aria-labelledby="home-top">
+        <h2 id="home-top" class="border-b border-line px-5 py-3.5 text-base font-semibold text-ink">
+          {{ t().home.topClientsTitle(year) }}
+        </h2>
+        @if (s.topClients.length) {
+          <ol class="space-y-1 p-2">
+            @for (c of s.topClients; track c.clientId) {
+              <li>
+                <a
+                  routerLink="/estimates"
+                  [queryParams]="{ q: c.name }"
+                  class="block rounded-xl px-3 py-2.5 transition-colors duration-150 hover:bg-canvas"
+                >
+                  <span class="flex items-baseline justify-between gap-4">
+                    <span class="min-w-0 truncate font-semibold text-ink">{{ c.name }}</span>
+                    <span class="font-bold text-ink tabular-nums">{{ money(c.total) }}</span>
+                  </span>
+                  <span class="mt-2 flex items-center gap-3">
+                    <span class="h-1.5 flex-1 overflow-hidden rounded-full bg-brand-50">
+                      <span
+                        class="block h-full rounded-full bg-brand-600"
+                        [style.width.%]="c.share * 100"
+                      ></span>
+                    </span>
+                    <span class="w-24 text-right text-sm text-ink-muted tabular-nums">{{
+                      t().home.topClientEstimates(c.estimates)
+                    }}</span>
+                  </span>
+                </a>
+              </li>
+            }
+          </ol>
+          @if (s.estimates.acceptedYear > 0) {
+            <p class="border-t border-line px-5 py-3 text-sm text-ink-muted">
+              <svg
+                lucideCircleCheck
+                class="mr-1 inline size-4 align-[-0.2em] text-success-700"
+                aria-hidden="true"
+              ></svg>
+              {{ t().home.accepted(money(s.estimates.acceptedYear)) }}
+            </p>
+          }
+        } @else {
+          <p class="px-5 py-8 text-center text-[0.9375rem] text-ink-muted">
+            {{ t().home.topClientsEmpty(year) }}
+          </p>
+        }
+      </section>
+    </div>
+
+    <div class="grid gap-6">
+      <!-- What someone should pick up next -->
+      <section class="rounded-2xl border border-line bg-white" aria-labelledby="home-attention">
+        <h2
+          id="home-attention"
+          class="border-b border-line px-5 py-3.5 text-base font-semibold text-ink"
+        >
+          {{ t().home.attentionTitle }}
+        </h2>
+        @if (s.estimates.drafts || s.estimates.sent || s.products.missingData) {
+          <ul class="space-y-1 p-2">
+            @if (s.estimates.drafts) {
+              <li>
+                <a routerLink="/estimates" [queryParams]="{ status: 'draft' }" class="todo">
+                  <span class="todo-icon bg-canvas text-ink-muted">
+                    <svg lucideFilePenLine class="size-[1.125rem]" aria-hidden="true"></svg>
+                  </span>
+                  <span class="flex-1">{{ t().home.attentionDrafts(s.estimates.drafts) }}</span>
+                  <svg lucideChevronRight class="size-4 text-ink-subtle" aria-hidden="true"></svg>
+                </a>
+              </li>
+            }
+            @if (s.estimates.sent) {
+              <li>
+                <a routerLink="/estimates" [queryParams]="{ status: 'sent' }" class="todo">
+                  <span class="todo-icon bg-brand-50 text-brand-600">
+                    <svg lucideSend class="size-[1.125rem]" aria-hidden="true"></svg>
+                  </span>
+                  <span class="flex-1">{{ t().home.attentionSent(s.estimates.sent) }}</span>
+                  <svg lucideChevronRight class="size-4 text-ink-subtle" aria-hidden="true"></svg>
+                </a>
+              </li>
+            }
+            @if (s.products.missingData) {
+              <li>
+                <a routerLink="/products" [queryParams]="{ missing: 'any' }" class="todo">
+                  <span class="todo-icon bg-amber-50 text-amber-700">
+                    <svg lucideTriangleAlert class="size-[1.125rem]" aria-hidden="true"></svg>
+                  </span>
+                  <span class="flex-1">{{
+                    t().home.attentionMissing(s.products.missingData)
+                  }}</span>
+                  <svg lucideChevronRight class="size-4 text-ink-subtle" aria-hidden="true"></svg>
+                </a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="flex gap-3 px-5 py-5 text-[0.9375rem] text-ink-muted">
+            <svg
+              lucideCircleCheck
+              class="mt-0.5 size-5 shrink-0 text-success-700"
+              aria-hidden="true"
+            ></svg>
+            {{ t().home.attentionClear }}
+          </p>
+        }
+      </section>
+
+      <!-- Latest products added to the catalog -->
+      <section class="rounded-2xl border border-line bg-white" aria-labelledby="home-new-products">
+        <div class="flex items-center justify-between gap-3 border-b border-line py-2 pr-2 pl-5">
+          <h2 id="home-new-products" class="py-1.5 text-base font-semibold text-ink">
+            {{ t().home.newProductsTitle }}
+          </h2>
+          <a routerLink="/products" class="btn-ghost">
+            {{ t().home.seeCatalog }}
+            <svg lucideArrowRight class="size-4" aria-hidden="true"></svg>
+          </a>
+        </div>
+        @if (s.newProducts.length) {
+          <ul class="grid grid-cols-2 gap-2 p-2">
+            @for (p of s.newProducts; track p.id) {
+              <li>
+                <a
+                  [routerLink]="['/products', p.id]"
+                  class="block h-full rounded-xl p-2 transition-colors duration-150 hover:bg-canvas"
+                >
+                  <span
+                    class="relative grid aspect-[4/3] place-items-center overflow-hidden rounded-lg border border-line bg-white"
+                  >
+                    @if (p.photoUrl) {
+                      <img
+                        [ngSrc]="p.photoUrl"
+                        [alt]="t().products.photoOf(p.description)"
+                        fill
+                        class="object-contain p-2"
+                      />
+                    } @else {
+                      <svg
+                        lucideImageOff
+                        class="size-6 text-ink-subtle"
+                        role="img"
+                        [attr.aria-label]="t().home.noPhoto"
+                      ></svg>
+                    }
+                  </span>
+                  <span
+                    class="mt-2 line-clamp-2 text-sm leading-snug font-semibold text-ink"
+                    [title]="p.description"
+                    >{{ p.description }}</span
+                  >
+                  <span class="mt-0.5 block text-sm text-ink-muted tabular-nums">
+                    @if (p.ref) {
+                      {{ p.ref }} ·
+                    }
+                    {{ money(p.pricePerBox) }}
+                  </span>
+                </a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="px-5 py-8 text-center text-[0.9375rem] text-ink-muted">
+            {{ t().home.newProductsEmpty }}
+          </p>
+        }
+      </section>
+
+      @if (isAdmin()) {
+        <section class="rounded-2xl border border-line bg-white" aria-labelledby="home-admin">
+          <h2
+            id="home-admin"
+            class="border-b border-line px-5 py-3.5 text-base font-semibold text-ink"
+          >
+            {{ t().home.adminTitle }}
+          </h2>
+          <div class="px-5 py-4">
+            @if (team(); as tm) {
+              <p class="text-[0.9375rem] text-ink-muted">
+                {{ t().home.users(tm.active, tm.total) }}
+              </p>
+            }
+            <div class="mt-3 flex flex-wrap gap-2">
+              <a routerLink="/users" class="btn-secondary h-10 px-4 text-sm">
+                <svg lucideUserCog class="size-4 text-brand-600" aria-hidden="true"></svg>
+                {{ t().home.manageUsers }}
+              </a>
+              <a routerLink="/import" class="btn-secondary h-10 px-4 text-sm">
+                <svg lucideDatabase class="size-4 text-brand-600" aria-hidden="true"></svg>
+                {{ t().home.importData }}
+              </a>
+            </div>
+          </div>
+        </section>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="mt-7" role="status" [attr.aria-label]="t().home.loading">
+    <div
+      class="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4"
+    >
+      @for (i of skeleton; track i) {
+        <div class="space-y-3 bg-white px-5 py-5">
+          <div class="h-3.5 w-28 max-w-full animate-pulse rounded bg-line"></div>
+          <div class="h-7 w-16 animate-pulse rounded bg-line"></div>
+          <div class="h-3 w-24 max-w-full animate-pulse rounded bg-canvas"></div>
+        </div>
+      }
+    </div>
+    <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+      <div class="h-80 animate-pulse rounded-2xl border border-line bg-white"></div>
+      <div class="h-80 animate-pulse rounded-2xl border border-line bg-white"></div>
+    </div>
+  </div>
+}

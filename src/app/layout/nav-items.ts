@@ -2,6 +2,7 @@ import {
   LucideBookOpen,
   LucideDatabase,
   LucideFileText,
+  LucideHouse,
   LucidePackage,
   LucideUserCog,
   LucideUsers,
@@ -13,9 +14,12 @@ export interface NavItem {
   readonly path: string;
   readonly label: keyof Messages['nav'];
   readonly icon: LucideIcon;
+  /** Active only on this exact URL (the home page would otherwise match every page). */
+  readonly exact?: boolean;
 }
 
 export const NAV_ITEMS: readonly NavItem[] = [
+  { path: '/', label: 'home', icon: LucideHouse, exact: true },
   { path: '/clients', label: 'clients', icon: LucideUsers },
   { path: '/products', label: 'products', icon: LucidePackage },
   { path: '/estimates', label: 'estimates', icon: LucideFileText },

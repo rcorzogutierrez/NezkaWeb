@@ -39,6 +39,7 @@ Figtree Variable, self-hosted via `@fontsource-variable/figtree`, one family for
 - `app-status-badge`: green Active / grey Inactive pill in lists.
 - Lists: white panel, toolbar with search and a segmented filter that shows counts, blue table header (from the proforma), rows turn into stacked cards below `lg`. Skeleton rows while loading; empty states say what to do next. No stat cards.
 - Long forms (`.form-section`): one white panel, sections divided by lines, the section title beside the fields on wide screens; actions and form-level messages in a grey footer bar.
+- Home (`/`, after sign-in): greeting with the date and quick actions; one summary band of four linked figures (the year's quoted total in brand blue, like the proforma's TOTAL); recent estimates under the blue proforma header; "needs attention" rows linking to filtered lists; top clients of the year with thin brand bars; newest products with photos; an administration panel for admins only. This band is the only place figures are grouped; lists keep "no stat cards".
 - Confirmations use a native `<dialog>` (focus trapped, Escape closes), only for destructive actions.
 - `app-form-alert`: tinted block with icon for form-level errors (`role=alert`) and confirmations (`role=status`).
 

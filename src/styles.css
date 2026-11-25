@@ -134,6 +134,32 @@
     @apply bg-brand-600 font-semibold text-white hover:bg-brand-700 hover:text-white;
   }
 
+  /* Home page: one figure of the summary band, a link to its section. */
+  .tile {
+    @apply flex h-full flex-col px-5 py-4 transition-colors duration-150 hover:bg-canvas sm:py-5;
+  }
+
+  .tile-label {
+    @apply text-sm font-semibold text-ink-muted;
+  }
+
+  .tile-figure {
+    @apply mt-1.5 text-[1.75rem] leading-none font-bold tracking-tight text-ink tabular-nums;
+  }
+
+  .tile-detail {
+    @apply mt-2 text-sm text-ink-muted;
+  }
+
+  /* Home page: a row of "needs attention", with its icon in a tinted circle. */
+  .todo {
+    @apply flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-[0.9375rem] font-medium text-ink transition-colors duration-150 hover:bg-canvas;
+  }
+
+  .todo-icon {
+    @apply grid size-9 shrink-0 place-items-center rounded-full;
+  }
+
   .skip-link {
     @apply fixed top-3 left-3 z-50 -translate-y-24 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-transform focus:translate-y-0;
   }
