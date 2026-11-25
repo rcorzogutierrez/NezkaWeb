@@ -50,6 +50,3 @@ firebase-export-*
 
 # Impeccable review captures
 .impeccable/review/
-
-# Cloud Functions
-/functions/node_modules
