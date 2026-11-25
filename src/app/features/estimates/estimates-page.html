@@ -215,20 +215,20 @@
           <tbody class="divide-y divide-line max-lg:block">
             @for (e of shown(); track e.id) {
               <tr
-                class="align-middle transition-colors hover:bg-brand-50/40 max-lg:grid max-lg:grid-cols-[minmax(0,1fr)_auto] max-lg:gap-x-3 max-lg:gap-y-1 max-lg:px-4 max-lg:py-3"
+                class="align-middle transition-colors hover:bg-brand-50/40 max-lg:relative max-lg:grid max-lg:grid-cols-[minmax(0,1fr)_auto] max-lg:gap-x-3 max-lg:gap-y-1 max-lg:px-4 max-lg:py-3 max-lg:active:bg-brand-50/60"
                 [class.text-ink-muted]="e.status === 'rejected'"
               >
                 <td class="py-3 pr-3 pl-5 whitespace-nowrap max-lg:p-0 max-lg:whitespace-normal">
                   <input
                     type="checkbox"
-                    class="mr-3 size-4 align-[-0.15em] accent-brand-600"
+                    class="relative z-10 mr-3 size-4 align-[-0.15em] accent-brand-600"
                     [checked]="isMarked(e.id)"
                     [attr.aria-label]="t().estimates.markNamed(e.number)"
                     (change)="toggleMark(e.id, $any($event.target).checked)"
                   />
                   <a
                     [routerLink]="e.id"
-                    class="font-bold text-ink tabular-nums decoration-brand-200 decoration-[0.09em] underline-offset-[0.2em] hover:text-brand-700 hover:underline"
+                    class="font-bold text-ink tabular-nums decoration-brand-200 decoration-[0.09em] underline-offset-[0.2em] hover:text-brand-700 hover:underline max-lg:after:absolute max-lg:after:inset-0"
                     >{{ e.number }}</a
                   >
                   <span class="text-sm text-ink-muted lg:hidden"> · {{ date(e.date) }}</span>
@@ -265,7 +265,7 @@
                   }}</app-estimate-status-badge>
                 </td>
                 <td class="px-3 py-3 max-lg:col-span-2 max-lg:p-0">
-                  <div class="flex items-center gap-1 max-lg:-ml-2">
+                  <div class="relative z-10 flex w-fit items-center gap-1 max-lg:-ml-2">
                     <button
                       type="button"
                       class="btn-icon"
