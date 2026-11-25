@@ -146,12 +146,12 @@
           <tbody class="divide-y divide-line max-lg:block">
             @for (client of shown(); track client.id) {
               <tr
-                class="align-middle transition-colors hover:bg-brand-50/40 max-lg:grid max-lg:grid-cols-[1fr_auto] max-lg:gap-x-4 max-lg:gap-y-1.5 max-lg:px-4 max-lg:py-3.5"
+                class="align-middle transition-colors hover:bg-brand-50/40 max-lg:relative max-lg:grid max-lg:grid-cols-[1fr_auto] max-lg:gap-x-4 max-lg:gap-y-1.5 max-lg:px-4 max-lg:py-3.5 max-lg:active:bg-brand-50/60"
               >
                 <td class="px-5 py-3.5 max-lg:p-0">
                   <a
                     [routerLink]="client.id"
-                    class="font-semibold text-ink decoration-brand-200 decoration-[0.09em] underline-offset-[0.2em] hover:text-brand-700 hover:underline"
+                    class="font-semibold text-ink decoration-brand-200 decoration-[0.09em] underline-offset-[0.2em] hover:text-brand-700 hover:underline max-lg:after:absolute max-lg:after:inset-0"
                     >{{ client.name }}</a
                   >
                   @if (client.branch) {
