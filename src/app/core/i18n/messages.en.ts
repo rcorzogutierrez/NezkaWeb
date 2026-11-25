@@ -150,9 +150,6 @@ export const en: Messages = {
     recentLogin: 'For security, sign out and sign in again before changing your password.',
     permissionDenied: 'You do not have permission to do this.',
     userExists: 'That person is already in the user list.',
-    protectedAccount:
-      'You cannot delete or change your own account here, or leave the app without administrators.',
-    serverUnavailable: 'The server did not answer. Try again in a moment.',
     unknown: 'Something went wrong. Please try again.',
   },
   nav: {
@@ -637,29 +634,16 @@ export const en: Messages = {
     createdWithPassword: (name, password) =>
       `${name}'s account was created. Their temporary password is ${password}: give it to them and they will change it when they sign in.`,
     tempPassword: 'Temporary password',
-    setPassword: 'Set password',
-    setPasswordOf: (name) => `Set a password for ${name}`,
     delete: 'Delete',
     deleteOf: (name) => `Delete ${name}`,
     cancel: 'Cancel',
     deleteTitle: (name) => `Delete ${name}?`,
-    deleteBody: (email) =>
-      `Their account is deleted and they can no longer sign in. You can create it again with ${email} later. Their estimates are kept.`,
+    deleteBody: 'They leave the list and can no longer sign in. Their estimates are kept.',
+    deleteLater: (email) =>
+      `To create them again with ${email}, use New user. If you do not know their current password, first delete their sign-in in Firebase › Authentication.`,
     deleteConfirm: 'Delete user',
     deleting: 'Deleting…',
     deleted: (name) => `${name} was deleted.`,
-    passwordTitle: (name) => `${name}’s password`,
-    passwordIntro:
-      'Type the password you want to give them. It can be simple; Firebase asks for at least 6 characters.',
-    passwordLabel: 'New password',
-    passwordHint: (min) => `At least ${min} characters.`,
-    mustChange: 'Ask them to change it when they sign in',
-    mustChangeHelp: 'They will choose their own the next time they sign in.',
-    passwordSave: 'Save password',
-    passwordSaving: 'Saving…',
-    passwordSet: (name) => `Done: ${name} can sign in with the new password.`,
-    passwordSetMustChange: (name) =>
-      `Done: ${name} signs in with the new password and then chooses their own.`,
     created: (name, email) =>
       `${name}’s account is ready. We emailed ${email} a link to choose a password.`,
     form: {
