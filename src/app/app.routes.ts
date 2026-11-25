@@ -56,7 +56,12 @@ export const routes: Routes = [
     canMatch: [authGuard],
     loadComponent: () => import('./layout/shell').then((m) => m.Shell),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'clients' },
+      {
+        path: '',
+        pathMatch: 'full',
+        title: 'nav.home',
+        loadComponent: () => import('./features/home/home-page').then((m) => m.HomePage),
+      },
       {
         path: 'clients',
         children: [

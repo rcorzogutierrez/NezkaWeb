@@ -37,8 +37,9 @@ describe('Shell', () => {
 
   it('shows the work sections and marks the current one', async () => {
     await open(testUser());
-    expect(navLabels()).toEqual(['Clients', 'Products', 'Estimates', 'Catalog']);
-    expect(page.querySelector('nav a')?.getAttribute('aria-current')).toBe('page');
+    expect(navLabels()).toEqual(['Home', 'Clients', 'Products', 'Estimates', 'Catalog']);
+    const current = [...page.querySelectorAll('nav a[aria-current=page]')];
+    expect(current.map((a) => a.textContent?.trim())).toEqual(['Clients']);
   });
 
   it('adds Users for administrators only', async () => {
@@ -57,7 +58,7 @@ describe('Shell', () => {
     await open(testUser());
     buttonByText(page, 'es Español').click();
     await harness.fixture.whenStable();
-    expect(navLabels()).toEqual(['Clientes', 'Productos', 'Estimados', 'Catálogo']);
+    expect(navLabels()).toEqual(['Inicio', 'Clientes', 'Productos', 'Estimados', 'Catálogo']);
   });
 
   it('signs out and returns to the login page', async () => {
