@@ -25,6 +25,7 @@ import {
 import { type ErrorKey, errorKey } from '../../core/auth/auth-errors';
 import { AuthService } from '../../core/auth/auth.service';
 import { I18nService } from '../../core/i18n/i18n.service';
+import { UnsavedChanges } from '../../core/session/unsaved-changes.service';
 import { PhotoError, preparePhoto } from '../../core/products/photo';
 import {
   PRODUCT_MAX_LENGTH,
@@ -149,6 +150,7 @@ export class ProductForm {
   });
 
   constructor() {
+    inject(UnsavedChanges).watch(() => this.productForm().dirty() || this.photo().kind !== 'keep');
     inject(DestroyRef).onDestroy(() => this.setNewPhotoUrl(null));
     // An automatic price per unit shows the calculation and follows price and pack.
     effect(() => {

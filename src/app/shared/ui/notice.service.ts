@@ -1,7 +1,7 @@
 import { Service, signal } from '@angular/core';
 
 export interface Notice {
-  readonly tone: 'success' | 'error';
+  readonly tone: 'success' | 'error' | 'info';
   /** A function so the text follows the language switch. */
   readonly text: () => string;
 }

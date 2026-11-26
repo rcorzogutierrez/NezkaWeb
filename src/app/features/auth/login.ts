@@ -7,6 +7,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { UsersService } from '../../core/users/users.service';
 import { FormAlert } from '../../shared/ui/form-alert';
+import { NoticeService } from '../../shared/ui/notice.service';
 import { TextField } from '../../shared/ui/text-field';
 import { safeRedirect } from './safe-redirect';
 
@@ -20,6 +21,8 @@ import { safeRedirect } from './safe-redirect';
     <form [formRoot]="loginForm" class="mt-7 space-y-5" novalidate>
       @if (error(); as key) {
         <app-form-alert>{{ t().errors[key] }}</app-form-alert>
+      } @else if (notice; as n) {
+        <app-form-alert [tone]="n.tone">{{ n.text() }}</app-form-alert>
       }
       <app-text-field
         [field]="loginForm.email"
@@ -71,6 +74,8 @@ export class Login {
   readonly returnUrl = input<string>();
 
   protected readonly error = signal<ErrorKey | null>(null);
+  /** Message carried from the previous page, e.g. the sign-out for inactivity. */
+  protected readonly notice = inject(NoticeService).take();
 
   /** Until the first administrator exists, offer to create it instead of asking for one. */
   protected readonly setupPending = resource({

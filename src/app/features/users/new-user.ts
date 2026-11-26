@@ -12,6 +12,7 @@ import { Router, RouterLink } from '@angular/router';
 import { LucideArrowLeft, LucideLoaderCircle, LucideRefreshCw } from '@lucide/angular';
 import { type ErrorKey, errorKey } from '../../core/auth/auth-errors';
 import { I18nService } from '../../core/i18n/i18n.service';
+import { UnsavedChanges } from '../../core/session/unsaved-changes.service';
 import { USER_ROLES, type UserRole } from '../../core/users/user-profile';
 import { UsersService, temporaryPassword } from '../../core/users/users.service';
 import { MIN_PASSWORD_LENGTH } from '../auth/password-match';
@@ -252,4 +253,8 @@ export class NewUser {
       },
     },
   );
+
+  constructor() {
+    inject(UnsavedChanges).watch(() => this.userForm().dirty());
+  }
 }
