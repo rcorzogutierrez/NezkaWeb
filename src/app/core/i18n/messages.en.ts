@@ -131,6 +131,17 @@ export const en: Messages = {
       logout: 'Sign out',
     },
   },
+  session: {
+    idle: {
+      title: 'Are you still there?',
+      countdown: (seconds) =>
+        `Your session will close in ${seconds} ${seconds === 1 ? 'second' : 'seconds'} because of inactivity.`,
+      unsaved: 'You have unsaved changes on this page. They will be lost if the session closes.',
+      stay: 'Stay signed in',
+      signOut: 'Sign out',
+      signedOut: 'We signed you out after 15 minutes of inactivity. Sign in again to continue.',
+    },
+  },
   validation: {
     required: 'This field is required.',
     email: 'That email address is not valid.',

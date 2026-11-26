@@ -14,6 +14,7 @@ import {
   provideUsersServiceMock,
 } from '../../../testing/users-service.mock';
 import type { Language } from '../../core/i18n/i18n.service';
+import { NoticeService } from '../../shared/ui/notice.service';
 import { Login } from './login';
 
 describe('Login', () => {
@@ -23,7 +24,11 @@ describe('Login', () => {
 
   async function open(
     url = '/login',
-    { setupPending = false, language = 'en' }: { setupPending?: boolean; language?: Language } = {},
+    {
+      setupPending = false,
+      language = 'en',
+      notice,
+    }: { setupPending?: boolean; language?: Language; notice?: string } = {},
   ) {
     auth = createAuthServiceMock();
     TestBed.configureTestingModule({
@@ -40,6 +45,7 @@ describe('Login', () => {
       ],
     });
     useLanguage(language);
+    if (notice) TestBed.inject(NoticeService).show({ tone: 'info', text: () => notice });
     harness = await RouterTestingHarness.create(url);
     page = harness.routeNativeElement as HTMLElement;
   }
@@ -89,5 +95,11 @@ describe('Login', () => {
     expect(page.querySelector('a[href="/setup"]')?.textContent).toContain(
       'Create the administrator account',
     );
+  });
+
+  it('says why the session was closed', async () => {
+    await open('/login', { notice: 'We signed you out after 15 minutes of inactivity.' });
+    const alert = page.querySelector('[role=status]');
+    expect(alert?.textContent).toContain('We signed you out after 15 minutes of inactivity.');
   });
 });

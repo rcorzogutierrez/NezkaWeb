@@ -132,6 +132,17 @@ export const es = {
       logout: 'Cerrar sesión',
     },
   },
+  session: {
+    idle: {
+      title: '¿Sigues ahí?',
+      countdown: (seconds: number) =>
+        `Tu sesión va a cerrarse en ${seconds} ${seconds === 1 ? 'segundo' : 'segundos'} por inactividad.`,
+      unsaved: 'Tienes cambios sin guardar en esta página. Si se cierra la sesión, se perderán.',
+      stay: 'Seguir conectado',
+      signOut: 'Cerrar sesión',
+      signedOut: 'Cerramos tu sesión por inactividad. Vuelve a entrar para seguir.',
+    },
+  },
   validation: {
     required: 'Este campo es obligatorio.',
     email: 'Ese correo no tiene un formato válido.',

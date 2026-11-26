@@ -26,7 +26,7 @@ Move the nezka-invoice desktop app (Python/PySide6 + SQLite, one PC) to the web 
 
 ## Capabilities and Constraints
 
-- Sign-in: email and password only, with password reset. No Google sign-in.
+- Sign-in: email and password only, with password reset. No Google sign-in. The session closes after 15 minutes without activity in any open tab, with a one-minute warning (no maximum session length; Rafa chose that on 26 Nov 2026).
 - UI languages: Spanish (default) and English, switchable anywhere; routes in English. Only administrators add people; there is no public sign-up.
 - Roles: administrator (also manages users) and user. Accounts are deactivated, never deleted.
 - Clients: every active user creates and edits them; only administrators delete.

@@ -24,6 +24,7 @@ import {
 } from '../../core/clients/client';
 import { ClientsService } from '../../core/clients/clients.service';
 import { I18nService } from '../../core/i18n/i18n.service';
+import { UnsavedChanges } from '../../core/session/unsaved-changes.service';
 import { FormAlert } from '../../shared/ui/form-alert';
 import { NoticeService } from '../../shared/ui/notice.service';
 import { TextField } from '../../shared/ui/text-field';
@@ -123,6 +124,10 @@ export class ClientForm {
       },
     },
   );
+
+  constructor() {
+    inject(UnsavedChanges).watch(() => this.clientForm().dirty());
+  }
 
   // Deleting, behind a confirmation dialog (administrators only).
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('deleteDialog');

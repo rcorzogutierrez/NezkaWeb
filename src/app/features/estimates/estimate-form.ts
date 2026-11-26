@@ -46,6 +46,7 @@ import {
 } from '../../core/estimates/estimate';
 import { EstimatesService } from '../../core/estimates/estimates.service';
 import { I18nService } from '../../core/i18n/i18n.service';
+import { UnsavedChanges } from '../../core/session/unsaved-changes.service';
 import { PdfService } from '../../core/pdf/pdf.service';
 import {
   type Product,
@@ -439,6 +440,12 @@ export class EstimateForm {
       },
     },
   );
+
+  constructor() {
+    inject(UnsavedChanges).watch(() =>
+      this.editing() ? this.dirty() : this.estimateForm().dirty() || this.lines().length > 0,
+    );
+  }
 
   /** Shows every problem at once when the person tries to save. */
   protected onSubmitAttempt(): void {

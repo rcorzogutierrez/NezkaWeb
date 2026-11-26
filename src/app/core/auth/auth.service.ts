@@ -10,6 +10,7 @@ import {
 import { FIREBASE_AUTH } from '../firebase/firebase.providers';
 import { FirestoreLoader } from '../firebase/firestore.loader';
 import { I18nService } from '../i18n/i18n.service';
+import { clearActivity } from '../session/activity';
 import { USERS_COLLECTION, type UserProfile, toUserProfile } from '../users/user-profile';
 
 /**
@@ -56,6 +57,8 @@ export class AuthService {
     const language = inject(I18nService).language;
     effect(() => (this.auth.languageCode = language()));
     onAuthStateChanged(this.auth, (user) => {
+      // The next sign-in starts a fresh inactivity clock.
+      if (!user) clearActivity();
       this.firebaseUser.set(user);
       this.watchProfile(user);
     });

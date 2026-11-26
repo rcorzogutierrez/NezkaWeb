@@ -13,6 +13,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../core/auth/auth.service';
 import { I18nService } from '../core/i18n/i18n.service';
 import { LanguageSwitch } from '../shared/ui/language-switch';
+import { IdleLogout } from './idle-logout';
 import { ADMIN_NAV_ITEMS, NAV_ITEMS } from './nav-items';
 
 /** Signed-in frame: brand rule, sidebar navigation and the current page. */
@@ -29,6 +30,7 @@ import { ADMIN_NAV_ITEMS, NAV_ITEMS } from './nav-items';
     LucideMenu,
     LucideX,
     LanguageSwitch,
+    IdleLogout,
   ],
   templateUrl: './shell.html',
   host: { '(document:keydown.escape)': 'menuOpen.set(false)' },
