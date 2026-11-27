@@ -1,6 +1,7 @@
 import {
   ACTIVITY_KEY,
   IDLE_LIMIT_MS,
+  activityExpired,
   clearActivity,
   idleState,
   readActivity,
@@ -39,5 +40,14 @@ describe('activity storage', () => {
   it('ignores a value that is not a time', () => {
     localStorage.setItem(ACTIVITY_KEY, 'nope');
     expect(readActivity()).toBeNull();
+  });
+
+  it('knows when the saved time is older than 15 minutes', () => {
+    const now = 10 * IDLE_LIMIT_MS;
+    expect(activityExpired(now)).toBe(false);
+    writeActivity(now - IDLE_LIMIT_MS + 1);
+    expect(activityExpired(now)).toBe(false);
+    writeActivity(now - IDLE_LIMIT_MS);
+    expect(activityExpired(now)).toBe(true);
   });
 });

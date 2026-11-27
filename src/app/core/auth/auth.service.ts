@@ -10,7 +10,8 @@ import {
 import { FIREBASE_AUTH } from '../firebase/firebase.providers';
 import { FirestoreLoader } from '../firebase/firestore.loader';
 import { I18nService } from '../i18n/i18n.service';
-import { clearActivity } from '../session/activity';
+import { NoticeService } from '../../shared/ui/notice.service';
+import { activityExpired, clearActivity } from '../session/activity';
 import { USERS_COLLECTION, type UserProfile, toUserProfile } from '../users/user-profile';
 
 /**
@@ -51,12 +52,21 @@ export class AuthService {
   readonly email = computed(() => this.firebaseUser()?.email ?? '');
 
   private readonly injector = inject(Injector);
+  private readonly notices = inject(NoticeService);
+  private readonly t = inject(I18nService).t;
 
   constructor() {
     // Password emails go out in the language the person is using.
     const language = inject(I18nService).language;
     effect(() => (this.auth.languageCode = language()));
     onAuthStateChanged(this.auth, (user) => {
+      // A session Firebase restores after more than 15 minutes without activity (the
+      // browser reopened, or a phone that kept the tab asleep) closes before any page shows.
+      if (user && activityExpired(Date.now())) {
+        this.notices.show({ tone: 'info', text: () => this.t().session.idle.signedOut });
+        signOut(this.auth).catch(() => this.firebaseUser.set(null));
+        return;
+      }
       // The next sign-in starts a fresh inactivity clock.
       if (!user) clearActivity();
       this.firebaseUser.set(user);
@@ -113,6 +123,8 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<void> {
+    // A new sign-in never inherits the clock of an old, expired session.
+    clearActivity();
     await signInWithEmailAndPassword(this.auth, email.trim(), password);
     await this.whenSettled();
   }
