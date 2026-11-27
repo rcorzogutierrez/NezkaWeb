@@ -167,6 +167,32 @@ describe('IdleLogout', () => {
     expect(auth.logout).toHaveBeenCalled();
   });
 
+  it('a phone waking the tab hours later signs out on the first touch', async () => {
+    await open();
+    // The browser paused the timer in the background: the clock moves, no tick runs.
+    vi.setSystemTime(Date.now() + minutes(180));
+    document.dispatchEvent(new Event('pointerdown'));
+    await harness.fixture.whenStable();
+    expect(auth.logout).toHaveBeenCalledTimes(1);
+    expect(TestBed.inject(Router).url).toBe('/login');
+  });
+
+  it('checks again as soon as the page comes back', async () => {
+    await open();
+    vi.setSystemTime(Date.now() + minutes(60));
+    window.dispatchEvent(new Event('pageshow'));
+    await harness.fixture.whenStable();
+    expect(auth.logout).toHaveBeenCalledTimes(1);
+  });
+
+  it('a touch after a short pause still keeps the session', async () => {
+    await open();
+    vi.setSystemTime(Date.now() + minutes(5));
+    document.dispatchEvent(new Event('pointerdown'));
+    expect(readActivity()).toBe(Date.now());
+    expect(auth.logout).not.toHaveBeenCalled();
+  });
+
   it('warns that unsaved changes would be lost', async () => {
     await open();
     await harness.navigateByUrl('/edit');

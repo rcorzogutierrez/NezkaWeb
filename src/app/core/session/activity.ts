@@ -44,6 +44,15 @@ export function clearActivity(): void {
   }
 }
 
+/**
+ * True when the last activity saved for this browser is older than the limit. A phone
+ * that kept the tab asleep, or a browser reopened hours later, lands here.
+ */
+export function activityExpired(now: number): boolean {
+  const last = readActivity();
+  return last !== null && now - last >= IDLE_LIMIT_MS;
+}
+
 export type IdleState =
   { kind: 'active' } | { kind: 'warning'; seconds: number } | { kind: 'expired' };
 

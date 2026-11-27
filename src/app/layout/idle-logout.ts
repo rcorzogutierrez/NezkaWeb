@@ -78,7 +78,10 @@ const WRITE_EVERY_MS = 5_000;
     '(document:keydown)': 'onActivity()',
     '(window:scroll)': 'onActivity()',
     '(window:storage)': 'onStorage($event)',
+    // Phones pause the timer while the browser is in the background: check again on return.
     '(document:visibilitychange)': 'tick()',
+    '(window:pageshow)': 'tick()',
+    '(window:focus)': 'tick()',
   },
 })
 export class IdleLogout {
@@ -122,6 +125,9 @@ export class IdleLogout {
     // While the warning is up only "Stay signed in" counts, so a stray key does not hide it.
     if (this.closing || this.warningOpen || this.auth.status() !== 'active') return;
     const now = Date.now();
+    // The first touch after the phone wakes the tab must not revive a session whose time ran out.
+    const last = Math.max(this.lastActivity, readActivity() ?? 0);
+    if (idleState(now - last).kind !== 'active') return this.tick();
     this.lastActivity = now;
     if (now - this.lastWritten >= WRITE_EVERY_MS) this.share(now);
   }
