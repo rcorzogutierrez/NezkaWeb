@@ -113,13 +113,6 @@ export const routes: Routes = [
         loadComponent: () => import('./features/catalog/catalog-page').then((m) => m.CatalogPage),
       },
       {
-        path: 'import',
-        canMatch: [adminGuard],
-        title: 'desktopImport.title',
-        loadComponent: () =>
-          import('./features/desktop-import/desktop-import').then((m) => m.DesktopImport),
-      },
-      {
         path: 'users',
         canMatch: [adminGuard],
         children: [
