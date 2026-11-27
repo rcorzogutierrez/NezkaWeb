@@ -23,15 +23,10 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              },
-              {
-                "glob": "sql-wasm-browser.wasm",
-                "input": "node_modules/sql.js/dist",
-                "output": "vendor/sql.js"
               }
             ],
             "styles": ["src/styles.css"],
-            "allowedCommonJsDependencies": ["sql.js", "html2canvas", "raf", "rgbcolor", "core-js"]
+            "allowedCommonJsDependencies": ["html2canvas", "raf", "rgbcolor", "core-js"]
           },
           "configurations": {
             "production": {

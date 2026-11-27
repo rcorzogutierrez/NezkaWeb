@@ -16,7 +16,6 @@ Versión web de la app de **Elpidio Jr. Produce Co.** para gestionar clientes, p
 - **Inglés y español**: el selector de idioma está en el menú y en las pantallas de acceso. Se recuerda en el navegador; la primera vez se usa el idioma del navegador. Todas las rutas están en inglés.
 - **Clientes** (`/clients`, `/clients/new`, `/clients/:id`, `/clients/import`): lista con búsqueda (sin importar mayúsculas ni acentos) y filtro de activos e inactivos, que se guardan en la URL. Formulario con los mismos campos que la app de escritorio, aviso de nombre duplicado y eliminación solo para administradores. Importación de la lista de clientes de QuickBooks (Excel, CSV o IIF) con vista previa, con las mismas reglas que la app de escritorio.
 - **Estimados** (`/estimates`, `/estimates/new`, `/estimates/:id`): proformas con la serie PF-año-número, búsqueda por número, cliente o producto, filtro por estado y totales. El formulario busca productos del catálogo, suma cajas si el producto ya está y calcula el total. El PDF de la proforma se crea en el navegador con jsPDF, con el mismo formato que la app de escritorio (`core/pdf/`).
-- **Importar datos** (`/import`, solo administradores): trae productos con fotos, clientes y estimados desde `nezka.db` de la app de escritorio.
 - **Catálogo** (`/catalog`): se marcan los productos (todos los activos por defecto), con o sin precios e inactivos, y se descarga el PDF del catálogo con el formato de la app de escritorio.
 - **Marco de la app**: menú lateral con Clientes, Productos, Estimados y Catálogo.
 

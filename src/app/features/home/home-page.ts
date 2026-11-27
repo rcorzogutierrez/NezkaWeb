@@ -5,7 +5,6 @@ import {
   LucideArrowRight,
   LucideChevronRight,
   LucideCircleCheck,
-  LucideDatabase,
   LucideFilePenLine,
   LucideFilePlus,
   LucideImageOff,
@@ -29,7 +28,7 @@ import { EstimateStatusBadge } from '../estimates/estimate-status-badge';
 
 /**
  * The page after signing in: greeting, quick actions, the figures that matter today, recent
- * estimates and what needs attention. Administrators also see the team and the import.
+ * estimates and what needs attention. Administrators also see the team.
  */
 @Component({
   selector: 'app-home-page',
@@ -39,7 +38,6 @@ import { EstimateStatusBadge } from '../estimates/estimate-status-badge';
     LucideArrowRight,
     LucideChevronRight,
     LucideCircleCheck,
-    LucideDatabase,
     LucideFilePenLine,
     LucideFilePlus,
     LucideImageOff,

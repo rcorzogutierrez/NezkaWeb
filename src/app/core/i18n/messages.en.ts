@@ -14,65 +14,6 @@ export const en: Messages = {
     es: 'Español',
     en: 'English',
   },
-  desktopImport: {
-    title: 'Import from the desktop app',
-    intro:
-      'Bring the products with their photos, the clients and the estimates from Nezka Invoice to the web. Anything already here is not duplicated.',
-    choose: 'Choose nezka.db',
-    chooseAnother: 'Choose another file',
-    drop: 'or drop it here',
-    whereTitle: 'Where the file is',
-    whereBody:
-      'On the computer with the desktop app, close Nezka Invoice. Then, in the window to choose the file, paste this folder in the address bar:',
-    whereCopy: 'Copy folder',
-    whereCopied: 'Copied',
-    whereFile: 'nezka.db is there. If the app is open, the latest changes may not be in the file.',
-    reading: 'Reading the file…',
-    errors: {
-      notSqlite: 'That file is not a database. Choose nezka.db.',
-      notDesktopDb: 'That database is not the one from Nezka Invoice.',
-      unreadable: 'The file could not be read. It may be damaged.',
-    },
-    products: 'Products',
-    clients: 'Clients',
-    estimates: 'Estimates',
-    estimatesHint:
-      'Estimates are linked to their client and products on the web. If the client is neither here nor imported, that estimate cannot be brought over.',
-    found: (fresh, existing) =>
-      `${fresh} new` + (existing ? ` · ${existing} already on the web` : ''),
-    withPhoto: (count) => `${count} with a photo`,
-    statusNew: 'New',
-    statusExists: 'Already here',
-    include: (count, what) => `Import ${count} ${what.toLowerCase()}`,
-    nothingNew: 'Everything in this file is already on the web.',
-    submit: 'Import',
-    importing: 'Importing…',
-    progress: (done, total) => `Uploading ${done} of ${total}…`,
-    progressLabel: 'Import progress',
-    keepOpen: 'Do not close this page until it finishes.',
-    cancel: 'Cancel',
-    done: (products, clients, estimates) =>
-      `Imported ${products} ${products === 1 ? 'product' : 'products'}, ${clients} ${clients === 1 ? 'client' : 'clients'} and ${estimates} ${estimates === 1 ? 'estimate' : 'estimates'}.`,
-    failed: (count, details) =>
-      `${count === 1 ? 'One could not be saved' : `${count} could not be saved`}. ${details} Import the file again to retry.`,
-    failedGroup: (reason, names) => {
-      const known: Record<string, string> = {
-        'storage/unauthorized': 'Firebase Storage did not allow the photo upload',
-        'storage/unauthenticated': 'The session expired while uploading the photos',
-        'storage/quota-exceeded': 'The Firebase Storage quota is full',
-        'permission-denied': 'Firestore rejected the data',
-        unavailable: 'No connection to Firebase',
-        'client not found': 'Its client is not in the web app',
-        'no lines': 'It has no lines with boxes',
-      };
-      const shown = names.slice(0, 3).join(', ');
-      const more = names.length > 3 ? ` and ${names.length - 3} more` : '';
-      return `${known[reason] ?? 'Error'} [${reason}]: ${shown}${more}.`;
-    },
-    colStatus: 'Status',
-    colPhoto: 'Photo',
-    noPhoto: 'No photo',
-  },
   auth: {
     statement: 'Clients, products and estimates in one place.',
     pitch:
@@ -220,7 +161,6 @@ export const en: Messages = {
     users: (active: number, total: number) =>
       `${active} active ${active === 1 ? 'user' : 'users'} of ${total}`,
     manageUsers: 'Users',
-    importData: 'Import data',
     loadFailed: 'The data could not be loaded. Check the connection and reload the page.',
     loading: 'Loading…',
   },
@@ -232,7 +172,6 @@ export const en: Messages = {
     products: 'Products',
     estimates: 'Estimates',
     catalog: 'Catalog',
-    import: 'Import data',
     users: 'Users',
     openMenu: 'Open menu',
     closeMenu: 'Close menu',

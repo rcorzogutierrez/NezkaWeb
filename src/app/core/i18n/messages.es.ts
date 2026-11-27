@@ -12,67 +12,6 @@ export const es = {
     es: 'Español',
     en: 'English',
   },
-  desktopImport: {
-    title: 'Importar desde la app de escritorio',
-    intro:
-      'Trae a la web los productos con sus fotos, los clientes y los estimados de Nezka Invoice. Lo que ya existe aquí no se duplica.',
-    choose: 'Elegir nezka.db',
-    chooseAnother: 'Elegir otro archivo',
-    drop: 'o arrástralo aquí',
-    whereTitle: 'Dónde está el archivo',
-    whereBody:
-      'En la computadora con la app de escritorio, cierra Nezka Invoice. Luego, en la ventana para elegir el archivo, pega esta carpeta en la barra de direcciones:',
-    whereCopy: 'Copiar carpeta',
-    whereCopied: 'Copiada',
-    whereFile:
-      'Ahí está nezka.db. Si la app está abierta, los últimos cambios pueden no estar en el archivo.',
-    reading: 'Leyendo el archivo…',
-    errors: {
-      notSqlite: 'Ese archivo no es una base de datos. Elige nezka.db.',
-      notDesktopDb: 'Esa base de datos no es la de Nezka Invoice.',
-      unreadable: 'No se pudo leer el archivo. Puede estar dañado.',
-    },
-    products: 'Productos',
-    clients: 'Clientes',
-    estimates: 'Estimados',
-    estimatesHint:
-      'Los estimados se enlazan con su cliente y sus productos en la web. Si el cliente no está aquí ni se importa, ese estimado no se puede traer.',
-    found: (fresh: number, existing: number) =>
-      `${fresh} ${fresh === 1 ? 'nuevo' : 'nuevos'}` +
-      (existing ? ` · ${existing} ya ${existing === 1 ? 'está' : 'están'} en la web` : ''),
-    withPhoto: (count: number) => `${count} con foto`,
-    statusNew: 'Nuevo',
-    statusExists: 'Ya existe',
-    include: (count: number, what: string) => `Importar ${count} ${what.toLowerCase()}`,
-    nothingNew: 'Todo lo de este archivo ya está en la web.',
-    submit: 'Importar',
-    importing: 'Importando…',
-    progress: (done: number, total: number) => `Subiendo ${done} de ${total}…`,
-    progressLabel: 'Progreso de la importación',
-    keepOpen: 'No cierres esta página hasta que termine.',
-    cancel: 'Cancelar',
-    done: (products: number, clients: number, estimates: number) =>
-      `Importamos ${products} ${products === 1 ? 'producto' : 'productos'}, ${clients} ${clients === 1 ? 'cliente' : 'clientes'} y ${estimates} ${estimates === 1 ? 'estimado' : 'estimados'}.`,
-    failed: (count: number, details: string) =>
-      `${count === 1 ? 'Uno no se pudo guardar' : `${count} no se pudieron guardar`}. ${details} Vuelve a importar el archivo para reintentarlo.`,
-    failedGroup: (reason: string, names: readonly string[]) => {
-      const known: Record<string, string> = {
-        'storage/unauthorized': 'Firebase Storage no dio permiso para subir la foto',
-        'storage/unauthenticated': 'La sesión expiró mientras se subían las fotos',
-        'storage/quota-exceeded': 'Se llenó la cuota de Firebase Storage',
-        'permission-denied': 'Firestore rechazó los datos',
-        unavailable: 'Sin conexión con Firebase',
-        'client not found': 'Su cliente no está en la web',
-        'no lines': 'No tiene líneas con cajas',
-      };
-      const shown = names.slice(0, 3).join(', ');
-      const more = names.length > 3 ? ` y ${names.length - 3} más` : '';
-      return `${known[reason] ?? 'Error'} [${reason}]: ${shown}${more}.`;
-    },
-    colStatus: 'Estado',
-    colPhoto: 'Foto',
-    noPhoto: 'Sin foto',
-  },
   auth: {
     statement: 'Clientes, productos y proformas en un solo lugar.',
     pitch:
@@ -225,7 +164,6 @@ export const es = {
     users: (active: number, total: number) =>
       `${active} ${active === 1 ? 'usuario activo' : 'usuarios activos'} de ${total}`,
     manageUsers: 'Usuarios',
-    importData: 'Importar datos',
     loadFailed: 'No se pudieron cargar los datos. Revisa la conexión y recarga la página.',
     loading: 'Cargando…',
   },
@@ -237,7 +175,6 @@ export const es = {
     products: 'Productos',
     estimates: 'Estimados',
     catalog: 'Catálogo',
-    import: 'Importar datos',
     users: 'Usuarios',
     openMenu: 'Abrir menú',
     closeMenu: 'Cerrar menú',
