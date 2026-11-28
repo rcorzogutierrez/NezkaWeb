@@ -1,79 +1,121 @@
-# NezkaWeb
+<div align="center">
 
-Versión web de la app de **Elpidio Jr. Produce Co.** para gestionar clientes, productos y estimados (proformas). Reemplaza poco a poco a la app de escritorio [nezka-invoice](https://github.com/rcorzogutierrez/nezka-invoice).
+<img src="public/brand/logo.webp" alt="Elpidio Jr. Produce Co." width="340">
+
+### NezkaWeb
+
+Clientes, productos y proformas de **Elpidio Jr. Produce Co.**, desde cualquier dispositivo.
+
+[**nezka-web.web.app**](https://nezka-web.web.app)
+
+![Angular 22](https://img.shields.io/badge/Angular-22-1e3f9e?logo=angular&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-Auth%20·%20Firestore%20·%20Storage-1e3f9e?logo=firebase&logoColor=white)
+![Tailwind CSS 4](https://img.shields.io/badge/Tailwind%20CSS-4-1e3f9e?logo=tailwindcss&logoColor=white)
+![Idiomas](https://img.shields.io/badge/idiomas-ES%20·%20EN-d7191f)
+
+</div>
+
+<br>
+
+<p align="center">
+  <img src="docs/inicio.webp" alt="Pantalla de inicio con totales, estimados recientes y productos nuevos" width="900">
+</p>
+
+NezkaWeb es la versión web de [nezka-invoice](https://github.com/rcorzogutierrez/nezka-invoice), la app de escritorio de la empresa. Hace lo mismo que ella, pero con los datos compartidos en la nube: la oficina y el almacén ven la misma información, en la computadora o en el teléfono.
+
+---
+
+## Qué hace
+
+|                      |                                                                                                                                                                            |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Inicio**           | Saludo, totales del año, estimados recientes, clientes con más cotizado, productos nuevos y lo que está pendiente (borradores, estimados sin respuesta, datos que faltan). |
+| **Clientes**         | Lista con búsqueda y filtros, formulario completo, aviso de nombres repetidos e importación desde QuickBooks (Excel, CSV o IIF) con vista previa.                          |
+| **Productos**        | Catálogo con foto, Ref., UPC, tamaño, pack, cajas por pallet y precio por caja y por unidad. Filtro de datos faltantes y exportación a Excel para el proveedor.            |
+| **Estimados**        | Proformas con la serie `PF-año-número`, estados (borrador, enviado, aceptado, rechazado) y PDF con el mismo formato de siempre, uno o varios a la vez.                     |
+| **Catálogo**         | PDF del catálogo con fotos, con o sin precios, eligiendo qué productos entran.                                                                                             |
+| **Usuarios**         | Solo administradores. Alta con contraseña temporal o por correo, roles, activar o desactivar y borrar cuentas.                                                             |
+| **Español e inglés** | Se cambia en cualquier momento desde el menú o la pantalla de acceso.                                                                                                      |
+
+**Seguridad.** Se entra con correo y contraseña; no hay registro público. La sesión se cierra sola tras 15 minutos sin uso, con un aviso un minuto antes. Las reglas de Firestore y Storage protegen los datos.
+
+---
+
+## Tecnología
 
 - **Angular 22**: componentes standalone, sin zone.js, signals, Signal Forms y rutas con carga diferida.
-- **Firebase** con la librería oficial `firebase` (sin AngularFire): Auth con correo y contraseña, Firestore y Hosting.
-- **Tailwind CSS v4** con los colores de la proforma (azul `#1e3f9e`, rojo `#d7191f`) definidos en `src/styles.css`.
-- Iconos de **@lucide/angular**.
+- **Firebase** con la librería oficial `firebase` (sin AngularFire): Auth, Firestore, Storage para las fotos y Hosting.
+- **Tailwind CSS v4** con los colores de la proforma: azul `#1e3f9e` y rojo `#d7191f`.
+- **jsPDF** para la proforma y el catálogo, generados en el navegador.
+- Iconos de **Lucide**. Pruebas con **Vitest**, **ESLint** y **Prettier**.
 
-## Qué hay hoy
-
-- **Acceso** (`/login`, `/forgot-password`): iniciar sesión con correo y contraseña y recuperar la contraseña por correo. No hay registro público.
-- **Primer administrador** (`/setup`): la primera vez, la pantalla de acceso ofrece crear la cuenta de administrador. Después de eso, `/setup` deja de existir.
-- **Usuarios** (`/users`, `/users/new`, solo administradores): el administrador agrega personas con nombre, correo y rol (administrador o usuario). Firebase les envía un correo para elegir su contraseña. Se pueden activar, desactivar, cambiar de rol y reenviar el correo. Las cuentas no se borran.
-- **Sin acceso** (`/no-access`): una cuenta de Firebase sin perfil activo en `users/{uid}` no entra a la app.
-- **Inglés y español**: el selector de idioma está en el menú y en las pantallas de acceso. Se recuerda en el navegador; la primera vez se usa el idioma del navegador. Todas las rutas están en inglés.
-- **Clientes** (`/clients`, `/clients/new`, `/clients/:id`, `/clients/import`): lista con búsqueda (sin importar mayúsculas ni acentos) y filtro de activos e inactivos, que se guardan en la URL. Formulario con los mismos campos que la app de escritorio, aviso de nombre duplicado y eliminación solo para administradores. Importación de la lista de clientes de QuickBooks (Excel, CSV o IIF) con vista previa, con las mismas reglas que la app de escritorio.
-- **Estimados** (`/estimates`, `/estimates/new`, `/estimates/:id`): proformas con la serie PF-año-número, búsqueda por número, cliente o producto, filtro por estado y totales. El formulario busca productos del catálogo, suma cajas si el producto ya está y calcula el total. El PDF de la proforma se crea en el navegador con jsPDF, con el mismo formato que la app de escritorio (`core/pdf/`).
-- **Catálogo** (`/catalog`): se marcan los productos (todos los activos por defecto), con o sin precios e inactivos, y se descarga el PDF del catálogo con el formato de la app de escritorio.
-- **Marco de la app**: menú lateral con Clientes, Productos, Estimados y Catálogo.
+---
 
 ## Trabajar en local
 
-Requisitos: Node 22.12 o superior y Java 21 (solo para el emulador de Firestore).
+> Requisitos: Node 22.12 o superior, y Java 21 para los emuladores de Firebase.
 
 ```bash
 npm install
-npm run emulators   # Auth, Firestore y Storage locales, en otra terminal
+npm run emulators   # Auth, Firestore y Storage locales (en otra terminal)
 npm start           # http://localhost:4200
 ```
 
-En desarrollo la app usa los **emuladores de Firebase** con el proyecto `demo-nezka`, así que las cuentas que crees en local no tocan el proyecto real. La interfaz de los emuladores está en http://localhost:4000.
+En desarrollo la app usa los **emuladores** con el proyecto `demo-nezka`, así que nada de lo que hagas en local toca los datos reales. La consola de los emuladores está en http://localhost:4000.
 
-## Calidad
+| Comando              | Qué hace                                                 |
+| -------------------- | -------------------------------------------------------- |
+| `npm test`           | Pruebas unitarias (modo observación)                     |
+| `npm run test:ci`    | Pruebas una vez, con cobertura en `coverage/`            |
+| `npm run test:rules` | Pruebas de las reglas de Firestore y Storage             |
+| `npm run lint`       | ESLint con reglas de Angular y accesibilidad             |
+| `npm run format`     | Prettier (ordena también las clases de Tailwind)         |
+| `npm run check`      | Todo lo anterior y el build, igual que en GitHub Actions |
 
-| Comando              | Qué hace                                                  |
-| -------------------- | --------------------------------------------------------- |
-| `npm test`           | Pruebas unitarias con Vitest (modo observación)           |
-| `npm run test:ci`    | Pruebas una vez, con cobertura en `coverage/`             |
-| `npm run lint`       | ESLint con las reglas de angular-eslint y accesibilidad   |
-| `npm run test:rules` | Pruebas de `firestore.rules` contra el emulador (Java 21) |
-| `npm run format`     | Prettier (ordena también las clases de Tailwind)          |
-| `npm run check`      | Todo lo anterior y el build, igual que en GitHub Actions  |
+---
 
-Cada pull request pasa por el flujo `CI` de GitHub Actions.
+## Publicar
 
-## Publicar en Firebase Hosting
+Cada **merge a `main`** publica la app, junto con las reglas de Firestore y Storage, en Firebase Hosting mediante el flujo `Deploy` de GitHub Actions. Cada pull request pasa antes por el flujo `CI`.
 
-Una sola vez, en el proyecto `nezka-web`:
+<details>
+<summary><b>Configuración inicial del proyecto Firebase</b> (una sola vez)</summary>
+
+<br>
+
+En el proyecto `nezka-web` (plan Blaze):
 
 1. **Authentication › Método de acceso**: activa Correo electrónico/contraseña.
 2. **Firestore Database**: crea la base de datos.
-3. **Storage**: pulsa «Comenzar» para crear el bucket `nezka-web.firebasestorage.app` (plan Blaze). Ahí van las fotos de los productos.
-4. Crea una cuenta de servicio en Google Cloud (IAM › Cuentas de servicio) con los roles Firebase Hosting Admin, Firebase Rules Admin, Cloud Storage for Firebase Admin, API Keys Viewer, Service Account User y Service Usage Consumer. Descarga una clave JSON.
-5. En GitHub, en **Settings › Secrets and variables › Actions**, crea el secreto `FIREBASE_SERVICE_ACCOUNT` con el contenido de ese JSON. Luego borra el archivo.
+3. **Storage**: pulsa «Comenzar» para crear el bucket `nezka-web.firebasestorage.app`, donde van las fotos.
+4. En Google Cloud (IAM › Cuentas de servicio) crea una cuenta con los roles Firebase Hosting Admin, Firebase Rules Admin, Cloud Storage for Firebase Admin, API Keys Viewer, Service Account User y Service Usage Consumer, y descarga una clave JSON.
+5. En GitHub, **Settings › Secrets and variables › Actions**, crea el secreto `FIREBASE_SERVICE_ACCOUNT` con ese JSON. Luego borra el archivo.
 
-Desde entonces, cada fusión a `main` publica Hosting y las reglas de Firestore y de Storage con el flujo `Deploy`. Sin el secreto el flujo se omite. También se puede publicar a mano con `npx firebase login` y `npm run deploy`.
+Sin el secreto, el deploy se omite. También se puede publicar a mano con `npx firebase login` y `npm run deploy`.
 
-Después del primer deploy, abre el sitio y usa el enlace **Crea la cuenta de administrador** de la pantalla de acceso para crear el primer administrador.
+Tras el primer deploy, abre el sitio y usa **Crea la cuenta de administrador** en la pantalla de acceso.
 
-La configuración web de Firebase está en `src/environments/environment.ts`. No es secreta: los datos los protegen Firebase Auth y las reglas de `firestore.rules` y `storage.rules`.
+La configuración web de Firebase (`src/environments/environment.ts`) no es secreta: los datos los protegen Auth y las reglas.
+
+</details>
+
+---
 
 ## Estructura
 
 ```
 src/app/
-  core/firebase/   Firebase como proveedores de Angular; Firestore se carga bajo demanda
-  core/auth/       Sesión con signals, guards y mensajes de error
-  core/users/      Perfiles en Firestore y alta de usuarios
-  core/clients/    Modelo y servicio de clientes en Firestore
-  core/i18n/       Textos en español e inglés y el servicio de idioma
-  features/auth/   Acceso, contraseña olvidada, primer administrador, sin acceso
-  features/users/  Lista y alta de usuarios
-  features/clients/ Lista y formulario de clientes
-  layout/          Marco de la app con el menú lateral
-  shared/ui/       Campo de texto y avisos de formulario
-src/testing/       Dobles de prueba (AuthService y UsersService sin Firebase)
+├─ core/        Servicios y lógica: auth, sesión, Firebase, clientes, productos,
+│               estimados, usuarios, inicio, PDF, Excel e idiomas
+├─ features/    Pantallas: inicio, clientes, productos, estimados, catálogo,
+│               usuarios y acceso
+├─ layout/      Marco de la app con el menú lateral
+└─ shared/ui/   Piezas de interfaz reutilizables
 firestore-tests/   Pruebas de las reglas de seguridad
 ```
+
+Las decisiones visuales están en [`DESIGN.md`](DESIGN.md) y los datos del producto en [`PRODUCT.md`](PRODUCT.md).
+
+<br>
+
+<p align="center"><sub>Elpidio Jr. Produce Co. · 5400 NW 32nd Ct, Miami, FL · Wholesale Fresh Fruits, Vegetables &amp; Groceries</sub></p>
