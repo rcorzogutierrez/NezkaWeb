@@ -144,13 +144,15 @@
                   [class.opacity-60]="!isIncluded(p)"
                 >
                   <td class="py-2 pr-1 pl-4">
-                    <input
-                      type="checkbox"
-                      class="size-[1.125rem] cursor-pointer accent-brand-600"
-                      [attr.aria-label]="t().catalog.include(p.description)"
-                      [checked]="isIncluded(p)"
-                      (change)="toggle(p, $any($event.target).checked)"
-                    />
+                    <label class="-m-2.5 grid cursor-pointer place-items-center p-2.5">
+                      <input
+                        type="checkbox"
+                        class="size-[1.125rem] cursor-pointer accent-brand-600 pointer-coarse:size-6"
+                        [attr.aria-label]="t().catalog.include(p.description)"
+                        [checked]="isIncluded(p)"
+                        (change)="toggle(p, $any($event.target).checked)"
+                      />
+                    </label>
                   </td>
                   <td class="px-2 py-2">
                     <div

@@ -84,11 +84,11 @@
   }
 
   .btn-icon {
-    @apply inline-grid size-10 place-items-center rounded-lg text-ink-muted transition-colors duration-150 hover:bg-canvas hover:text-ink;
+    @apply inline-grid size-10 place-items-center rounded-lg text-ink-muted transition-colors duration-150 hover:bg-canvas hover:text-ink pointer-coarse:size-11;
   }
 
   .btn-ghost {
-    @apply inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-brand-600 transition-colors duration-150 hover:bg-brand-50 hover:text-brand-800 disabled:cursor-progress disabled:text-ink-subtle disabled:hover:bg-transparent;
+    @apply inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-brand-600 transition-colors duration-150 hover:bg-brand-50 hover:text-brand-800 disabled:cursor-progress disabled:text-ink-subtle disabled:hover:bg-transparent pointer-coarse:h-11;
   }
 
   .btn-secondary {
@@ -177,5 +177,17 @@
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+}
+
+/*
+ * Phones and tablets: text fields at 16px at least, so iOS Safari does not zoom into the page
+ * when one gets focus. Outside any layer so it wins over the text-size utilities.
+ */
+@media (pointer: coarse) {
+  input:not([type='checkbox'], [type='radio'], [type='file'], [type='range']),
+  select,
+  textarea {
+    font-size: max(1rem, 16px);
   }
 }

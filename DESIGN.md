@@ -54,3 +54,7 @@ Short colour transitions (150ms), drawer slide (200ms ease-out), router view tra
 ## Browser surfaces
 
 Selection in brand tint, brand caret, 2px brand focus ring with offset, thin neutral scrollbars.
+
+## Touch
+
+On touch screens (`pointer-coarse:`) every control is at least 44px tall, row checkboxes are 24px inside a 44px label, and text fields use 16px type so iOS Safari does not zoom on focus.

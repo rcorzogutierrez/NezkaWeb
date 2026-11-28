@@ -23,37 +23,6 @@
 @if (loadFailed()) {
   <app-form-alert class="mt-6">{{ t().estimates.loadFailed }}</app-form-alert>
 } @else {
-  @if (estimates()?.length) {
-    <dl class="mt-6 grid gap-3 sm:grid-cols-3">
-      <div class="rounded-2xl border border-line bg-white px-5 py-4">
-        <dt class="text-xs font-bold tracking-wide text-ink-muted uppercase">
-          {{ t().estimates.statTotal }}
-        </dt>
-        <dd class="mt-1 text-2xl font-bold text-brand-700 tabular-nums">{{ stats().total }}</dd>
-      </div>
-      <div class="rounded-2xl border border-line bg-white px-5 py-4">
-        <dt class="text-xs font-bold tracking-wide text-ink-muted uppercase">
-          {{ t().estimates.statPending }}
-        </dt>
-        <dd class="mt-1 text-2xl font-bold text-brand-700 tabular-nums">
-          {{ stats().pending }}
-          <span class="ml-1 text-sm font-medium text-ink-muted">{{
-            t().estimates.statPendingHint
-          }}</span>
-        </dd>
-      </div>
-      <div class="rounded-2xl border border-line bg-white px-5 py-4">
-        <dt class="text-xs font-bold tracking-wide text-ink-muted uppercase">
-          {{ t().estimates.statQuoted }}
-        </dt>
-        <dd class="mt-1 text-2xl font-bold text-brand-700 tabular-nums">
-          {{ money(stats().quoted) }}
-        </dd>
-        <dd class="text-sm text-ink-muted">{{ t().estimates.statQuotedHint }}</dd>
-      </div>
-    </dl>
-  }
-
   <section class="mt-4 overflow-hidden rounded-2xl border border-line bg-white">
     <div
       class="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3.5 sm:px-5"
@@ -133,6 +102,11 @@
           >
             {{ t().estimates.showing(shown().length, all.length) }}
           </p>
+          @if (shownTotal(); as total) {
+            <p class="text-sm text-ink-muted tabular-nums">
+              {{ t().estimates.shownTotal(money(total)) }}
+            </p>
+          }
           @if (shown().length < all.length) {
             <button type="button" class="btn-ghost" (click)="clear()">
               <svg lucideX class="size-4" aria-hidden="true"></svg>
@@ -192,7 +166,7 @@
                 <span class="flex items-center gap-3">
                   <input
                     type="checkbox"
-                    class="size-4 accent-white"
+                    class="size-4 accent-white pointer-coarse:size-6"
                     [checked]="allMarked()"
                     [indeterminate]="markedShown().length > 0 && !allMarked()"
                     [attr.aria-label]="t().estimates.markAll"
@@ -219,13 +193,17 @@
                 [class.text-ink-muted]="e.status === 'rejected'"
               >
                 <td class="py-3 pr-3 pl-5 whitespace-nowrap max-lg:p-0 max-lg:whitespace-normal">
-                  <input
-                    type="checkbox"
-                    class="relative z-10 mr-3 size-4 align-[-0.15em] accent-brand-600"
-                    [checked]="isMarked(e.id)"
-                    [attr.aria-label]="t().estimates.markNamed(e.number)"
-                    (change)="toggleMark(e.id, $any($event.target).checked)"
-                  />
+                  <label
+                    class="relative z-10 -my-2.5 mr-0.5 -ml-2.5 inline-grid cursor-pointer place-items-center p-2.5 align-middle"
+                  >
+                    <input
+                      type="checkbox"
+                      class="size-4 cursor-pointer accent-brand-600 pointer-coarse:size-6"
+                      [checked]="isMarked(e.id)"
+                      [attr.aria-label]="t().estimates.markNamed(e.number)"
+                      (change)="toggleMark(e.id, $any($event.target).checked)"
+                    />
+                  </label>
                   <a
                     [routerLink]="e.id"
                     class="font-bold text-ink tabular-nums decoration-brand-200 decoration-[0.09em] underline-offset-[0.2em] hover:text-brand-700 hover:underline max-lg:after:absolute max-lg:after:inset-0"
