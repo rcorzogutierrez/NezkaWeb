@@ -74,7 +74,7 @@
                 }}</label>
                 <select
                   [id]="'role-' + user.uid"
-                  class="h-9 rounded-lg border border-line-strong bg-white pr-8 pl-3 text-sm font-medium text-ink focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20 focus:outline-none disabled:bg-canvas disabled:text-ink-muted"
+                  class="h-9 rounded-lg border border-line-strong bg-white pr-8 pl-3 text-sm font-medium text-ink focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20 focus:outline-none disabled:bg-canvas disabled:text-ink-muted pointer-coarse:h-11"
                   [value]="user.role"
                   [disabled]="mine || isBusy(user.uid)"
                   [attr.title]="mine ? t().users.ownRole : null"

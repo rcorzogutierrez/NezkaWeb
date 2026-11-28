@@ -16,7 +16,6 @@ import {
   type EstimateStatus,
   displayDate,
   isActive,
-  isPending,
   matchesEstimateSearch,
   proformaFileName,
   proformasFileName,
@@ -74,14 +73,12 @@ export class EstimatesPage {
   protected readonly loadFailed = this.live.error;
   protected readonly notice = signal<Notice | null>(inject(NoticeService).take());
 
-  protected readonly stats = computed(() => {
-    const list = this.estimates() ?? [];
-    return {
-      total: list.length,
-      pending: list.filter(isPending).length,
-      quoted: list.filter(isActive).reduce((sum, e) => sum + e.total, 0),
-    };
-  });
+  /** Sum of the listed estimates that still count (rejected ones left out). */
+  protected readonly shownTotal = computed(() =>
+    this.shown()
+      .filter(isActive)
+      .reduce((sum, e) => sum + e.total, 0),
+  );
 
   protected readonly shown = computed(() => {
     const status = this.statusFilter();

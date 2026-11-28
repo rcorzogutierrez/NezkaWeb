@@ -53,9 +53,8 @@ describe('EstimatesPage', () => {
   it('hides rejected estimates by default and sums only the active ones', async () => {
     await open();
     expect(numbers()).toEqual(['PF-2026-1028']);
-    const stats = page.querySelector('dl')!.textContent!;
-    expect(stats).toContain('$240.00');
     expect(page.textContent).toContain('Showing 1 of 2 estimates');
+    expect(page.textContent).toContain('Quoted total: $240.00 (rejected left out)');
   });
 
   it('shows every status and searches from the URL', async () => {

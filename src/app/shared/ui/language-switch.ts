@@ -17,7 +17,7 @@ import { I18nService, LANGUAGES } from '../../core/i18n/i18n.service';
           [attr.lang]="lang"
           [attr.aria-pressed]="i18n.language() === lang"
           [attr.title]="t().language[lang]"
-          class="h-8 min-w-10 rounded-md px-2.5 text-xs font-bold tracking-wide uppercase transition-colors duration-150"
+          class="h-8 min-w-10 rounded-md px-2.5 text-xs font-bold tracking-wide uppercase transition-colors duration-150 pointer-coarse:h-11 pointer-coarse:min-w-11"
           [class]="buttonClass(lang)"
           (click)="i18n.use(lang)"
         >
